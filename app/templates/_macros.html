@@ -1,0 +1,26 @@
+{% macro render_social_login(type, connections={}) %}
+ <div class="form-group text-center">
+
+  {% for provider in config["PROJECT"]["socialLogin"]["apis"] | sort %}
+   {% if provider != "openid" %}
+    <a class="ui {{provider}} button" href="{{url_for("login", provider=provider)}}">
+     <i class="{{provider}} icon"></i>
+    </a>
+   {% endif %}
+  {% endfor %}
+
+  <p>
+  <form class="form-inline" action="{{url_for("login", provider="openid")}}" method="GET">
+   <div class="form-group">
+    <div class="input-group openid_identifier">
+     <input name="id" class="form-control" type="text" placeholder="Your OpenID">
+    </div>
+   </div>
+   <button type="submit" class="btn btn-social btn-openid">
+    <span class="fa fa-openid"></span>OpenID
+   </button>
+  </form>
+  </p>
+
+ </div>
+{% endmacro %}

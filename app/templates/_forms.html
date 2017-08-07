@@ -1,0 +1,149 @@
+{%- macro parsefield(field) -%}
+ {%- if field.type != "CSRFTokenField" and field.type != "HiddenField" -%}
+       {%- if 
+                 field.type == "StringField" or
+                 field.type == "TextField" or
+                 field.type == "IntegerField" or
+                 field.type == "TextAreaField" or
+                 field.type == "PasswordField" or
+                 field.type == "DateTimeField" or
+                 field.type == "RecaptchaField" or
+                 field.type == "FloatField" or
+                 field.type == "DateField"
+        -%}
+             <label>
+              {{field.label.text|safe}}
+             </label>
+             {{field(**kwargs)|safe}}
+       {%- elif field.type == "DecimalRangeField" -%}
+
+          <label>
+           {{field.label.text|safe}}
+          </label>
+          <div class="ui grid">
+           <div class="column"></div>
+           <div class="five wide column">
+            <div class="ui
+             {% if field.render_kw["unit"] %}
+             right labeled
+             {% endif %}
+             input">
+             <input type="text"
+                    class="slidervalue"
+                    value="{{field.data}}"
+                    style="
+                     text-align:center;
+                     font-weight:900;
+                    ">
+             {% if field.render_kw["unit"] %}
+             <div class="ui basic label">
+              {{field.render_kw["unit"]}}
+             </div>
+             {% endif %}
+            </div>
+           </div>
+           <div class="column"></div>
+           <div class="nine wide column">
+            <div class="ui horizontal list">
+             <div class="middle aligned item">
+              {{field.render_kw["min"]}}
+             </div>
+             <div class="middle aligned item">
+              {{field(**kwargs)|safe}}
+             </div>
+             <div class="middle aligned item">
+              {{field.render_kw["max"]}}
+             </div>
+            </div>
+           </div>
+          </div>
+
+       {%- elif field.type == "TagListField" -%}
+           <div class="ui fluid right labeled left icon input">
+            <i class="tags icon"></i>
+            <input placeholder="{{field.label.text | safe}}"
+                   type="text"
+                   name="{{ field.name }}"
+                   {%- if field.data -%}
+                   value="{{ field.data}}"
+                   {%- endif -%}
+                   >
+                   <a class="ui tag label">
+                    Add Tag
+                   </a>
+           </div>
+       {%- elif field.type == "SelectField" -%}
+           <label>
+            {{field.label.text|safe}}
+           </label>
+           <div class="ui fluid search selection dropdown">
+            <input name="{{field.name}}" type="hidden" value="{{field.value}}">
+            <i class="dropdown icon"></i>
+            <div class="default text">{{field.label.text|safe}}</div>
+             <div class="menu">
+              {% for option in field.choices %}
+              <div class="item" data-value="{{option[0]}}"><i class="{{option[0]}} flag"></i>{{option[1]}}</div>
+              {% endfor %}
+             </div>
+            </div>
+       {%- elif field.type == "SelectMultipleField" -%}
+           <select name="{{field.name}}" class="ui fluid search dropdown" multiple="{{field.data}}">
+            {% for option in field.choices %}
+            <option value="{{option[0]}}">{{option[0]}}</option>
+            {% endfor %}
+           </select>
+       {%- elif field.type == "BooleanField" -%}
+            <div class="ui toggle checkbox">
+              {{field(**kwargs)|safe}}
+              <label>
+               {{field.label.text|safe}}
+              </label>
+            </div>
+       {%- elif field.type == "FieldList" -%}
+        <fieldset>
+         {%- for entry in field.entries -%}
+           {{parsefield(entry)}}
+         {%- endfor -%}
+        </fieldset>
+       {%- elif field.type == "FormField" -%}
+         {%- for entry in field -%}
+           {{ parsefield(entry) }}
+         {%- endfor -%}
+       {%- else -%}
+          WARNING: missing field def: {{field.type}}
+          {{field.label.text|safe}}
+       {%- endif -%}
+ {%- endif -%}
+{%- endmacro -%}
+
+{%- macro quickform(form, action="", id="", method="POST") -%}
+<form
+ {%- if action != None %} action="{{action}}"{% endif -%}
+ {%- if id %} id="{{id}}"{% endif -%}
+ {%- if method %} method="{{method}}"{% endif %}
+ class="ui form
+     {% if form.errors %} error {% endif %}
+ ">
+  {{ form.csrf_token }}
+  {{ form.hidden_tag() }}
+  {%- for field in form -%}
+   {%- if field.type != "CSRFTokenField" and field.type != "HiddenField" -%}
+    {%- if field.type == "SubmitField" -%}
+        <button class="ui button" type="submit">{{field.label.text|safe}}</button>
+    {%- else -%}
+      <div class="field {% if field.errors %} error {% endif %}">
+       {{- parsefield(field) -}}
+      </div>
+      {% if field.errors %}
+       <div class="ui error message">
+        <div class="header">Error</div>
+        {% for error in field.errors %}
+        <p>{{error}}</p>
+        {% endfor %}
+       </div>
+      {% endif %}
+    {%- endif -%}
+   {%- endif -%}
+  {%- endfor -%}
+</form>
+{%- endmacro -%}

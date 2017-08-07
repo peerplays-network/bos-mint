@@ -1,0 +1,12 @@
+peerplays
+
+Flask
+Flask-Assets
+Flask-Mail
+Flask-Markdown
+Flask-WTF
+Jinja2
+Markdown
+PyYAML
+requests
+webassets>=0-12.1

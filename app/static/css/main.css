@@ -1,0 +1,40 @@
+body {
+ background-color: #FFFFFF;
+}
+.ui.menu .item img.logo {
+ margin-right: 1.5em;
+}
+.main.container {
+ margin-top: 7em;
+}
+.ui.footer.segment {
+ margin: 5em 0em 0em;
+ padding: 5em 0em;
+}
+.header.branding img {
+ height: 50px;
+}
+.ui.vertical.footer.segment {
+ border: 0px;
+}
+
+/* Login Buttons
+-------------------------------------------------- */
+.openid_identifier input {
+  background: white url(/static/img/openid-large.png) center left no-repeat;
+  padding-left: 32px;
+ }
+
+.btn-social {
+  padding: 15px 50px;
+  -webkit-border-radius: 0px;
+  -moz-border-radius: 0px;
+  border-radius: 0px;
+  font-weight: 900;
+ }
+
+.btn-social > :first-child {
+  line-height: 50px !important;
+  width: 40px !important;
+  border: 0 !important;
+ }

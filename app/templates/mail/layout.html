@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+  <link href='https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css' rel='stylesheet'>
+  <style>
+   body {
+    padding-top: 10px;
+   }
+  </style>
+ </head>
+ <body>
+  <div class="container-fluid">
+   <div class="row">
+    <div class="col-xs-12 col-sm-8 col-sm-offset-2 text-center">
+     <img alt="logo" src="{{ url_for('static', filename = 'img/logo.svg') }}" height="64px" />
+    </div>
+   </div>
+   <br />
+   <div class="row">
+    <div class="col-xs-12 col-sm-10 col-sm-offset-1 col-md-10 col-md-offset-1">
+
+     <div class="panel panel-default">
+      {% if subject %}
+      <div class="panel-heading">
+       <h3 class="panel-title">{{subject}}</h3>
+      </div>
+      {% endif %}
+      <div class="panel-body">
+
+       {{content}}
+
+      </div>
+     </div>
+
+ </body>
+</html>
