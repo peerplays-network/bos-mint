@@ -10,3 +10,5 @@ Markdown
 PyYAML
 requests
 webassets>=0-12.1
+flask-script
+flask-sqlalchemy
