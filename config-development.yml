@@ -1,0 +1,16 @@
+debug: True
+nobroadcast: True
+witness_url: wss://peerplays-dev.blocktrades.info/ws
+
+mail_host: host:port
+mail_port: 25 
+mail_user: username
+mail_pass: password
+mail_from: local@localhost
+admins:
+ - mail@xeroc.org
+
+project_name: PeerPlays Witness Tool
+secret_key: RUR7LywKvncb4eoR
+
+sql_database: "mysql://peermit_devel:mKKatn97eUJT3eH9@streemian.com/peermit_devel"
