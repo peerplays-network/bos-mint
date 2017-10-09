@@ -1,4 +1,10 @@
-# Setup
+## Peerplays Bookied-UI
+
+The purpose of these tools is to serve the witnesses and assist them
+with their regular ground work of managing events on the PeerPlays
+blockchain.
+
+## Setup
 
 ### Dependencies
 
@@ -25,17 +31,7 @@
     source env/bin/activate
     pip3 install -r requirements.txt
 
-# SQL Database
+## Run
 
-    CREATE DATABASE {database};
-    CREATE USER '{user}'@'localhost' IDENTIFIED BY '{password}';
-    GRANT ALL ON {database}.* TO '{user}'@'localhost';
-    FLUSH PRIVILEGES;
-
-    # set localhost=% .. to allow outside connections
-
-# Manage setup
-
-    python manage.py install
-    python manage.py db init
-    python manage.py db migrate
+    ./manage web
+    (open browser with http://localhost:5000)
