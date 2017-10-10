@@ -1,6 +1,6 @@
 import re
 from flask import current_app
-from flask_wtf import Form
+from flask_wtf import FlaskForm
 from wtforms import (
     TextField,
     PasswordField,
@@ -60,7 +60,7 @@ validators = {
 }
 
 
-class InternationalizedString(Form):
+class InternationalizedString(FlaskForm):
     country = SelectField("Country", [Required()], choices=[
         ("AF", "Afghanistan"),
         ("AL", "Albania"),
@@ -308,11 +308,11 @@ class InternationalizedString(Form):
     text = StringField('Text', [Required()])
 
 
-class SportForm(Form):
+class SportForm(FlaskForm):
     names = FieldList(FormField(InternationalizedString), min_entries=3)
     submit = SubmitField("Submit")
 
 
-class UnlockForm(Form):
+class UnlockForm(FlaskForm):
     password = PasswordField('Password', validators['unlock'])
     submit = SubmitField("Unlock")

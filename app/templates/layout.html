@@ -11,15 +11,17 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>{{config["PROJECT"].project_name}}</title>
-  {% assets "css_libs" %}
+  
+  <!-- Include Assets -->
+  {%- assets "css_libs" %}
   <link rel='stylesheet' href='{{ ASSET_URL }}'>
-  {% endassets %}
-  {% assets "css_main" %}
+  {%- endassets %}
+  {%- assets "css_main" %}
   <link rel='stylesheet' href='{{ ASSET_URL }}'>
-  {% endassets %}
+  {%- endassets %}
  </head>
  <body>
-
+  <!-- Header Navigation (Logo ...) -->
   <div class="ui menu">
    <div class="ui container">
     <a href="/" class="header">
@@ -27,21 +29,30 @@
     </a>
    </div>
   </div>
+  
+  <!-- Notification Area -->
+  <div class="ui container">
+  	{%- include "_messages.html" %}
+  </div>
 
+  <!-- Block Content Wrapper -->
   <div class="ui main container ">
    <div class="ui grid">
     <div class="column">
+     <!-- Block Content Begin -->
      {% block content -%}
      {%- endblock content %}
+     <!-- Block Content End -->
     </div>
    </div>
   </div>
 
-  {% assets "js_libs" %}
+  <!-- Assets Scripts -->
+  {%- assets "js_libs" %}
   <script type="text/javascript" src="{{ ASSET_URL }}"></script>
-  {% endassets %}
-  {% assets "js_main" %}
+  {%- endassets %}
+  {%- assets "js_main" %}
   <script type="text/javascript" src="{{ ASSET_URL }}"></script>
-  {% endassets %}
+  {%- endassets %}
  </body>
 </html>

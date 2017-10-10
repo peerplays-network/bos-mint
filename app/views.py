@@ -37,4 +37,5 @@ def newwallet():
 @app.route("/sport/new")
 def sport_new():
     sportForm = forms.SportForm()
+    flash('Constant test message')
     return render_template("sport.html", **locals())

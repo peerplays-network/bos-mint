@@ -121,29 +121,28 @@
  {%- if action != None %} action="{{action}}"{% endif -%}
  {%- if id %} id="{{id}}"{% endif -%}
  {%- if method %} method="{{method}}"{% endif %}
- class="ui form
-     {% if form.errors %} error {% endif %}
- ">
+ {%- if form.errors %} class="ui form error"{% else %} class="ui form"{% endif %}>
   {{ form.csrf_token }}
   {{ form.hidden_tag() }}
-  {%- for field in form -%}
-   {%- if field.type != "CSRFTokenField" and field.type != "HiddenField" -%}
+  {%- for field in form %}
+   {%- if field.type != "CSRFTokenField" and field.type != "HiddenField" %}
     {%- if field.type == "SubmitField" -%}
-        <button class="ui button" type="submit">{{field.label.text|safe}}</button>
+		<button class="ui button" type="submit">{{field.label.text|safe}}</button>
     {%- else -%}
-      <div class="field {% if field.errors %} error {% endif %}">
-       {{- parsefield(field) -}}
-      </div>
+		<div class="field{% if field.errors %} error {% endif %}">
+			{{ parsefield(field) }}
+		</div>
       {% if field.errors %}
-       <div class="ui error message">
-        <div class="header">Error</div>
-        {% for error in field.errors %}
-        <p>{{error}}</p>
-        {% endfor %}
-       </div>
+		<div class="ui error message">
+		<div class="header">Error</div>
+		{% for error in field.errors %}
+			<p>{{error}}</p>
+		{% endfor %}
+		</div>
       {% endif %}
     {%- endif -%}
    {%- endif -%}
-  {%- endfor -%}
+  {%- endfor %}
 </form>
 {%- endmacro -%}
+
