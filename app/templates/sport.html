@@ -2,5 +2,13 @@
 {% extends "layout.html" %}
 
 {% block content %}
+{%- if sportId %}
+<h2>Sport: {{ sportId }}</h2>
+{%- else %}
+<h2>New Sport</h2>
+{%- endif %}
+{% if not isInvalidSportId %}
+<h3>List of translations:</h3>
 {{ quickform(sportForm) }}
+{% endif %}
 {% endblock %}

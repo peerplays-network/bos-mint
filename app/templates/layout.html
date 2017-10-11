@@ -21,12 +21,15 @@
   {%- endassets %}
  </head>
  <body>
-  <!-- Header Navigation (Logo ...) -->
+  <!-- Header Logo -->
   <div class="ui menu">
    <div class="ui container">
     <a href="/" class="header">
      <img class="logo" src="{{ url_for('static', filename='img/logo.png') }}" />
     </a>
+    <!-- Header Menu -->
+	<a href="{{ url_for('sport_new') }}">Create sport</a>
+	<a href="{{ url_for('sport_update', sportId='1') }}">Update sport</a>
    </div>
   </div>
   

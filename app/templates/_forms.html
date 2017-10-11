@@ -77,7 +77,7 @@
             {{field.label.text|safe}}
            </label>
            <div class="ui fluid search selection dropdown">
-            <input name="{{field.name}}" type="hidden" value="{{field.value}}">
+            <input name="{{field.name}}" type="hidden" value="{{field.data}}">
             <i class="dropdown icon"></i>
             <div class="default text">{{field.label.text|safe}}</div>
              <div class="menu">
@@ -122,12 +122,11 @@
  {%- if id %} id="{{id}}"{% endif -%}
  {%- if method %} method="{{method}}"{% endif %}
  {%- if form.errors %} class="ui form error"{% else %} class="ui form"{% endif %}>
-  {{ form.csrf_token }}
-  {{ form.hidden_tag() }}
+  <!-- {{ form.hidden_tag() }} -->
   {%- for field in form %}
    {%- if field.type != "CSRFTokenField" and field.type != "HiddenField" %}
     {%- if field.type == "SubmitField" -%}
-		<button class="ui button" type="submit">{{field.label.text|safe}}</button>
+		{{ field(class_="ui button") }}
     {%- else -%}
 		<div class="field{% if field.errors %} error {% endif %}">
 			{{ parsefield(field) }}

@@ -125,6 +125,7 @@ class InternationalizedString(FlaskForm):
         ("EC", "Ecuador"),
         ("EG", "Egypt"),
         ("SV", "El Salvador"),
+        ("EN", "England"),
         ("GQ", "Equatorial Guinea"),
         ("ER", "Eritrea"),
         ("EE", "Estonia"),
@@ -309,10 +310,10 @@ class InternationalizedString(FlaskForm):
 
 
 class SportForm(FlaskForm):
-    names = FieldList(FormField(InternationalizedString), min_entries=3)
+    names  = FieldList(FormField(InternationalizedString), min_entries=1)
     submit = SubmitField("Submit")
-
-
+    addLanguage = SubmitField("Add new language")
+    
 class UnlockForm(FlaskForm):
     password = PasswordField('Password', validators['unlock'])
     submit = SubmitField("Unlock")
