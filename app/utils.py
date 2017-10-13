@@ -33,5 +33,7 @@ def unlocked_wallet_required(f):
                 "to unlock your wallet first!"
             )
             return redirect(url_for('unlock', next=request.url))
+        
+        walletInfo = "abc"
         return f(*args, **kwargs)
     return decorated_function

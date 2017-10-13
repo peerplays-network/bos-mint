@@ -1,4 +1,4 @@
-{%- macro parsefield(field) -%}
+{%- macro parsefield(field, addLabel=True) -%}
  {%- if field.type != "CSRFTokenField" and field.type != "HiddenField" -%}
        {%- if 
                  field.type == "StringField" or
@@ -73,16 +73,16 @@
                    </a>
            </div>
        {%- elif field.type == "SelectField" -%}
-           <label>
+           {% if addLabel %}<label>
             {{field.label.text|safe}}
-           </label>
-           <div class="ui fluid search selection dropdown">
+           </label>{% endif %}
+           <div class="ui {% if field.choices|length < 2 %}disabled{% endif %} fluid search selection dropdown">
             <input name="{{field.name}}" type="hidden" value="{{field.data}}">
             <i class="dropdown icon"></i>
-            <div class="default text">{{field.label.text|safe}}</div>
+            <div class="default text">Select {{field.label.text|safe}}</div>
              <div class="menu">
               {% for option in field.choices %}
-              <div class="item" data-value="{{option[0]}}"><i class="{{option[0]}} flag"></i>{{option[1]}}</div>
+              <div class="item" data-value="{{option[0]}}"><i class="{{option[0]}} flag"></i>{{option[0]}} - {{option[1]}}</div>
               {% endfor %}
              </div>
             </div>
@@ -100,11 +100,14 @@
               </label>
             </div>
        {%- elif field.type == "FieldList" -%}
-        <fieldset>
+        {% if field|length > 0 %} 
+            <label>
+             {{field.label.text|safe}}
+            </label><fieldset>
          {%- for entry in field.entries -%}
            {{parsefield(entry)}}
          {%- endfor -%}
-        </fieldset>
+        </fieldset>{% endif %}
        {%- elif field.type == "FormField" -%}
          {%- for entry in field -%}
            {{ parsefield(entry) }}
@@ -116,7 +119,7 @@
  {%- endif -%}
 {%- endmacro -%}
 
-{%- macro quickform(form, action="", id="", method="POST") -%}
+{%- macro quickform(form, action="", id="", method="POST", skip="") -%}
 <form
  {%- if action != None %} action="{{action}}"{% endif -%}
  {%- if id %} id="{{id}}"{% endif -%}
@@ -124,7 +127,7 @@
  {%- if form.errors %} class="ui form error"{% else %} class="ui form"{% endif %}>
   <!-- {{ form.hidden_tag() }} -->
   {%- for field in form %}
-   {%- if field.type != "CSRFTokenField" and field.type != "HiddenField" %}
+   {%- if field.type != "CSRFTokenField" and field.type != "HiddenField" and field.name != skip %}
     {%- if field.type == "SubmitField" -%}
 		{{ field(class_="ui button") }}
     {%- else -%}
