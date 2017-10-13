@@ -64,7 +64,16 @@ validators = {
 class InternationalizedStringForm(FlaskForm):
     country = SelectField("Language", [Required()], choices=InternationalizedString.LANGUAGES)
     text    = StringField('Text', [Required()])
+    
+class UnlockForm(FlaskForm):
+    password = PasswordField('Password', validators['unlock'])
+    submit = SubmitField("Unlock")
 
+class SportNewForm(FlaskForm):
+    names  = FieldList(FormField(InternationalizedStringForm), min_entries=1, label="List of translations")
+    submit = SubmitField("Submit")
+    addLanguage = SubmitField("Add new language")
+    
 class SportUpdateForm(FlaskForm):
     sport  = SelectField("Sport", [Required()], choices=None)
     names  = FieldList(FormField(InternationalizedStringForm), min_entries=1, label="List of translations")
@@ -76,11 +85,19 @@ class SportSelectForm(FlaskForm):
     sport  = SelectField("Sport", [Required()], choices=Node().getSportsAsList())
     submit = SubmitField("Submit")
     
-class SportNewForm(FlaskForm):
+class NewForm(FlaskForm):
     names  = FieldList(FormField(InternationalizedStringForm), min_entries=1, label="List of translations")
     submit = SubmitField("Submit")
     addLanguage = SubmitField("Add new language")
     
-class UnlockForm(FlaskForm):
-    password = PasswordField('Password', validators['unlock'])
-    submit = SubmitField("Unlock")
+#     def __init__(self, list_title="List of translations", *args, **kwargs):
+#         self.names = FieldList(FormField(InternationalizedStringForm), min_entries=1, label=list_title)
+#         super(FlaskForm, self).__init__(*args, **kwargs)
+    
+class OperationForm(FlaskForm):
+    name  = StringField('Name', render_kw = { 'disabled' : True }) 
+    
+class PendingOperationsForms(FlaskForm):
+    operations = FieldList(FormField(OperationForm), min_entries=0, label="List of operations")
+    submit = SubmitField("Broadcast")
+    

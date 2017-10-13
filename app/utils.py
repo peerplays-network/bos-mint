@@ -1,7 +1,9 @@
-from flask import redirect, flash, url_for, request
+from flask import redirect, flash, url_for, request, render_template
 from flask_security import current_user
 from functools import wraps
 from datetime import datetime
+from app.node import Node
+from tkinter.constants import CURRENT
 
 
 def strfdelta(time, fmt):
@@ -37,3 +39,62 @@ def unlocked_wallet_required(f):
         walletInfo = "abc"
         return f(*args, **kwargs)
     return decorated_function
+
+def render_template_menuinfo(tmpl_name, **kwargs):
+    menuInfo = getMenuInfo()
+    return render_template( tmpl_name, menuInfo=menuInfo, **kwargs)
+
+def getMenuInfo():
+    account = Node().getActiveAccount();
+    
+    currentTransaction = Node().getActiveTransaction()
+    if not currentTransaction:
+        operations = []
+    else:
+        operations = Node().getActiveTransaction().ops
+     
+        
+    menuInfo = { 
+            'accountName': account.identifier + " - " + account.name,
+            'numberOfOpenTransactions': len(operations)
+                }
+    return menuInfo
+
+class Singleton:
+    """
+    A non-thread-safe helper class to ease implementing singletons.
+    This should be used as a decorator -- not a metaclass -- to the
+    class that should be a singleton.
+
+    The decorated class can define one `__init__` function that
+    takes only the `self` argument. Also, the decorated class cannot be
+    inherited from. Other than that, there are no restrictions that apply
+    to the decorated class.
+
+    To get the singleton instance, use the `Instance` method. Trying
+    to use `__call__` will result in a `TypeError` being raised.
+
+    """
+
+    def __init__(self, decorated):
+        self._decorated = decorated
+
+    def Instance(self):
+        """
+        Returns the singleton instance. Upon its first call, it creates a
+        new instance of the decorated class and calls its `__init__` method.
+        On all subsequent calls, the already created instance is returned.
+
+        """
+        try:
+            return self._instance
+        except AttributeError:
+            self._instance = self._decorated()
+            return self._instance
+
+    def __call__(self):
+        raise TypeError('Singletons must be accessed through `Instance()`.')
+
+    def __instancecheck__(self, inst):
+        return isinstance(inst, self._decorated)
+    

@@ -1,9 +1,8 @@
-import re
 from peerplays import PeerPlays
 from peerplays.account import Account
 from peerplays.sport import Sport, Sports
 from . import config
-from _ast import Try
+from functools import wraps
 
 class NodeException(Exception):
     """ All exceptions thrown by the underlying data service will be wrapped with this exception
@@ -23,17 +22,21 @@ class ApiServerDown(NodeException):
     pass
 
 def proposedOperation(func):
+    @wraps(func)
     def wrapper(self, *arg, **kw):
-        self.setProposer( self.getProposerAccountName() )
+        self.ensureProposal( )
         res = func(self, *arg, **kw) 
-        self.setProposer( None ) 
+#         if self.isLastOpAProposal(res):
         return res
+#         else:
+#             raise NodeException("Received transaction is not a proposal") 
     return wrapper
 
 class Node(object):
     
     #: The static connection
     node = None
+    openProposal = None
 
     def __init__(self, url=None, num_retries=1, **kwargs):
         """ This class is a singelton and makes sure that only one
@@ -82,9 +85,36 @@ class Node(object):
             return self.get_node().config["default_account"]
         except Exception as ex:
             raise NodeException(cause=ex)
+        
+    def getActiveTransaction(self):
+        try:
+            # so far default is openProposal
+            return Node.openProposal
+        except Exception as ex:
+            raise NodeException(cause=ex)
+            
+    def isLastOpAProposal(self, transactionToCheck):
+        operations = transactionToCheck['operations'] 
+        return operations[len(operations)-1][0] == 22
+        
+            
+    def ensureProposal(self):
+        # deprecated code, can be removed with next peerplays update
+        if not Node.openProposal:
+            # no active proposal, create one
+            Node.openProposal = self.get_node().proposal(proposer=self.getProposerAccountName())
             
     def getProposerAccountName(self):
         return self.getActiveAccountName()
+
+    def wallet_exists(self):
+        return self.get_node().wallet.created()
+
+    def unlock(self, pwd):
+        return self.get_node().wallet.unlock(pwd)
+
+    def locked(self):
+        return self.get_node().wallet.locked()
     
     def getSport(self, name):
         try:
@@ -115,32 +145,38 @@ class Node(object):
     @proposedOperation
     def createSport(self, istrings):
         try:
-            dummy = 'Mockup: Sport created';
-            return dummy
-#             return self.get_node().sport_create( istrings, self.getActiveAccountName() ) 
+            return self.get_node().sport_create( istrings, account=self.getActiveAccountName(), append_to=self.getActiveTransaction() )
         except Exception as ex:
-            raise NodeException(cause=ex) 
+            raise NodeException(cause=ex)
         
     @proposedOperation
     def updateSport(self, sportId, istrings):
         try:
-            dummy = 'Mockup: Sport updated';
-            return dummy
-#             return self.get_node().sport_create( istrings, self.getActiveAccountName() ) 
+            return self.get_node().sport_update( sportId, istrings, self.getActiveAccountName(), append_to=self.getActiveTransaction() ) 
         except Exception as ex:
             raise NodeException(cause=ex) 
-
-    def wallet_exists(self):
-        return self.get_node().wallet.created()
-
-    def unlock(self, pwd):
-        return self.get_node().wallet.unlock(pwd)
-
-    def locked(self):
-        return self.get_node().wallet.locked()
-    
-    def setProposer(self, accountName):
-        self.get_node().proposer = accountName
-    
-    
+        
+    @proposedOperation
+    def createEventGroup(self, istrings, sportId):
+        try:
+            self.get_node().event_group_create(istrings, sportId, self.getActiveAccountName())
+        except Exception as ex:
+            raise NodeException(cause=ex) 
+        
+    @proposedOperation
+    def createBettingMarketGroup(self, istrings):
+        try:
+            return "dummy"
+#         self.get_node().betting_market_group_create(description, event_id, rules_id, asset, account)
+        except Exception as ex:
+            raise NodeException(cause=ex) 
+        
+    @proposedOperation
+    def createBettingMarket(self, istrings):
+        try:
+            return "dummy"
+#         self.get_node().betting_market_create(payout_condition, description, group_id, account)
+        except Exception as ex:
+            raise NodeException(cause=ex) 
+        
         
