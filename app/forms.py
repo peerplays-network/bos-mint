@@ -65,18 +65,17 @@ class InternationalizedStringForm(FlaskForm):
     country = SelectField("Language", [Required()], choices=InternationalizedString.LANGUAGES)
     text    = StringField('Text', [Required()])
     
+class TranslatedFieldForm(FlaskForm):
+    translations = FieldList(FormField(InternationalizedStringForm, label=""), min_entries=1, label="")
+    addLanguage  = SubmitField("Add translation")
+    
 class UnlockForm(FlaskForm):
     password = PasswordField('Password', validators['unlock'])
     submit = SubmitField("Unlock")
-
-class SportNewForm(FlaskForm):
-    names  = FieldList(FormField(InternationalizedStringForm), min_entries=1, label="List of translations")
-    submit = SubmitField("Submit")
-    addLanguage = SubmitField("Add new language")
     
 class SportUpdateForm(FlaskForm):
     sport  = SelectField("Sport", [Required()], choices=None)
-    names  = FieldList(FormField(InternationalizedStringForm), min_entries=1, label="List of translations")
+    names  = FieldList(FormField(InternationalizedStringForm, label=""), min_entries=1, label="List of translations")
     submit = SubmitField("Submit")
     addLanguage = SubmitField("Add new language")
     
@@ -85,19 +84,38 @@ class SportSelectForm(FlaskForm):
     sport  = SelectField("Sport", [Required()], choices=Node().getSportsAsList())
     submit = SubmitField("Submit")
     
-class NewForm(FlaskForm):
-    names  = FieldList(FormField(InternationalizedStringForm), min_entries=1, label="List of translations")
+class NewSportForm(FlaskForm):
+    name   = FormField(TranslatedFieldForm)
     submit = SubmitField("Submit")
-    addLanguage = SubmitField("Add new language")
+#     
+class NewEventGroupForm(FlaskForm):
+    sport  = SelectField("Sport", [Required()], choices=Node().getSportsAsList())
+    name   = FormField(TranslatedFieldForm)
+    submit = SubmitField("Submit")
     
-#     def __init__(self, list_title="List of translations", *args, **kwargs):
-#         self.names = FieldList(FormField(InternationalizedStringForm), min_entries=1, label=list_title)
-#         super(FlaskForm, self).__init__(*args, **kwargs)
+class NewEventForm(FlaskForm):
+    eventgroup = SelectField("Event group", [Required()], choices=Node().getSportsAsList())
+    name   = FormField(TranslatedFieldForm, label="Name")
+    season = FormField(TranslatedFieldForm, label="Season")
+    start  = TextField("Start")
+    submit = SubmitField("Submit")
+    
+class NewBettingMarketGroupForm(FlaskForm):
+    event = SelectField("Event", [Required()], choices=Node().getSportsAsList())
+    description   = FormField(TranslatedFieldForm)
+    bettingMarketRule = SelectField("Betting market rule", [Required()], choices=Node().getSportsAsList())
+    submit = SubmitField("Submit")
+    
+class NewBettingMarketForm(FlaskForm):
+    bettingmarketgroup = SelectField("Betting market group", [Required()], choices=Node().getSportsAsList())
+    description     = FormField(TranslatedFieldForm, label="Description")
+    payoutCondition = FormField(TranslatedFieldForm, label="Payout condition")
+    submit = SubmitField("Submit")
     
 class OperationForm(FlaskForm):
     name  = StringField('Name', render_kw = { 'disabled' : True }) 
     
 class PendingOperationsForms(FlaskForm):
     operations = FieldList(FormField(OperationForm), min_entries=0, label="List of operations")
-    submit = SubmitField("Broadcast")
+    submit     = SubmitField("Broadcast")
     

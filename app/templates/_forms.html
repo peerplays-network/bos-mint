@@ -15,6 +15,8 @@
               {{field.label.text|safe}}
              </label>
              {{field(**kwargs)|safe}}
+       {%- elif field.type == "SubmitField" -%}
+		     {{ field(class_="ui right floated button") }}<br />
        {%- elif field.type == "DecimalRangeField" -%}
 
           <label>
@@ -109,6 +111,9 @@
          {%- endfor -%}
         </fieldset>{% endif %}
        {%- elif field.type == "FormField" -%}
+         <label>
+           {{field.label.text|safe}}
+         </label>
          {%- for entry in field -%}
            {{ parsefield(entry) }}
          {%- endfor -%}
@@ -129,7 +134,7 @@
   {%- for field in form %}
    {%- if field.type != "CSRFTokenField" and field.type != "HiddenField" and field.name != skip %}
     {%- if field.type == "SubmitField" -%}
-		{{ field(class_="ui button") }}
+		 {{ field(class_="ui button") }}
     {%- else -%}
 		<div class="field{% if field.errors %} error {% endif %}">
 			{{ parsefield(field) }}

@@ -6,7 +6,10 @@ from . import app, db, forms, config
 from .utils import unlocked_wallet_required
 from functools import wraps
 from app.utils import render_template_menuinfo
-from app.forms import OperationForm, PendingOperationsForms
+from app.forms import OperationForm, PendingOperationsForms, TranslatedFieldForm
+from test.test_hash import FixedHash
+
+from wtforms     import FormField
 
 
 # InternationalizedString = namedtuple('InternationalizedString', ['country', 'text'])
@@ -18,7 +21,121 @@ from app.forms import OperationForm, PendingOperationsForms
 @app.route('/')
 @unlocked_wallet_required
 def index():
-    return render_template_menuinfo('index.html')
+    return redirect(url_for('overview'))
+
+@app.route('/overview')
+@app.route('/overview/<typeName>/<identifier>')
+@unlocked_wallet_required
+def overview(typeName=None, identifier=None):
+    # get list of objects for typename, containing id, typeName and toString field
+    getter = {
+      'sport' :     lambda: [ { 
+                               'id' : x["id"], 
+                               'typeName': 'sport',
+                               'toString': x["id"] + ' - ' + x["name"][0][1]  
+                              } for x in Node().getSports() ],
+      'eventgroup': lambda tmpSportId: [ { 
+                                          'id' : x["id"], 
+                                          'typeName': 'eventgroup',
+                                          'toString': x["id"] + ' - ' + x["name"][0][1]  
+                                         } for x in Node().getEventGroups(tmpSportId) ],
+      'event': lambda tmpEventGroupId: [ { 
+                                          'id' : x["id"], 
+                                          'typeName': 'event',
+                                          'toString': x["id"] + ' - ' + x["name"][0][1]  
+                                         } for x in Node().getEvents(tmpEventGroupId) ], 
+      'bettingmarketgroup': lambda tmpEventId: [ { 
+                                          'id' : x["id"], 
+                                          'typeName': 'bettingmarketgroup',
+                                          'toString': x["id"] + ' - ' + x["description"][0][1]  
+                                         } for x in Node().getBettingMarketGroups(tmpEventId) ],
+      'bettingmarket': lambda tmpBMGId: [ { 
+                                          'id' : x["id"], 
+                                          'typeName': 'bettingmarket',
+                                          'toString': x["id"] + ' - ' + x["description"][0][1]  
+                                         } for x in Node().getBettingMarkets(tmpBMGId) ],
+      'bet': lambda tmpBMGId: [  ], # not implemented yet
+    }
+    # get object for typename, containing id 
+    reverseId = {
+      'sport' :     lambda tmpId: None,
+      'eventgroup': lambda tmpId: Node().getEventGroup(tmpId).sport.identifier,
+      'event':      lambda tmpId: Node().getEvent(tmpId).eventgroup.identifier,
+      'bettingmarketgroup':        lambda tmpId: Node().getBettingMarketGroup(tmpId).event.identifier,
+      'bettingmarket':         lambda tmpId: Node().getBettingMarket(tmpId).bettingmarketgroup.identifier,
+      'bet':        lambda tmpId: tmpId,
+    }
+    # which type does it cascade to
+    nextType = {
+                 'sport': 'eventgroup',
+                 'eventgroup': 'event',
+                 'event': 'bettingmarketgroup',
+                 'bettingmarketgroup': 'bettingmarket',
+                 'bettingmarket': 'bet'
+               }
+    # which type does it come from
+    reverseType = {
+                 'sport': None,
+                 'eventgroup': 'sport',
+                 'event': 'eventgroup',
+                 'bettingmarketgroup': 'event',
+                 'bettingmarket': 'bettingmarketgroup',
+                 'bet': 'bettingmarket'
+               }
+    # human readable title
+    titles   = { 
+                 'sport': 'Sport',
+                 'eventgroup': 'Event group',
+                 'event': 'Event',
+                 'bettingmarketgroup': 'Betting market group',
+                 'bettingmarket': 'Betting market',
+                 'bet': 'Bets'
+               }
+    # selected ids
+    selected = { }
+    
+    # same structure for all chain elements    
+    def buildChainElement( tmpList, title, typeName ):
+        return { 'list': tmpList,
+                 'title': title,
+                 'typeName': typeName }
+    
+    # build reverse chain starting with the one selected
+    reverseChain = []
+    if typeName:
+        tmpTypeName   = nextType.get(typeName)
+    else:
+        # in this case the user only wants the sports
+        tmpTypeName = 'sport'
+
+    tmpIdentifier = identifier 
+    while tmpTypeName and not tmpTypeName == 'sport':
+        tmpChainElement = buildChainElement( getter.get(tmpTypeName)(tmpIdentifier), titles.get(tmpTypeName), tmpTypeName ) 
+        tmpTypeName   = reverseType.get(tmpTypeName)
+        selected[tmpTypeName]      = tmpIdentifier
+        tmpIdentifier = reverseId.get(tmpTypeName)(tmpIdentifier)
+        
+        
+        reverseChain.append( tmpChainElement )
+                
+#         if tmpTypeName == 'event':
+#             tmpIdentifier = '1.16.0'
+#         else:
+#             tmpIdentifier = '1'
+       
+    listChain = buildChainElement( getter.get('sport')(), titles.get('sport'), 'sport' )
+    
+    reverseChain.reverse()
+    if reverseChain:
+        tmpChainElement = listChain
+        for chainElement in reverseChain:
+            
+            tmpChainElement["nextChainElement"] = chainElement
+            tmpChainElement = chainElement
+                   
+    del getter, tmpTypeName, tmpIdentifier
+               
+    return render_template_menuinfo('index.html', **locals())
 
 
 @app.route('/unlock', methods=['GET', 'POST'])
@@ -63,35 +180,6 @@ def pending_operations():
     
     return render_template_menuinfo("cart.html", **locals())
 
-@app.route("/sport/new", methods=['post','get'])
-@unlocked_wallet_required
-def sport_new():
-    # highlight active menu item
-    sport_new_active = " active" 
-    
-    sportForm = forms.SportNewForm()
-    
-    # Which button was pressed?
-    if sportForm.submit.data and sportForm.validate_on_submit():
-        # Create new sport
-        try:
-            proposal = Node().createSport( InternationalizedString.parseToList(sportForm.names) )
-            flash("A creation proposal for a new sport was created.")
-            return redirect(url_for('index'))
-        except NodeException as e:
-            flash(e.message, category='error')
-            raise e.cause
-        
-        return render_template_menuinfo("sport/new.html", **locals())
-    
-    elif sportForm.addLanguage.data:
-        # an additional language line was requested
-        sportForm.names.append_entry()
-        return render_template_menuinfo("sport/new.html", **locals())
-    
-    # Show SportForm
-    return render_template_menuinfo("sport/new.html", **locals())
-    
 @app.route("/sport/update", methods=['post','get'])
 @unlocked_wallet_required
 def sport_update_select():
@@ -168,105 +256,84 @@ def sport_update(sportId):
             
     return render_template_menuinfo("sport/update.html", **locals())
 
-@app.route("/eventgroup/new", methods=['post','get'])
-@unlocked_wallet_required
-def eventgroup_new():
+def genericNewForm(form, createFunction, typeName):
     # look into https://github.com/Semantic-Org/Semantic-UI/issues/2978 for highlighting the chosen menu branch as well
     
-    # highlight active menu item
-    eventgroup_active = " active"
-    
-    newObjectForm = forms.NewForm()
-    newObjectName = "event group"
+    def findAndProcessTranslatons(form):
+        for field in form._fields.values():
+            if isinstance(field, FormField) and isinstance(field.form, TranslatedFieldForm) and field.addLanguage.data:
+                # an additional language line was requested
+                field.translations.append_entry()
+                return True
+            
+        return False
     
     # Which button was pressed?
-    if newObjectForm.submit.data and newObjectForm.validate_on_submit():
-        # Create new object
+    if findAndProcessTranslatons(form):
+        del createFunction
+        return render_template_menuinfo("new.html", **locals())
+        
+    elif form.submit.data and form.validate_on_submit():
+        # Create new sport
         try:
-#             proposal = Node().createEventGroup( InternationalizedString.parseToList(newObjectForm.names), sportId )
-            proposalId = "mockId"
-            newObjectId = "mockId" 
-            flash("A creation proposal (id=" + proposalId + ") for a new " + newObjectName + " (id=" + newObjectId + ") was created.")
+            proposal = createFunction( form )
+            flash("A creation proposal for a new " + typeName + " was created.")
             return redirect(url_for('index'))
         except NodeException as e:
             flash(e.message, category='error')
             raise e.cause
-        
-        return render_template_menuinfo("new.html", **locals())
     
-    elif newObjectForm.addLanguage.data:
-        # an additional language line was requested
-        newObjectForm.names.append_entry()
-        return render_template_menuinfo("new.html", **locals())
+    del createFunction 
     
-    # Show NewForm
     return render_template_menuinfo("new.html", **locals())
+
+@app.route("/sport/new", methods=['post','get'])
+@unlocked_wallet_required
+def sport_new(): 
+    typeName         = "sport"
+    form = forms.NewSportForm()
+    createFunction = lambda tmpForm: Node().createSport( InternationalizedString.parseToList(tmpForm.name.translations) )
+    
+    return genericNewForm(form, createFunction, typeName)
+    
+@app.route("/eventgroup/new", methods=['post','get'])
+@unlocked_wallet_required
+def eventgroup_new(): 
+    typeName         = "eventgroup"
+    form = forms.NewEventGroupForm()
+    createFunction = lambda tmpForm: Node().createSport( InternationalizedString.parseToList(tmpForm.name.translations) )
+    
+    return genericNewForm(form, createFunction, typeName)
+
+@app.route("/event/new", methods=['post','get'])
+@unlocked_wallet_required
+def event_new(): 
+    typeName         = "event"
+    form = forms.NewEventForm()
+    createFunction = lambda tmpForm: Node().createSport( InternationalizedString.parseToList(tmpForm.name.translations) )
+    
+    return genericNewForm(form, createFunction, typeName)
 
 @app.route("/bettingmarketgroup/new", methods=['post','get'])
 @unlocked_wallet_required
-def bettingmarketgroup_new():
-    # look into https://github.com/Semantic-Org/Semantic-UI/issues/2978 for highlighting the chosen menu branch as well
+def bettingmarketgroup_new(): 
+    typeName         = "bettingmarketgroup"
+    form = forms.NewBettingMarketGroupForm()
+    createFunction = lambda tmpForm: Node().createSport( InternationalizedString.parseToList(tmpForm.name.translations) )
     
-    # highlight active menu item
-    bettingmarketgroup_new_active = " active"
-    
-    newObjectForm = forms.NewForm()
-    newObjectName = "betting market group"
-    
-    # Which button was pressed?
-    if newObjectForm.submit.data and newObjectForm.validate_on_submit():
-        # Create new object
-        try:
-            proposal = Node().createBettingMarketGroup( InternationalizedString.parseToList(newObjectForm.names) )
-            proposalId = "mockId"
-            newObjectId = "mockId" 
-            flash("A creation proposal (id=" + proposalId + ") for a new " + newObjectName + " (id=" + newObjectId + ") was created.")
-            return redirect(url_for('index'))
-        except NodeException as e:
-            flash(e.message, category='error')
-            raise e.cause
-        
-        return render_template_menuinfo("new.html", **locals())
-    
-    elif newObjectForm.addLanguage.data:
-        # an additional language line was requested
-        newObjectForm.names.append_entry()
-        return render_template_menuinfo("new.html", **locals())
-    
-    # Show NewForm
-    return render_template_menuinfo("new.html", **locals())
+    return genericNewForm(form, createFunction, typeName)
 
 @app.route("/bettingmarket/new", methods=['post','get'])
 @unlocked_wallet_required
-def bettingmarket_new():
-    # look into https://github.com/Semantic-Org/Semantic-UI/issues/2978 for highlighting the chosen menu branch as well
+def bettingmarket_new(): 
+    typeName         = "bettingmarket"
+    form = forms.NewBettingMarketForm()
+    createFunction = lambda tmpForm: Node().createSport( InternationalizedString.parseToList(tmpForm.name.translations) )
     
-    # highlight active menu item
-    bettingmarket_new_active = " active"
-    
-    newObjectForm = forms.NewForm()
-    newObjectName = "betting market"
-    
-    # Which button was pressed?
-    if newObjectForm.submit.data and newObjectForm.validate_on_submit():
-        # Create new object
-        try:
-            proposal = Node().createBettingMarket( InternationalizedString.parseToList(newObjectForm.names) )
-            proposalId = "mockId"
-            newObjectId = "mockId" 
-            flash("A creation proposal (id=" + proposalId + ") for a new " + newObjectName + " (id=" + newObjectId + ") was created.")
-            return redirect(url_for('index'))
-        except NodeException as e:
-            flash(e.message, category='error')
-            raise e.cause
-        
-        return render_template_menuinfo("new.html", **locals())
-    
-    elif newObjectForm.addLanguage.data:
-        # an additional language line was requested
-        newObjectForm.names.append_entry()
-        return render_template_menuinfo("new.html", **locals())
-    
-    # Show NewForm
-    return render_template_menuinfo("new.html", **locals())
+    return genericNewForm(form, createFunction, typeName)
+
+@app.route("/bet/new", methods=['post','get'])
+@unlocked_wallet_required
+def bet_new(): 
+    return render_template_menuinfo('index.html', **locals())
 

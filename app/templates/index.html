@@ -1,5 +1,67 @@
 {% extends "layout.html" %}
+{% from "_forms.html" import quickform, parsefield %}
 
 {% block content %}
-<h1>{{config["PROJECT"].project_name}}</h1>
+<h1 class="ui header">{{config["PROJECT"].project_name}}</h1><br/>
+{% if listChain %}
+<div class="ui grid">
+<div></div><!-- empty for design -->
+{{ popListChainMenuStyle( listChain ) }}
+</div>
+{% endif %}  
 {% endblock %}
+
+{%- macro popListChainInside( listChain ) -%}
+ <div class="ui grid">
+  <div class="four wide column">
+    <div class="ui vertical fluid tabular menu">
+      {% if listChain['title'] %} <h4 class="ui header">{{ listChain['title'] }}{{ listChain['selected'] }}</h4> {% endif %}
+      {% for entry in listChain['list'] %}
+ 	  <a class="{% if selected[entry['typeName']] and selected[entry['typeName']] == entry['id'] %}active {% endif %}item"
+ 	     href="{{ url_for('overview', typeName=entry['typeName'], identifier=entry['id'] ) }}">
+ 	  	{{ entry['toString'] }}
+ 	  </a>
+      {% endfor %}
+      {% if not listChain['list'] %}
+      <a class="item">No {{ listChain['title'] }} found</a>
+      {% endif %}
+    </div>
+  </div>
+  <div class="twelve wide stretched column">
+    <div> <!-- class="ui segment" -->
+      {% if listChain['nextChainElement'] %}
+      {{ popListChain( listChain['nextChainElement'] ) }}
+      {% else %}
+      <div class="ui grid container">
+      None selected
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{%- endmacro -%}
+
+{%- macro popListChainMenuStyle( listChain ) -%}
+<div class="ui secondary vertical pointing menu">
+ {% if listChain['title'] %} <h4 class="ui header">{{ listChain['title'] }}</h4> {% endif %}
+ {% for entry in listChain['list'] %}
+  <a class="{% if selected[entry['typeName']] and selected[entry['typeName']] == entry['id'] %}active {% endif %}item"
+     href="{{ url_for('overview', typeName=entry['typeName'], identifier=entry['id'] ) }}"
+     style="hover: {background-color: yellow;}">
+ 	  	{{ entry['toString'] }}
+  </a>    
+  {% endfor %}
+  {% if not listChain['list'] %}
+  <a class="item">No {{ listChain['title'] }} found</a>
+  {% endif %}
+  <a class="item" href="{{ url_for(listChain['typeName'] + '_new') }}"><div><i class="plus icon"></i> Create {{ listChain['title'] }}</div></a>
+</div>
+{% if listChain['nextChainElement'] %}
+{{ popListChainMenuStyle( listChain['nextChainElement'] ) }}
+{% else %}
+<!--  <div class="ui secondary vertical pointing menu">
+<h4 class="ui header"></h4><a class="item">No {{ listChain['title'] }} selected</a></div>
+</div>  -->
+{% endif %}
+{%- endmacro -%}
+

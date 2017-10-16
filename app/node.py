@@ -3,6 +3,10 @@ from peerplays.account import Account
 from peerplays.sport import Sport, Sports
 from . import config
 from functools import wraps
+from peerplays.eventgroup import EventGroups, EventGroup
+from peerplays.event import Events, Event
+from peerplays.bettingmarketgroup import BettingMarketGroup, BettingMarketGroups
+from peerplays.bettingmarket import BettingMarkets, BettingMarket
 
 class NodeException(Exception):
     """ All exceptions thrown by the underlying data service will be wrapped with this exception
@@ -141,6 +145,54 @@ class Node(object):
             return [ (x["id"], x["name"][0][1]) for x in sports ]
         except Exception as ex:
             raise NodeException(message="Sports could not be loaded", cause=ex)
+      
+    def getEventGroup(self, sportId):
+        try:
+            return EventGroup(sportId, peerplays_instance=self.get_node())
+        except Exception as ex:
+            raise NodeException(message="EventGroups could not be loaded", cause=ex)
+        
+    def getEventGroups(self, sportId):
+        try:
+            return EventGroups(sportId).eventgroups
+        except Exception as ex:
+            raise NodeException(message="EventGroups could not be loaded", cause=ex)
+        
+    def getEvent(self, eventId):
+        try:
+            return Event(eventId, peerplays_instance=self.get_node())
+        except Exception as ex:
+            raise NodeException(message="Events could not be loaded", cause=ex)
+        
+    def getEvents(self, eventGroupId):
+        try:
+            return Events(eventGroupId).events
+        except Exception as ex:
+            raise NodeException(message="Events could not be loaded", cause=ex)
+      
+    def getBettingMarketGroup(self, bmgId):
+        try:
+            return BettingMarketGroup(bmgId, peerplays_instance=self.get_node())
+        except Exception as ex:
+            raise NodeException(message="BettingMarketGroup could not be loaded", cause=ex)
+        
+    def getBettingMarketGroups(self, eventId):
+        try:
+            return BettingMarketGroups(eventId).bettingmarketgroups
+        except Exception as ex:
+            raise NodeException(message="BettingMarketGroup could not be loaded", cause=ex)
+      
+    def getBettingMarket(self, bmId):
+        try:
+            return BettingMarket(bmId, peerplays_instance=self.get_node())
+        except Exception as ex:
+            raise NodeException(message="BettingMarkets could not be loaded", cause=ex)
+        
+    def getBettingMarkets(self, bettingMarketGroupId):
+        try:
+            return BettingMarkets(bettingMarketGroupId).bettingmarkets
+        except Exception as ex:
+            raise NodeException(message="BettingMarkets could not be loaded", cause=ex)
             
     @proposedOperation
     def createSport(self, istrings):
