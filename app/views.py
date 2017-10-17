@@ -1,23 +1,19 @@
+from app.forms import OperationForm, PendingOperationsForms, TranslatedFieldForm
 from app.models import InternationalizedString, LanguageNotFoundException
-from app.node import Node, NodeException
+from app.node import Node, NodeException, NonScalableRequest
+from app.utils import render_template_menuinfo
 from flask import render_template, redirect, request, session, flash, url_for, make_response, abort
+from wtforms     import FormField
 
 from . import app, db, forms, config
 from .utils import unlocked_wallet_required
-from functools import wraps
-from app.utils import render_template_menuinfo
-from app.forms import OperationForm, PendingOperationsForms, TranslatedFieldForm
-from test.test_hash import FixedHash
-
-from wtforms     import FormField
-
+from app import utils
 
 # InternationalizedString = namedtuple('InternationalizedString', ['country', 'text'])
 # Sport = namedtuple('Sport', ['names', 'submit'])
 ###############################################################################
 # Homepage
 ###############################################################################
-
 @app.route('/')
 @unlocked_wallet_required
 def index():
@@ -27,36 +23,7 @@ def index():
 @app.route('/overview/<typeName>/<identifier>')
 @unlocked_wallet_required
 def overview(typeName=None, identifier=None):
-    # get list of objects for typename, containing id, typeName and toString field
-    getter = {
-      'sport' :     lambda: [ { 
-                               'id' : x["id"], 
-                               'typeName': 'sport',
-                               'toString': x["id"] + ' - ' + x["name"][0][1]  
-                              } for x in Node().getSports() ],
-      'eventgroup': lambda tmpSportId: [ { 
-                                          'id' : x["id"], 
-                                          'typeName': 'eventgroup',
-                                          'toString': x["id"] + ' - ' + x["name"][0][1]  
-                                         } for x in Node().getEventGroups(tmpSportId) ],
-      'event': lambda tmpEventGroupId: [ { 
-                                          'id' : x["id"], 
-                                          'typeName': 'event',
-                                          'toString': x["id"] + ' - ' + x["name"][0][1]  
-                                         } for x in Node().getEvents(tmpEventGroupId) ], 
-      'bettingmarketgroup': lambda tmpEventId: [ { 
-                                          'id' : x["id"], 
-                                          'typeName': 'bettingmarketgroup',
-                                          'toString': x["id"] + ' - ' + x["description"][0][1]  
-                                         } for x in Node().getBettingMarketGroups(tmpEventId) ],
-      'bettingmarket': lambda tmpBMGId: [ { 
-                                          'id' : x["id"], 
-                                          'typeName': 'bettingmarket',
-                                          'toString': x["id"] + ' - ' + x["description"][0][1]  
-                                         } for x in Node().getBettingMarkets(tmpBMGId) ],
-      'bet': lambda tmpBMGId: [  ], # not implemented yet
-    }
-    # get object for typename, containing id 
+    # get object for typename, containing id of parent object
     reverseId = {
       'sport' :     lambda tmpId: None,
       'eventgroup': lambda tmpId: Node().getEventGroup(tmpId).sport.identifier,
@@ -82,22 +49,13 @@ def overview(typeName=None, identifier=None):
                  'bettingmarket': 'bettingmarketgroup',
                  'bet': 'bettingmarket'
                }
-    # human readable title
-    titles   = { 
-                 'sport': 'Sport',
-                 'eventgroup': 'Event group',
-                 'event': 'Event',
-                 'bettingmarketgroup': 'Betting market group',
-                 'bettingmarket': 'Betting market',
-                 'bet': 'Bets'
-               }
     # selected ids
     selected = { }
     
     # same structure for all chain elements    
     def buildChainElement( tmpList, title, typeName ):
-        return { 'list': tmpList,
-                 'title': title,
+        return { 'list':     tmpList,
+                 'title':    title,
                  'typeName': typeName }
     
     # build reverse chain starting with the one selected
@@ -110,20 +68,19 @@ def overview(typeName=None, identifier=None):
 
     tmpIdentifier = identifier 
     while tmpTypeName and not tmpTypeName == 'sport':
-        tmpChainElement = buildChainElement( getter.get(tmpTypeName)(tmpIdentifier), titles.get(tmpTypeName), tmpTypeName ) 
+        try:
+            tmpChainElement = buildChainElement( utils.getTypesGetter(tmpTypeName)(tmpIdentifier), utils.getTitle(tmpTypeName), tmpTypeName )
+        except NodeException as e:
+            flash(e.message, category='error')
+            return render_template_menuinfo('index.html', **locals())
+        
         tmpTypeName   = reverseType.get(tmpTypeName)
         selected[tmpTypeName]      = tmpIdentifier
         tmpIdentifier = reverseId.get(tmpTypeName)(tmpIdentifier)
-        
-        
-        reverseChain.append( tmpChainElement )
                 
-#         if tmpTypeName == 'event':
-#             tmpIdentifier = '1.16.0'
-#         else:
-#             tmpIdentifier = '1'
+        reverseChain.append( tmpChainElement )
        
-    listChain = buildChainElement( getter.get('sport')(), titles.get('sport'), 'sport' )
+    listChain = buildChainElement( utils.getTypesGetter('sport')(None), utils.getTitle('sport'), 'sport' )
     
     reverseChain.reverse()
     if reverseChain:
@@ -133,7 +90,7 @@ def overview(typeName=None, identifier=None):
             tmpChainElement["nextChainElement"] = chainElement
             tmpChainElement = chainElement
                    
-    del getter, tmpTypeName, tmpIdentifier
+    del tmpTypeName, tmpIdentifier
                
     return render_template_menuinfo('index.html', **locals())
 
@@ -180,93 +137,19 @@ def pending_operations():
     
     return render_template_menuinfo("cart.html", **locals())
 
-@app.route("/sport/update", methods=['post','get'])
-@unlocked_wallet_required
-def sport_update_select():
-    # highlight active menu item
-    sport_update_active = " active"
-    
-    sportForm           = forms.SportSelectForm()
+def findAndProcessTranslatons(form):
+    for field in form._fields.values():
+        if isinstance(field, FormField) and isinstance(field.form, TranslatedFieldForm) and field.addLanguage.data:
+            # an additional language line was requested
+            field.translations.append_entry()
+            return True
         
-    if sportForm.validate_on_submit():
-        return redirect(url_for('sport_update', sportId=sportForm.sport.data))
-        
-    return render_template_menuinfo("sport/select.html", **locals())
-    
-@app.route("/sport/update/<sportId>", methods=['post','get'])
-@unlocked_wallet_required
-def sport_update(sportId):
-    # highlight active menu item
-    sport_update_active = " active"
-    
-    sportForm = forms.SportUpdateForm()
-    
-    # Get the chosen sport
-    isInvalidSportId = True 
-    try:
-        if sportId:
-            sport = Node().getSport(sportId)
-            sportForm.sport.choices = [ (sport["id"], sport["name"][0][1]) ]
-            sportForm.sport.data    = sport["id"]
-            
-            if not sportForm.submit.data and not sportForm.addLanguage.data:
-                # empty the fieldlist
-                while len(sportForm.names) > 0:
-                    sportForm.names.pop_entry()
-                
-                # fill fields in form
-                for key,value in sport.items():
-                    if (key == "name"):
-                        for country,text in value:
-                            try:
-                                lng = InternationalizedString( country, text )
-                            except LanguageNotFoundException as e:
-                                # append an entry indicating the unknown language
-                                lng = InternationalizedString( InternationalizedString.UNKNOWN, country + " - " + text )
-
-                            # append entry to a FieldList creates forms from dictionary!                            
-                            sportForm.names.append_entry( lng.getForm() )
-            
-            isInvalidSportId = False
-                                
-    except NodeException as e:
-        flash(e.message, category='error')
-        sportId = "Invalid Id"
-        sportForm.sport.choices = [ ("Invalid Id", "Invalid Sport") ]
-        sportForm.sport.data    = "Invalid Id"
-        return render_template_menuinfo("sport/update.html", **locals())
-
-    except Exception as e:
-        flash("Unknown error occured retrieving data for the requested sport " + sportId + ": " + e.__class__.__name__, category='error')
-        sportId = "Invalid Id"
-        return render_template_menuinfo("sport/update.html", **locals())
-   
-   
-    # Which button was pressed?
-    if sportForm.submit.data and sportForm.validate_on_submit():
-        # all data was entered correctly, validate and update sport
-        proposal = Node().updateSport(sportId, InternationalizedString.parseToList(sportForm.names))
-        flash("An update proposal  for sport (id=" + sportId + ") was created.")
-        return redirect(url_for('index'))
-    
-    elif sportForm.addLanguage.data:
-        # an additional language line was requested
-        sportForm.names.append_entry()
-        return render_template_menuinfo("sport/update.html", **locals())
-            
-    return render_template_menuinfo("sport/update.html", **locals())
+    return False
 
 def genericNewForm(form, createFunction, typeName):
     # look into https://github.com/Semantic-Org/Semantic-UI/issues/2978 for highlighting the chosen menu branch as well
     
-    def findAndProcessTranslatons(form):
-        for field in form._fields.values():
-            if isinstance(field, FormField) and isinstance(field.form, TranslatedFieldForm) and field.addLanguage.data:
-                # an additional language line was requested
-                field.translations.append_entry()
-                return True
-            
-        return False
+    typeNameTitle = utils.getTitle(typeName)
     
     # Which button was pressed?
     if findAndProcessTranslatons(form):
@@ -337,3 +220,171 @@ def bettingmarket_new():
 def bet_new(): 
     return render_template_menuinfo('index.html', **locals())
 
+def genericUpdate(formClass, typeName, selectId, populateFunction, updateFunction ):
+    selectFunction  = utils.getTypeGetter(typeName)
+    choicesFunction = utils.getTypesGetter(typeName)
+            
+    try:
+        # maybe only query the selected object, if one is preselected, saves traffic
+        # currently: always query all
+        parentId = None
+        if selectId:
+            parentId = utils.getParentTypeGetter(typeName)(selectId)
+            
+        form = forms.buildUpdateForm(typeName, 
+                                     choicesFunction(parentId),
+                                     formClass,
+                                     selectId )
+    except NonScalableRequest as e:
+        return redirect(url_for('overview'))
+    except NodeException as e:
+        flash(e.message, category='error')
+        return render_template_menuinfo("update.html", **locals())
+    
+    typeNameTitle = utils.getTitle(typeName)
+    
+    if not selectId:
+        if form.submit.data:
+            return redirect(url_for(typeName + '_update', selectId=form.select.data))
+        else:
+            return render_template_menuinfo("update.html", **locals())
+
+    # update was called with given id, make sure it exists
+    try:
+        if selectId:
+            selectedObject = selectFunction(selectId)
+    except NodeException as e:
+        flash(e.message, category='error')
+        return render_template_menuinfo("update.html", **locals())
+
+    # user wants to add language?
+    if findAndProcessTranslatons(form):
+        return render_template_menuinfo("update.html", **locals())
+    
+    # first request? populate selected object
+    if not form.submit.data:
+        # preselect 
+        form.select.data = selectId
+        
+    populateFunction(form, selectedObject)
+    
+    if form.validate_on_submit(): # user submitted, wants to change  
+        # all data was entered correctly, validate and update sport
+        proposal = updateFunction(form, selectedObject)
+        flash("An update proposal  for " + utils.getTitle(typeName) + " (id=" + selectId + ") was created.")
+        return redirect(url_for('index'))
+    
+    return render_template_menuinfo("update.html", **locals())
+
+@app.route("/sport/update", methods=['post','get'])
+@app.route("/sport/update/<selectId>", methods=['post','get'])
+@unlocked_wallet_required
+def sport_update(selectId=None):
+    # highlight active menu item
+    typeName = 'sport'
+    
+    def updateFunction(form, selectedObject):
+        return Node().updateSport(selectedObject['id'], InternationalizedString.parseToList(form.name))
+
+    def populateFunction(form, selectedObject):
+        # fill values on initialization
+        if not form.submit.data:
+            form.name.fill( selectedObject['name'] )
+
+    return genericUpdate(forms.NewSportForm, typeName, selectId, populateFunction, updateFunction )
+
+@app.route("/eventgroup/update", methods=['post','get'])
+@app.route("/eventgroup/update/<selectId>", methods=['post','get'])
+@unlocked_wallet_required
+def eventgroup_update(selectId=None):
+    formClass = forms.NewEventGroupForm
+    typeName  = 'eventgroup'
+    
+    def updateFunction(form, selectedObject):
+        return Node().updateEventGroup(selectedObject['id'], InternationalizedString.parseToList(form.name), form.sport.data)
+
+    def populateFunction(form, selectedObject):
+        # fill values on initialization
+        if not form.submit.data:
+            form.sport.data = selectedObject.sport['id']
+            form.name.fill( selectedObject['name'] )
+
+    return genericUpdate(formClass, typeName, selectId, populateFunction, updateFunction )
+    
+@app.route("/event/update", methods=['post','get'])
+@app.route("/event/update/<selectId>", methods=['post','get'])
+@unlocked_wallet_required
+def event_update(selectId=None):
+    formClass = forms.NewEventForm
+    typeName  = 'event'
+    
+    def updateFunction(form, selectedObject):
+        return Node().updateEvent(selectedObject['id'], 
+                                  InternationalizedString.parseToList(form.name), 
+                                  InternationalizedString.parseToList(form.season),
+                                  form.start.data,
+                                  form.eventgroup.data)
+
+    def populateFunction(form, selectedObject):
+        # choices need to be filled at all times
+        form.eventgroup.choices = forms.selectDictToList(utils.getTypesGetter('eventgroup')(selectedObject.eventgroup.sport['id']))
+        
+        # fill values on initialization
+        if not form.submit.data:
+            form.eventgroup.data = selectedObject.eventgroup['id']
+            form.name.fill( selectedObject['name'] )
+            form.season.fill( selectedObject['season'] )
+                    
+    return genericUpdate(formClass, typeName, selectId, populateFunction, updateFunction )
+    
+@app.route("/bettingmarketgroup/update", methods=['post','get'])
+@app.route("/bettingmarketgroup/update/<selectId>", methods=['post','get'])
+@unlocked_wallet_required
+def bettingmarketgroup_update(selectId=None):
+    formClass = forms.NewBettingMarketGroupForm
+    typeName  = 'bettingmarketgroup'
+    
+    def updateFunction(form, selectedObject):
+        return Node().updateBettingMarketGroup(selectedObject['id'], 
+                                  InternationalizedString.parseToList(form.description), 
+                                  form.event.data)
+
+    def populateFunction(form, selectedObject):
+        # choices need to be filled at all times
+        form.event.choices = forms.selectDictToList(utils.getTypesGetter('event')(selectedObject.event['event_group_id']))
+        
+        # fill values on initialization
+        if not form.submit.data:
+            form.event.data    = selectedObject['event_id']
+            form.bettingmarketrule.data = selectedObject['rules_id']
+            form.description.fill( selectedObject['description'] )
+                    
+    return genericUpdate(formClass, typeName, selectId, populateFunction, updateFunction )
+    
+@app.route("/bettingmarket/update", methods=['post','get'])
+@app.route("/bettingmarket/update/<selectId>", methods=['post','get'])
+@unlocked_wallet_required
+def bettingmarket_update(selectId=None):
+    formClass = forms.NewBettingMarketForm
+    typeName  = 'bettingmarket'
+    
+    def updateFunction(form, selectedObject):
+        return Node().updateBettingMarket(selectedObject['id'], 
+                                  InternationalizedString.parseToList(form.payoutCondition),
+                                  InternationalizedString.parseToList(form.description),  
+                                  form.bettingmarketgroup.data)
+
+    def populateFunction(form, selectedObject):
+        # choices need to be filled at all times
+        form.bettingmarketgroup.choices = forms.selectDictToList(utils.getTypesGetter('bettingmarketgroup')(selectedObject.bettingmarketgroup['event_id']))
+        
+        # fill values on initialization
+        if not form.submit.data:
+            form.bettingmarketgroup.data    = selectedObject['group_id']
+            form.payoutCondition.fill( selectedObject['payout_condition'] )
+            form.description.fill( selectedObject['description'] )
+                    
+    return genericUpdate(formClass, typeName, selectId, populateFunction, updateFunction )
+
+
+    

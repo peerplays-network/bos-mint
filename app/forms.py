@@ -13,6 +13,7 @@ from wtforms import (
     SelectField,
     IntegerField,
     FieldList,
+    DateTimeField,
     FormField
 )
 from wtforms.validators import (
@@ -25,8 +26,40 @@ from wtforms.validators import (
     Optional,
     NumberRange
 )
-from app.models import InternationalizedString
+from app.models import InternationalizedString, LanguageNotFoundException
 from app.node import Node
+import datetime
+from app import views, utils
+
+def selectDictToList(sourceDictionary):
+    return [ (x['id'], x['toString']) for x in sourceDictionary ]
+    
+def buildUpdateForm(typeName, selectChoices, newFormClass, selected=None):
+    class _UpdateForm(FlaskForm):
+        pass
+    
+    selectChoices = selectDictToList(selectChoices)
+
+    if not selected:
+        select = SelectField(label=utils.getTitle(typeName), validators=[DataRequired()], choices=selectChoices)
+    else:
+        select = SelectField(label=utils.getTitle(typeName), validators=[DataRequired()], choices=selectChoices, render_kw={"disabled": True})
+    
+    if selected:   
+        select.data = selected
+        
+    setattr(_UpdateForm, 'select', select)
+    
+    baseCounter = select.creation_counter;
+    
+    for idx, entry in enumerate(newFormClass.__dict__.items()):
+        if not entry[0].startswith('_'):
+            if (not selected and entry[0].startswith('submit')) or selected:
+                entry[1].creation_counter = baseCounter + idx + 1
+                setattr(_UpdateForm, entry[0], entry[1]) 
+    
+    form = _UpdateForm()
+    return form
 
 
 class UnlockPassword(object):
@@ -62,52 +95,56 @@ validators = {
 }
 
 class InternationalizedStringForm(FlaskForm):
-    country = SelectField("Language", [Required()], choices=InternationalizedString.LANGUAGES)
-    text    = StringField('Text', [Required()])
+    country = SelectField("Language", validators=[DataRequired()], choices=InternationalizedString.getChoices())
+    text    = StringField('Text', validators=[DataRequired()],)
     
 class TranslatedFieldForm(FlaskForm):
     translations = FieldList(FormField(InternationalizedStringForm, label=""), min_entries=1, label="")
     addLanguage  = SubmitField("Add translation")
     
+    def fill(self, translationsList):
+        # empty the fieldlist
+        while len(self.translations) > 0:
+            self.translations.pop_entry()
+            
+        for country,text in translationsList:
+            try:
+                lng = InternationalizedString( country, text )
+            except LanguageNotFoundException:
+                # append an entry indicating the unknown language
+                lng = InternationalizedString( InternationalizedString.UNKNOWN, country + " - " + text )
+
+            # append entry to a FieldList creates forms from dictionary!                            
+            self.translations.append_entry( lng.getForm() )
+    
 class UnlockForm(FlaskForm):
     password = PasswordField('Password', validators['unlock'])
     submit = SubmitField("Unlock")
-    
-class SportUpdateForm(FlaskForm):
-    sport  = SelectField("Sport", [Required()], choices=None)
-    names  = FieldList(FormField(InternationalizedStringForm, label=""), min_entries=1, label="List of translations")
-    submit = SubmitField("Submit")
-    addLanguage = SubmitField("Add new language")
-    
-class SportSelectForm(FlaskForm):
-    # this form is only for selction, choices can be loaded always
-    sport  = SelectField("Sport", [Required()], choices=Node().getSportsAsList())
-    submit = SubmitField("Submit")
-    
+            
 class NewSportForm(FlaskForm):
     name   = FormField(TranslatedFieldForm)
     submit = SubmitField("Submit")
-#     
+
 class NewEventGroupForm(FlaskForm):
-    sport  = SelectField("Sport", [Required()], choices=Node().getSportsAsList())
+    sport  = SelectField("Sport", validators=[DataRequired()], choices=Node().getSportsAsList())
     name   = FormField(TranslatedFieldForm)
     submit = SubmitField("Submit")
     
 class NewEventForm(FlaskForm):
-    eventgroup = SelectField("Event group", [Required()], choices=Node().getSportsAsList())
+    eventgroup = SelectField("Event group", validators=[DataRequired()], choices=None)
     name   = FormField(TranslatedFieldForm, label="Name")
     season = FormField(TranslatedFieldForm, label="Season")
-    start  = TextField("Start")
+    start  = DateTimeField("Start", format='%Y-%m-%d %H:%M:%S', default=datetime.datetime.now(), validators=[DataRequired()])
     submit = SubmitField("Submit")
     
 class NewBettingMarketGroupForm(FlaskForm):
-    event = SelectField("Event", [Required()], choices=Node().getSportsAsList())
+    event = SelectField("Event", validators=[DataRequired()], choices=None)
     description   = FormField(TranslatedFieldForm)
-    bettingMarketRule = SelectField("Betting market rule", [Required()], choices=Node().getSportsAsList())
+    bettingmarketrule = SelectField("Betting market rule", validators=[DataRequired()], choices=selectDictToList(utils.getTypesGetter('bettingmarketrule')(None)))
     submit = SubmitField("Submit")
     
 class NewBettingMarketForm(FlaskForm):
-    bettingmarketgroup = SelectField("Betting market group", [Required()], choices=Node().getSportsAsList())
+    bettingmarketgroup = SelectField("Betting market group", validators=[DataRequired()], choices=None)
     description     = FormField(TranslatedFieldForm, label="Description")
     payoutCondition = FormField(TranslatedFieldForm, label="Payout condition")
     submit = SubmitField("Submit")
@@ -118,4 +155,5 @@ class OperationForm(FlaskForm):
 class PendingOperationsForms(FlaskForm):
     operations = FieldList(FormField(OperationForm), min_entries=0, label="List of operations")
     submit     = SubmitField("Broadcast")
+    
     

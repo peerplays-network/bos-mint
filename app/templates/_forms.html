@@ -78,13 +78,13 @@
            {% if addLabel %}<label>
             {{field.label.text|safe}}
            </label>{% endif %}
-           <div class="ui {% if field.choices|length < 2 %}disabled{% endif %} fluid search selection dropdown">
+           <div class="ui {% if field.render_kw['disabled'] %}disabled{% endif %} fluid search selection dropdown">
             <input name="{{field.name}}" type="hidden" value="{{field.data}}">
             <i class="dropdown icon"></i>
             <div class="default text">Select {{field.label.text|safe}}</div>
              <div class="menu">
               {% for option in field.choices %}
-              <div class="item" data-value="{{option[0]}}"><i class="{{option[0]}} flag"></i>{{option[0]}} - {{option[1]}}</div>
+              <div class="item" data-value="{{option[0]}}"><i class="{{option[0]}} flag"></i>{{option[1]}}</div>
               {% endfor %}
              </div>
             </div>

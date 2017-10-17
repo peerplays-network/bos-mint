@@ -5,6 +5,84 @@ from datetime import datetime
 from app.node import Node
 from tkinter.constants import CURRENT
 
+# dictionary to configure types (Sport, EventGroup, etc.) 
+#  title: human readable title
+TYPENAMES = {
+                 'sport': {'title': 'Sport' },
+                 'eventgroup': {'title': 'Event group' },
+                 'event': {'title': 'Event' },
+                 'bettingmarketgroup': {'title': 'Betting market group' },
+                 'bettingmarket': {'title': 'Betting market' },
+                 'bet': {'title': 'Bet' },
+               }
+
+    
+TYPE_GET_ALL = { # get list of objects for typename, containing id, typeName and toString field
+      'sport' :     lambda unusedId: [ { 
+                               'id' : x["id"], 
+                               'typeName': 'sport',
+                               'toString': x["id"] + ' - ' + x["name"][0][1]  
+                              } for x in Node().getSports() ],
+      'eventgroup': lambda tmpSportId: [ { 
+                                          'id' : x["id"], 
+                                          'typeName': 'eventgroup',
+                                          'toString': x["id"] + ' - ' + x["name"][0][1]  
+                                         } for x in Node().getEventGroups(tmpSportId) ],
+      'event': lambda tmpEventGroupId: [ { 
+                                          'id' : x["id"], 
+                                          'typeName': 'event',
+                                          'toString': x["id"] + ' - ' + x["name"][0][1]  
+                                         } for x in Node().getEvents(tmpEventGroupId) ], 
+      'bettingmarketgroup': lambda tmpEventId: [ { 
+                                          'id' : x["id"], 
+                                          'typeName': 'bettingmarketgroup',
+                                          'toString': x["id"] + ' - ' + x["description"][0][1]  
+                                         } for x in Node().getBettingMarketGroups(tmpEventId) ],
+      'bettingmarket': lambda tmpBMGId: [ { 
+                                          'id' : x["id"], 
+                                          'typeName': 'bettingmarket',
+                                          'toString': x["id"] + ' - ' + x["description"][0][1]  
+                                         } for x in Node().getBettingMarkets(tmpBMGId) ],
+      'bettingmarketrule': lambda unusedId: [ { 
+                                          'id' : x["id"], 
+                                          'typeName': 'bettingmarketrule',
+                                          'toString': x["id"] + ' - ' + x["name"][0][1]  
+                                         } for x in Node().getBettingMarketRules() if x is not None ],
+      'bet': lambda tmpBMGId: [  ], # not implemented yet
+    }
+
+TYPE_GET = { # get list of objects for typename, containing id, typeName and toString field
+      'sport'             : lambda tmpId: Node().getSport(tmpId),
+      'eventgroup'        : lambda tmpId: Node().getEventGroup(tmpId),
+      'event'             : lambda tmpId: Node().getEvent(tmpId), 
+      'bettingmarketgroup': lambda tmpId: Node().getBettingMarketGroup(tmpId),
+      'bettingmarket'     : lambda tmpId: Node().getBettingMarket(tmpId),
+      'bet'               : lambda tmpId: None, # not implemented yet
+    }
+
+# get object for typename, containing id of parent object
+PARENTTYPE_GET = {
+  'sport'             : lambda tmpId: None,
+  'eventgroup'        : lambda tmpId: Node().getEventGroup(tmpId).sport.identifier,
+  'event'             : lambda tmpId: Node().getEvent(tmpId).eventgroup.identifier,
+  'bettingmarketgroup': lambda tmpId: Node().getBettingMarketGroup(tmpId).event.identifier,
+  'bettingmarket'     : lambda tmpId: Node().getBettingMarket(tmpId).bettingmarketgroup.identifier,
+  'bet'               : lambda tmpId: tmpId,
+}
+
+def getParentTypeGetter(typeName):
+    return PARENTTYPE_GET.get(typeName)
+
+def getTypeGetter(typeName):
+    return TYPE_GET.get(typeName)
+
+def getTypesGetter(typeName):
+    return TYPE_GET_ALL.get(typeName)
+    
+
+def getTitle(typeName):
+    # insert configurable translation here
+    return TYPENAMES[typeName]['title']
 
 def strfdelta(time, fmt):
     if not hasattr(time, "days"):  # dirty hack

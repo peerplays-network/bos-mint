@@ -131,7 +131,7 @@ class InternationalizedString(object):
         ("nd", "Northern Ndebele"),
         ("ne", "Nepali"),
         ("no", "Norwegian"),
-        ("nb", "Norwegian bokmål"),
+        ("nb", "Norwegian bokm��l"),
         ("nn", "Norwegian nynorsk"),
         ("ii", "Nuosu"),
         ("oc", "Occitan"),
@@ -140,7 +140,7 @@ class InternationalizedString(object):
         ("or", "Oriya"),
         ("om", "Oromo (Afaan Oromo)"),
         ("os", "Ossetian"),
-        ("pi", "Pāli"),
+        ("pi", "P��li"),
         ("ps", "Pashto, Pushto"),
         ("fa", "Persian (Farsi)"),
         ("pl", "Polish"),
@@ -192,7 +192,7 @@ class InternationalizedString(object):
         ("uz", "Uzbek"),
         ("ve", "Venda"),
         ("vi", "Vietnamese"),
-        ("vo", "Volapük"),
+        ("vo", "Volap��k"),
         ("wa", "Wallon"),
         ("cy", "Welsh"),
         ("wo", "Wolof"),
@@ -226,8 +226,19 @@ class InternationalizedString(object):
         return lng
 
     @classmethod
+    def getChoices(cls):
+        return [ ( x[0], x[0] + " - " + x[1] ) for x in InternationalizedString.LANGUAGES ]
+
+    @classmethod
     def parseToList(cls, fieldListOfInternationalizedString):
+        from app.forms import TranslatedFieldForm
+        from wtforms import FormField
+        
         istrings = list()
+        
+        if isinstance(fieldListOfInternationalizedString, FormField) and isinstance(fieldListOfInternationalizedString.form, TranslatedFieldForm):
+            fieldListOfInternationalizedString = fieldListOfInternationalizedString.form.translations
+        
         for ffield in fieldListOfInternationalizedString.entries:
             istrings.append([ffield.data["country"], ffield.data["text"]])
         

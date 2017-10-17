@@ -45,11 +45,18 @@
 <div class="ui secondary vertical pointing menu">
  {% if listChain['title'] %} <h4 class="ui header">{{ listChain['title'] }}</h4> {% endif %}
  {% for entry in listChain['list'] %}
-  <a class="{% if selected[entry['typeName']] and selected[entry['typeName']] == entry['id'] %}active {% endif %}item"
-     href="{{ url_for('overview', typeName=entry['typeName'], identifier=entry['id'] ) }}"
-     style="hover: {background-color: yellow;}">
+ <div class="{% if selected[entry['typeName']] and selected[entry['typeName']] == entry['id'] %}active {% endif %}item"> 
+  <a style="color: black"
+     href="{{ url_for('overview', typeName=entry['typeName'], identifier=entry['id'] ) }}">
  	  	{{ entry['toString'] }}
-  </a>    
+  </a>
+   <div class="ui inline dropdown">
+    <i class="dropdown icon"></i>
+    <div class="menu">
+      <a class="item" href="{{ url_for(entry['typeName'] + '_update', selectId=entry['id'] ) }}">Update</a>
+    </div>
+  </div>
+  </div>
   {% endfor %}
   {% if not listChain['list'] %}
   <a class="item">No {{ listChain['title'] }} found</a>
