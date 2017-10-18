@@ -297,3 +297,25 @@ class PendingOperationsForms(FlaskForm):
     submit     = SubmitField("Broadcast")
     
     
+class AmountForm(FlaskForm):
+    symbol = TextField(label='Asset', validators=[DataRequired()], render_kw={'disabled' : True})
+    
+class AccountForm(FlaskForm):
+    id   = TextField(label='Id', validators=[DataRequired()], render_kw={'disabled' : True})
+    name = TextField(label='Name', validators=[DataRequired()], render_kw={'disabled' : True})
+    membershipExpirationDate = TextField(label='Membership expiration', validators=[DataRequired()])
+    
+    balances = FieldList(FormField(AmountForm, label=''), label='Balances', min_entries=0)
+    
+    def fill(self, account):
+        self.id.data = account['id']
+        self.name.data = account['name']
+        self.membershipExpirationDate.data = account['membership_expiration_date']
+        
+        for balance in account.balances:
+            tmpForm = AmountForm()
+            tmpForm.symbol  = str(balance.amount) + ' ' + balance.symbol
+            self.balances.append_entry( tmpForm )
+        
+
+    

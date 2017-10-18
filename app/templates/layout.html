@@ -33,7 +33,7 @@
 		 {% if menuInfo %}
 		 <div class="ui dropdown right item"><!-- <table><tr><td>Account</td></tr><tr><td> -->{{menuInfo["accountName"]}}<!-- </td></tr></table> --> <i class="dropdown icon"></i>
 		 	<div class="menu">
-    			<a class="item{{sport_new_active}}" href="{{ url_for('sport_new') }}">Account</a>
+    			<a class="item{{sport_new_active}}" href="{{ url_for('account') }}">Account</a>
     			<a class="item{{pending_operations_active_active}}" href="{{ url_for('pending_operations') }}">Pending Operations</a>
    			</div>
 		 </div>

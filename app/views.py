@@ -78,13 +78,18 @@ def unlock():
     if unlockForm.validate_on_submit():
         return redirect(request.args.get("next", url_for("index")))
 
-    return render_template  ('unlock.html', **locals())
+    return render_template_menuinfo('unlock.html', **locals())
 
 
-@app.route('/demo')
-@unlocked_wallet_required
-def demo():
-    return "foobar"
+@app.route('/account')
+# @unlocked_wallet_required
+def account():
+    account = Node().getActiveAccount()
+    
+    form = forms.AccountForm()
+    form.fill( account )
+    
+    return render_template_menuinfo("account.html", **locals())
 
 
 @app.route("/wallet/new")
