@@ -66,7 +66,7 @@ def buildUpdateForm(typeName, selectChoices, newFormClass, selected=None):
 
 
 class UnlockPassword(object):
-    def __init__(self, message="Invalid Unlock Password!"):
+    def __init__(self, message="Invalid password to unlock the wallet!"):
         self.message = message
 
     def __call__(self, form, field):
@@ -78,6 +78,14 @@ class UnlockPassword(object):
             raise ValidationError(self.message)
         except Exception as e:
             raise ValidationError(str(e))
+        
+class UnlockAccount(object):
+    def __init__(self, message="Either the account does not exist or the password is invalid!"):
+        self.message = message
+
+    def __call__(self, form, field):
+        # validate account
+        pass
 
 
 validators = {
@@ -94,6 +102,10 @@ validators = {
     ],
     'unlock': [
         UnlockPassword()
+    ],
+    'unlockAccount': [
+        DataRequired(),
+        UnlockAccount()
     ]
 }
 
@@ -122,7 +134,18 @@ class TranslatedFieldForm(FlaskForm):
     
 class UnlockForm(FlaskForm):
     password = PasswordField('Password', validators['unlock'])
-    submit = SubmitField("Unlock")
+    submit = SubmitField("Unlock wallet")
+    
+class NewWalletForm(FlaskForm):
+    password_confirm = PasswordField('Password', validators=[ DataRequired() ])
+    password = PasswordField('Confirm password', validators['password'])
+    submit = SubmitField("Create new wallet")
+    
+class GetAccountForm(FlaskForm):
+    name     = TextField('Account name', validators=[DataRequired()])
+    password = PasswordField('Password', validators['unlockAccount'])
+    role     = TextField('Role', validators=[DataRequired()])
+    submit = SubmitField("Login")
             
 class NewSportForm(FlaskForm):
     name   = FormField(TranslatedFieldForm)
@@ -303,7 +326,7 @@ class AmountForm(FlaskForm):
 class AccountForm(FlaskForm):
     id   = TextField(label='Id', validators=[DataRequired()], render_kw={'disabled' : True})
     name = TextField(label='Name', validators=[DataRequired()], render_kw={'disabled' : True})
-    membershipExpirationDate = TextField(label='Membership expiration', validators=[DataRequired()])
+    membershipExpirationDate = TextField(label='Membership expiration', validators=[DataRequired()], render_kw={'disabled' : True})
     
     balances = FieldList(FormField(AmountForm, label=''), label='Balances', min_entries=0)
     
@@ -317,5 +340,8 @@ class AccountForm(FlaskForm):
             tmpForm.symbol  = str(balance.amount) + ' ' + balance.symbol
             self.balances.append_entry( tmpForm )
         
-
+class ConfigurationForm(FlaskForm):
+    accounts = FieldList(FormField(AccountForm), min_entries=0)
+    
+    addAccount = FieldList(FormField(AccountForm), min_entries=0)
     

@@ -26,20 +26,31 @@
    <div class="ui container">
     <a href="/" class="header">
      <img class="logo" src="{{ url_for('static', filename='img/logo.png') }}" />
-    </a>
+    </a> 
+    <div class="item"></div>
+    <div class="item"><h4 class="ui header">Manual Intervention Module</h4></div>
     <!-- Header Menu -->
 
 	<div class="right menu">
 		 {% if menuInfo %}
-		 <div class="ui dropdown right item"><!-- <table><tr><td>Account</td></tr><tr><td> -->{{menuInfo["accountName"]}}<!-- </td></tr></table> --> <i class="dropdown icon"></i>
+		 <div class="ui dropdown right item"><!-- <table><tr><td>Account</td></tr><tr><td> -->{{menuInfo['account']['toString']}}<!-- </td></tr></table> --> <i class="dropdown icon"></i>
 		 	<div class="menu">
-    			<a class="item{{sport_new_active}}" href="{{ url_for('account') }}">Account</a>
-    			<a class="item{{pending_operations_active_active}}" href="{{ url_for('pending_operations') }}">Pending Operations</a>
+    			<a class="item" href="{{ url_for('pending_operations') }}">Pending Operations</a>
+    			<div class="ui divider"></div>
+			    <a class="item" href="{{ url_for('account_info') }}">Account information</a>
+    			<div class="ui dropdown item">Switch Account <i class="dropdown icon"></i>
+				 	<div class="menu">
+				 		{% for account in menuInfo['allAccounts'] %}
+				        <a class="item" href="{{ url_for('account_select', accountId=account['id'], next=request.url) }}">{{account['toString']}}</a>
+		    			{% endfor %}
+		    			<a class="item" href="{{ url_for('account_add') }}"><i class="small plus icon"></i>Add new</a>
+		   			</div>
+				 </div>
    			</div>
 		 </div>
-		 <a class="item{{pending_operations_active_active}}" href="{{ url_for('pending_operations') }}"><i class="large in cart icon"></i> {{ menuInfo["numberOfOpenTransactions"] }}</a>
+		 <a class="item" href="{{ url_for('pending_operations') }}"><i class="large in cart icon"></i> {{ menuInfo["numberOfOpenTransactions"] }}</a>
 		 {% else %}
-		 <a class="item">Login</a> 
+		 <a class="item" href="{{ url_for('account_activate') }}">Choose Account</a> 
 		 {% endif %}
   	</div>
    </div>

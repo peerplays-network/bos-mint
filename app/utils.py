@@ -154,31 +154,55 @@ def render_template_menuinfo(tmpl_name, **kwargs):
     return render_template( tmpl_name, menuInfo=menuInfo, **kwargs)
 
 def getMenuInfo():
-    account = Node().getActiveAccount();
+    account = Node().getSelectedAccount();
     
-    currentTransaction = Node().getActiveTransaction()
+    currentTransaction = Node().getOpenTransaction()
     if not currentTransaction:
         operations = []
     else:
-        operations = Node().getActiveTransaction().ops
+        operations = Node().getOpenTransaction().ops
      
         
     menuInfo = { 
-            'accountName': account.identifier + " - " + account.name,
+            'account': { 'id': account.identifier, 
+                         'name': account.name, 
+                         'toString': account.identifier + ' - ' + account.name },
             'numberOfOpenTransactions': len(operations)
                 }
+    
+    allAccounts = []
+    for account in Node().getAllAccountsOfWallet():
+        if account['name']:
+            allAccounts.append({ 'id': account['account'].identifier, 
+                           'name': account['account'].name, 
+                      'publicKey': account['pubkey'],
+                       'toString': account['account'].identifier + ' - ' + account['account'].name })
+        else:
+            allAccounts.append({ 'id': 'None', 
+                           'name': 'This shouldnt happen', 
+                      'publicKey': 'None',
+                       'toString': 'None - Error shouldnt happen' + account['pubkey'] })
+    
+    menuInfo['allAccounts'] = allAccounts
+    
     return menuInfo
 
 def processNextArgument(nextArg, default):
-    if nextArg:
-        nextWords = nextArg.split(sep='/')
-        
-        if nextWords[1] == 'overview':
-            try:
-                return url_for('overview', typeName=nextWords[2], identifier=nextWords[3])
-            except:
-                return url_for(default)
+    if not nextArg:
+        return default
+    
+    if nextArg.startswith('/'):
+        if nextArg:
+            nextWords = nextArg.split(sep='/')
             
+            if nextWords[1] == 'overview':
+                try:
+                    return url_for('overview', typeName=nextWords[2], identifier=nextWords[3])
+                except:
+                    return url_for(default)
+    else:
+        return nextArg
+                
 
 class Singleton:
     """

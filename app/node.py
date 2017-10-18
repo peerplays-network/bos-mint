@@ -84,21 +84,48 @@ class Node(object):
         except Exception as ex:
             raise NodeException(cause=ex)
         
-    def getActiveAccount(self):
+    def getSelectedAccount(self):
         try:
             # so far default is always active
             return Account(self.get_node().config["default_account"], peerplays_instance=self.get_node())
         except Exception as ex:
             raise NodeException(cause=ex)
         
-    def getActiveAccountName(self):
+    def selectAccount(self, accountId):
+        try:
+            account = Account(accountId, peerplays_instance=self.get_node())
+            self.get_node().config["default_account"] = account['name'] 
+            return account['id'] + ' - ' + account['name']
+        except Exception as ex:
+            raise NodeException(cause=ex)
+        
+    def getAllAccountsOfWallet(self):
+        try:
+            # so far default is always active
+            return self.get_node().wallet.getAccounts()
+        except Exception as ex:
+            raise NodeException(cause=ex)
+        
+    def addAccountToWallet(self, name, pwd, role='active'):
+        # so far default is always active
+        
+        # check in someway that aaount exists
+        from peerplaysbase.account import PasswordKey 
+        pkey = PasswordKey(name, pwd, role)
+        try:
+            account = self.getAccount(name)
+            self.get_node().wallet.addPrivateKey( pkey.get_private() )
+        except Exception as ex:
+            raise NodeException(message=str(ex), cause=ex)
+        
+    def getSelectedAccountName(self):
         try:
             # so far default is always active
             return self.get_node().config["default_account"]
         except Exception as ex:
             raise NodeException(cause=ex)
         
-    def getActiveTransaction(self):
+    def getOpenTransaction(self):
         try:
             # so far default is openProposal
             return Node.openProposal
@@ -117,10 +144,13 @@ class Node(object):
             Node.openProposal = self.get_node().proposal(proposer=self.getProposerAccountName())
             
     def getProposerAccountName(self):
-        return self.getActiveAccountName()
+        return self.getSelectedAccountName()
 
     def wallet_exists(self):
         return self.get_node().wallet.created()
+    
+    def wallet_create(self, pwd):
+        return self.get_node().wallet.create(pwd)
 
     def unlock(self, pwd):
         return self.get_node().wallet.unlock(pwd)

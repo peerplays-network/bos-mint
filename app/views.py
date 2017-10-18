@@ -1,4 +1,5 @@
-from app.forms import OperationForm, PendingOperationsForms, TranslatedFieldForm
+from app.forms import OperationForm, PendingOperationsForms, TranslatedFieldForm,\
+    NewWalletForm, GetAccountForm
 from app.models import InternationalizedString, LanguageNotFoundException
 from app.node import Node, NodeException, NonScalableRequest
 from app.utils import render_template_menuinfo
@@ -8,6 +9,7 @@ from wtforms     import FormField
 from . import app, db, forms, config
 from .utils import unlocked_wallet_required
 from app import utils
+from peerplays.exceptions import WalletExists
 
 # InternationalizedString = namedtuple('InternationalizedString', ['country', 'text'])
 # Sport = namedtuple('Sport', ['names', 'submit'])
@@ -15,13 +17,74 @@ from app import utils
 # Homepage
 ###############################################################################
 @app.route('/')
-@unlocked_wallet_required
 def index():
     return redirect(url_for('overview'))
 
+@app.route('/unlock', methods=['GET', 'POST'])
+def unlock():
+    unlockForm = forms.UnlockForm()
+
+    if unlockForm.validate_on_submit():
+        return redirect(utils.processNextArgument( request.args.get('next'), url_for('overview'))) 
+
+    return render_template_menuinfo('unlock.html', **locals())
+
+@app.route('/account/info')
+# @unlocked_wallet_required
+def account_info():
+    account = Node().getSelectedAccount()
+    
+    form = forms.AccountForm()
+    form.fill( account )
+    
+    return render_template_menuinfo("account.html", **locals())
+
+@app.route("/account/select/<accountId>", methods=['GET', 'POST'])
+@unlocked_wallet_required
+def account_select(accountId):
+    try:
+        accountName = Node().selectAccount(accountId)
+        flash('Account ' + accountName + ' selected!')
+    except Exception as e:
+        flash(e.__repr__(), category='error')
+             
+    return redirect(utils.processNextArgument( request.args.get('next'), url_for('overview'))) 
+
+@app.route("/account/add", methods=['GET', 'POST'])
+@unlocked_wallet_required
+def account_add():
+    form = GetAccountForm()
+    formTitle = "Add Account to wallet"
+     
+    if form.validate_on_submit():
+        try:
+            Node().addAccountToWallet( form.name.data, form.password.data, form.role.data )
+        except Exception as e:
+            flash(e.__repr__(), category='error')
+        
+        redirect(utils.processNextArgument( request.args.get('next'), url_for('overview'))) 
+             
+    return render_template_menuinfo('generic.html', **locals())
+
+@app.route("/wallet/new", methods=['GET', 'POST'])
+def newwallet():
+    form = NewWalletForm()
+    formTitle = "Enter password to create new wallet"
+    formMessage = "A local wallet will be automatically created. This local wallet is encrypted with your password, and will contain any private keys belonging to your accounts. It is important that you take the time to backup this wallet once created!"
+    
+    if form.validate_on_submit():
+        try:
+            Node().wallet_create( form.password.data ) 
+            return redirect(utils.processNextArgument( request.args.get('next'), 'index'))
+        except WalletExists as e:
+            flash('There is already an open wallet.', category='error')
+        except Exception as e:
+            flash(e.__repr__(), category='error')
+            
+    return render_template_menuinfo('generic.html', **locals())
+
 @app.route('/overview')
 @app.route('/overview/<typeName>/<identifier>')
-@unlocked_wallet_required
 def overview(typeName=None, identifier=None):
     # selected ids
     selected = { }
@@ -71,31 +134,6 @@ def overview(typeName=None, identifier=None):
     return render_template_menuinfo('index.html', **locals())
 
 
-@app.route('/unlock', methods=['GET', 'POST'])
-def unlock():
-    unlockForm = forms.UnlockForm()
-
-    if unlockForm.validate_on_submit():
-        return redirect(request.args.get("next", url_for("index")))
-
-    return render_template_menuinfo('unlock.html', **locals())
-
-
-@app.route('/account')
-# @unlocked_wallet_required
-def account():
-    account = Node().getActiveAccount()
-    
-    form = forms.AccountForm()
-    form.fill( account )
-    
-    return render_template_menuinfo("account.html", **locals())
-
-
-@app.route("/wallet/new")
-def newwallet():
-    return "foobar"
-
 @app.route("/cart", methods=['post','get'])
 @unlocked_wallet_required
 def pending_operations():
@@ -108,7 +146,7 @@ def pending_operations():
         
     
     # construct operationsform from active transaction
-    transaction = Node().getActiveTransaction()
+    transaction = Node().getOpenTransaction()
     
     if transaction:
         for op in transaction.ops:
