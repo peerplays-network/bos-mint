@@ -70,6 +70,39 @@ PARENTTYPE_GET = {
   'bet'               : lambda tmpId: tmpId,
 }
 
+# which type does it cascade to
+CHILD_TYPE = {
+                 'sport': 'eventgroup',
+                 'eventgroup': 'event',
+                 'event': 'bettingmarketgroup',
+                 'bettingmarketgroup': 'bettingmarket',
+                 'bettingmarket': 'bet'
+               }
+
+# which type does it come from
+PARENT_TYPE = {
+                 'sport': None,
+                 'eventgroup': 'sport',
+                 'event': 'eventgroup',
+                 'bettingmarketgroup': 'event',
+                 'bettingmarket': 'bettingmarketgroup',
+                 'bet': 'bettingmarket'
+               }
+
+
+def getParentByIdGetter(typeName):
+    parentTypeName = PARENT_TYPE.get(typeName)
+    if parentTypeName:
+        return TYPE_GET.get(parentTypeName)
+    
+    return None
+
+def getChildType(typeName):
+    return CHILD_TYPE.get(typeName)
+
+def getParentType(typeName):
+    return PARENT_TYPE.get(typeName)
+
 def getParentTypeGetter(typeName):
     return PARENTTYPE_GET.get(typeName)
 
@@ -113,8 +146,6 @@ def unlocked_wallet_required(f):
                 "to unlock your wallet first!"
             )
             return redirect(url_for('unlock', next=request.url))
-        
-        walletInfo = "abc"
         return f(*args, **kwargs)
     return decorated_function
 
@@ -137,6 +168,17 @@ def getMenuInfo():
             'numberOfOpenTransactions': len(operations)
                 }
     return menuInfo
+
+def processNextArgument(nextArg, default):
+    if nextArg:
+        nextWords = nextArg.split(sep='/')
+        
+        if nextWords[1] == 'overview':
+            try:
+                return url_for('overview', typeName=nextWords[2], identifier=nextWords[3])
+            except:
+                return url_for(default)
+            
 
 class Singleton:
     """

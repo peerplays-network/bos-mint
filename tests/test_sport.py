@@ -3,8 +3,9 @@ Created on 13.10.2017
 
 @author: schiessl
 '''
-import unittest
 from multiprocessing.pool import Pool
+import unittest
+
 from app.node import Node
 from peerplays.peerplays import PeerPlays
 
@@ -39,7 +40,7 @@ class Test(unittest.TestCase):
 
     def testSportCreateNode(self):
 #         sportForm = self.getMockSportNewForm()
-        proposal = Node().createSport( [("de", "Tischtennis" ), ( "en", "Table tennis" )] )
+        proposal = Node().createSport([("de", "Tischtennis"), ("en", "Table tennis")])
         
         tx = proposal.json()
         ops = tx["operations"]
@@ -49,5 +50,5 @@ class Test(unittest.TestCase):
         self.assertEqual(len(prop["proposed_ops"]), 1)
         
         prop_op = prop["proposed_ops"][0]['op']
-        self.assertEqual(prop_op[0], 47) # create sport id 
-        self.assertEqual(prop_op[1]['name'], [['de', 'Tischtennis'], ['en', 'Table tennis']]) # correct names reflected
+        self.assertEqual(prop_op[0], 47)  # create sport id 
+        self.assertEqual(prop_op[1]['name'], [['de', 'Tischtennis'], ['en', 'Table tennis']])  # correct names reflected

@@ -224,25 +224,30 @@ class Node(object):
             raise NodeException(cause=ex)
         
     @proposedOperation
-    def createEventGroup(self, sportId, istrings):
+    def createEventGroup(self, istrings, sportId):
         try:
-            self.get_node().event_group_create(istrings, sportId, self.getActiveAccountName(), append_to=self.getActiveTransaction() )
+            return self.get_node().event_group_create(istrings, sportId, self.getActiveAccountName(), append_to=self.getActiveTransaction() )
         except Exception as ex:
             raise NodeException(cause=ex) 
         
     @proposedOperation
-    def createBettingMarketGroup(self, istrings):
+    def createEvent(self, name, season, startTime, eventGroupId):
         try:
-            return "dummy"
-#         self.get_node().betting_market_group_create(description, event_id, rules_id, asset, account)
+            return self.get_node().event_create(name, season, startTime, eventGroupId, self.getActiveAccountName(), append_to=self.getActiveTransaction() )
         except Exception as ex:
             raise NodeException(cause=ex) 
         
     @proposedOperation
-    def createBettingMarket(self, istrings):
+    def createBettingMarketGroup(self, description, eventId, bettingMarketRuleId, asset):
         try:
-            return "dummy"
-#         self.get_node().betting_market_create(payout_condition, description, group_id, account)
+            return self.get_node().betting_market_group_create(description, eventId, bettingMarketRuleId, asset, self.getActiveAccountName(), append_to=self.getActiveTransaction() )
+        except Exception as ex:
+            raise NodeException(cause=ex) 
+        
+    @proposedOperation
+    def createBettingMarket(self, payoutCondition, description, bettingMarketGroupId):
+        try:
+            return self.get_node().betting_market_create(payoutCondition, description, bettingMarketGroupId, self.getActiveAccountName(), append_to=self.getActiveTransaction() )
         except Exception as ex:
             raise NodeException(cause=ex) 
         

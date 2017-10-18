@@ -28,34 +28,7 @@
      <img class="logo" src="{{ url_for('static', filename='img/logo.png') }}" />
     </a>
     <!-- Header Menu -->
-    <div class="ui secondary menu">
-    	<div class="ui dropdown item">Sport <i class="dropdown icon"></i>
-   			<div class="menu">
-    			<a class="item{{sport_new_active}}" href="{{ url_for('sport_new') }}">Create</a>
-    			<a class="item{{sport_update_active}}" href="{{ url_for('sport_update') }}">Update</a>
-   			</div>
-  		</div>
-		<div class="ui dropdown item">Event group<i class="dropdown active icon"></i>
-   			<div class="menu">
-    			<a class="item{{eventgroup_new_active}}" href="{{ url_for('eventgroup_new') }}">Create</a>
-   			</div>
-  		</div>
-		<div class="ui dropdown item">Event<i class="dropdown active icon"></i>
-   			<div class="menu">
-    			<a class="item{{event_new_active}}" href="{{ url_for('event_new') }}">Create</a>
-   			</div>
-  		</div>
-		<div class="ui dropdown item">Betting market group<i class="dropdown active icon"></i>
-   			<div class="menu">
-    			<a class="item{{bettingmarketgroup_new_active}}" href="{{ url_for('bettingmarketgroup_new') }}">Create</a>
-   			</div>
-  		</div>
-		<div class="ui dropdown item">Betting market <i class="dropdown active icon"></i>
-   			<div class="menu">
-    			<a class="item{{bettingmarket_new_active}}" href="{{ url_for('bettingmarket_new') }}">Create</a>
-   			</div>
-  		</div>
-	</div>
+
 	<div class="right menu">
 		 {% if menuInfo %}
 		 <div class="ui dropdown right item"><!-- <table><tr><td>Account</td></tr><tr><td> -->{{menuInfo["accountName"]}}<!-- </td></tr></table> --> <i class="dropdown icon"></i>
@@ -64,9 +37,7 @@
     			<a class="item{{pending_operations_active_active}}" href="{{ url_for('pending_operations') }}">Pending Operations</a>
    			</div>
 		 </div>
-		 <div class="item">
-		 #T {{ menuInfo["numberOfOpenTransactions"] }}
-		 </div>
+		 <a class="item{{pending_operations_active_active}}" href="{{ url_for('pending_operations') }}"><i class="large in cart icon"></i> {{ menuInfo["numberOfOpenTransactions"] }}</a>
 		 {% else %}
 		 <a class="item">Login</a> 
 		 {% endif %}
