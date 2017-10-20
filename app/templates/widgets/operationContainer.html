@@ -35,13 +35,17 @@
 			<tr>
 				<td>
 					<div class="ui right floated buttons">
-						<button class="ui labeled negative icon button">
-							<i class="thumbs down icon"></i>{{ buttonNegative }}
-						</button>
+						<form action="{{ buttonNegativeURL }}" id="buttonNegative" method="GET">
+							<button class="ui labeled negative icon button">
+								<i class="thumbs down icon"></i>{{ buttonNegative }}
+							</button>
+						</form>
 						<div class="or"></div>
+						<form action="{{ buttonPositiveURL }}" id="buttonPositive" method="GET">
 						<button class="ui right labeled positive icon button">
 							<i class="thumbs up icon"></i>{{ buttonPositive }}
 						</button>
+						</form>
 					</div>
 				</td> 
 			{% endif %}

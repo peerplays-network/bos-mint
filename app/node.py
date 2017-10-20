@@ -110,7 +110,7 @@ class Node(object):
     def selectAccount(self, accountId):
         try:
             # if there are any pending operations the user need to finish that first
-            if self.getOpenProposal() and len(self.getOpenProposal().list_operations()) > 0:
+            if self.getPendingTransaction() and len(self.getPendingTransaction().list_operations()) > 0:
                 raise BroadcastActiveOperationsExceptions
             account = Account(accountId, peerplays_instance=self.get_node())
             self.get_node().config["default_account"] = account['name'] 
@@ -332,4 +332,30 @@ class Node(object):
             return self.get_node().betting_market_update(  bmId, payout_condition, descriptions, bmgId, self.getSelectedAccountName(), append_to=self.getPendingProposal() ) 
         except Exception as ex:
             raise NodeException(cause=ex, message=ex.__str__()) 
+    
+    def discardPendingTransaction(self):
+        try:
+            if Node.pendingProposal:
+                self.get_node().clear() 
+                Node.pendingProposal = []
+        except Exception as ex:
+            raise NodeException(cause=ex)
+        
+    def broadcastPendingTransaction(self):
+        try:
+            if Node.pendingProposal:
+                returnV =  self.get_node().broadcast()
+                self.get_node().clear() 
+                Node.pendingProposal = []
+                return returnV                
+        except Exception as ex:
+            raise NodeException(cause=ex)
+
+    def acceptProposal(self, proposalId):
+        try:
+            return self.get_node().approveproposal([proposalId], 
+                                                   self.getSelectedAccountName(), 
+                                                   self.getSelectedAccountName())
+        except Exception as ex:
+            raise NodeException(cause=ex)
         

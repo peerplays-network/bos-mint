@@ -1,11 +1,9 @@
-from app.forms import OperationForm, TranslatedFieldForm,\
-    NewWalletForm, GetAccountForm, OperationsContainerForm
+from app.forms import TranslatedFieldForm, NewWalletForm, GetAccountForm
 from app.models import InternationalizedString, LanguageNotFoundException
-from app.node import Node, NodeException, NonScalableRequest,\
-    BroadcastActiveOperationsExceptions
+from app.node import Node, NodeException, NonScalableRequest, BroadcastActiveOperationsExceptions
 from app.utils import render_template_menuinfo
 from flask import render_template, redirect, request, session, flash, url_for, make_response, abort
-from wtforms     import FormField
+from wtforms import FormField
 
 from . import app, db, forms, config
 from .utils import unlocked_wallet_required
@@ -31,7 +29,6 @@ def unlock():
     return render_template_menuinfo('unlock.html', **locals())
 
 @app.route('/account/info')
-# @unlocked_wallet_required
 def account_info():
     account = Node().getSelectedAccount()
     
@@ -41,7 +38,6 @@ def account_info():
     return render_template_menuinfo("account.html", **locals())
 
 @app.route("/account/select/<accountId>", methods=['GET', 'POST'])
-@unlocked_wallet_required
 def account_select(accountId):
     try:
         accountName = Node().selectAccount(accountId)
@@ -140,38 +136,52 @@ def overview(typeName=None, identifier=None):
                
     return render_template_menuinfo('index.html', **locals())
 
-
-@app.route("/cart", methods=['post','get'])
+@app.route("/pending/discard")
 @unlocked_wallet_required
+def pending_operations_discard():
+    Node().discardPendingTransaction()
+    flash('All pending operations have been discarded.')
+    return redirect(url_for('pending_operations'))
+
+@app.route("/pending/broadcast")
+@unlocked_wallet_required
+def pending_operations_broadcast():
+    Node().broadcastPendingTransaction()
+    flash('All pending operations have been broadcasted.')        
+    return redirect(url_for('pending_operations'))
+
+@app.route("/pending", methods=['post','get'])
 def pending_operations():
-#     pendingOperationsForm = OperationsContainerForm()
-    
-#     if pendingOperationsForm.validate_on_submit():
-#         flash('Operations have been flushed, not broadcasted yet.')
-#         Node().getActiveTransaction().ops = []
-            
     # construct operationsform from active transaction
     transaction = Node().getPendingTransaction()
     if transaction:
-        containerList = [ utils.prepareTransactionDataForRendering(transaction) ]
+        containerList = [ forms.prepareTransactionDataForRendering(transaction) ]
     del transaction
             
     return render_template_menuinfo("pendingOperations.html", **locals())
 
 @app.route("/proposals", methods=['post','get'])
-@unlocked_wallet_required
 def votable_proposals():
-#     pendingOperationsForm = OperationsContainerForm()
-    
-#     if pendingOperationsForm.validate_on_submit():
-#         pass
-    
     proposals = Node().getAllProposals()
     if proposals:
-        containerList = utils.prepareProposalsDataForRendering(proposals) 
+        containerList = forms.prepareProposalsDataForRendering(proposals) 
     del proposals
     
     return render_template_menuinfo("votableProposals.html", **locals())
+
+@app.route("/proposals/accept/<proposalId>", methods=['post','get'])
+@unlocked_wallet_required
+def votable_proposals_accept(proposalId):
+    acceptanceNotice = Node().acceptProposal(proposalId)
+    flash('Proposal has been accepted')
+    return redirect(url_for('votable_proposals'))
+
+@app.route("/proposals/reject/<proposalId>", methods=['post','get'])
+@unlocked_wallet_required
+def votable_proposals_reject(proposalId):
+    flash('rejected do something')
+    
+    return redirect(url_for('votable_proposals'))
 
 def findAndProcessTranslatons(form):
     for field in form._fields.values():
@@ -329,7 +339,6 @@ def event_update(selectId=None):
 @unlocked_wallet_required
 def bettingmarketgroup_update(selectId=None):
     formClass = forms.NewBettingMarketGroupForm
-    
     return genericUpdate(formClass, selectId )
     
 @app.route("/bettingmarket/update", methods=['post','get'])
@@ -337,7 +346,6 @@ def bettingmarketgroup_update(selectId=None):
 @unlocked_wallet_required
 def bettingmarket_update(selectId=None):
     formClass = forms.NewBettingMarketForm
-                    
     return genericUpdate(formClass, selectId )
 
 
