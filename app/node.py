@@ -107,6 +107,15 @@ class Node(object):
         except Exception as ex:
             raise NodeException(cause=ex)
         
+    def getAccounts(self, idList):
+        accounts = []
+        try:
+            for accountId in idList:
+                accounts.append(Account(accountId, peerplays_instance=self.get_node()))
+            return accounts
+        except Exception as ex:
+            raise NodeException(cause=ex)
+        
     def selectAccount(self, accountId):
         try:
             # if there are any pending operations the user need to finish that first
@@ -171,6 +180,9 @@ class Node(object):
 
     def unlock(self, pwd):
         return self.get_node().wallet.unlock(pwd)
+
+    def lock(self):
+        return self.get_node().wallet.lock()
 
     def locked(self):
         return self.get_node().wallet.locked()
@@ -354,6 +366,14 @@ class Node(object):
     def acceptProposal(self, proposalId):
         try:
             return self.get_node().approveproposal([proposalId], 
+                                                   self.getSelectedAccountName(), 
+                                                   self.getSelectedAccountName())
+        except Exception as ex:
+            raise NodeException(cause=ex)
+        
+    def rejectProposal(self, proposalId):
+        try:
+            return self.get_node().disapproveproposal([proposalId], 
                                                    self.getSelectedAccountName(), 
                                                    self.getSelectedAccountName())
         except Exception as ex:

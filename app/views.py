@@ -7,7 +7,7 @@ from wtforms import FormField
 
 from . import app, db, forms, config
 from .utils import unlocked_wallet_required
-from app import utils
+from app import utils, widgets
 from peerplays.exceptions import WalletExists
 
 # InternationalizedString = namedtuple('InternationalizedString', ['country', 'text'])
@@ -17,6 +17,11 @@ from peerplays.exceptions import WalletExists
 ###############################################################################
 @app.route('/')
 def index():
+    return redirect(url_for('overview'))
+
+@app.route('/lock', methods=['GET', 'POST'])
+def lock():
+    Node().lock()
     return redirect(url_for('overview'))
 
 @app.route('/unlock', methods=['GET', 'POST'])
@@ -155,7 +160,7 @@ def pending_operations():
     # construct operationsform from active transaction
     transaction = Node().getPendingTransaction()
     if transaction:
-        containerList = [ forms.prepareTransactionDataForRendering(transaction) ]
+        containerList = [ widgets.prepareTransactionDataForRendering(transaction) ]
     del transaction
             
     return render_template_menuinfo("pendingOperations.html", **locals())
@@ -164,7 +169,7 @@ def pending_operations():
 def votable_proposals():
     proposals = Node().getAllProposals()
     if proposals:
-        containerList = forms.prepareProposalsDataForRendering(proposals) 
+        containerList = widgets.prepareProposalsDataForRendering(proposals) 
     del proposals
     
     return render_template_menuinfo("votableProposals.html", **locals())
@@ -172,15 +177,15 @@ def votable_proposals():
 @app.route("/proposals/accept/<proposalId>", methods=['post','get'])
 @unlocked_wallet_required
 def votable_proposals_accept(proposalId):
-    acceptanceNotice = Node().acceptProposal(proposalId)
-    flash('Proposal has been accepted')
+    Node().acceptProposal(proposalId)
+    flash('Proposal (' + proposalId + ') has been accepted')
     return redirect(url_for('votable_proposals'))
 
 @app.route("/proposals/reject/<proposalId>", methods=['post','get'])
 @unlocked_wallet_required
 def votable_proposals_reject(proposalId):
-    flash('rejected do something')
-    
+    Node().rejectProposal(proposalId)
+    flash('Proposal (' + proposalId + ') has been rejected')
     return redirect(url_for('votable_proposals'))
 
 def findAndProcessTranslatons(form):

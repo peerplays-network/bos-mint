@@ -22,7 +22,7 @@ TYPE_GET_ALL = { # get list of objects for typename, containing id, typeName and
       'sport' :     lambda unusedId: [ { 
                                'id' : x["id"], 
                                'typeName': 'sport',
-                               'toString': x["id"] + ' - ' + x["name"][0][1]  
+                               'toString': x["name"][0][1] + ' (' + x["id"] + ')',
                               } for x in Node().getSports() ],
       'eventgroup': lambda tmpSportId: [ { 
                                           'id' : x["id"], 
@@ -90,6 +90,11 @@ PARENT_TYPE = {
                  'bet': 'bettingmarket'
                }
 
+def toString(toBeFormatted):
+    if toBeFormatted.get('name') and toBeFormatted.get('id'):
+        return toBeFormatted.get('name') + ' (' + toBeFormatted.get('id') + ')'
+    else:
+        raise Exception 
 
 def getParentByIdGetter(typeName):
     parentTypeName = PARENT_TYPE.get(typeName)
@@ -168,9 +173,10 @@ def getMenuInfo():
     menuInfo = { 
             'account': { 'id': account.identifier, 
                          'name': account.name, 
-                         'toString': account.identifier + ' - ' + account.name },
+                         'toString': toString(account) },
             'numberOfOpenTransactions': len(operations),
-            'numberOfVotableProposals': len(votableProposals)
+            'numberOfVotableProposals': len(votableProposals),
+            'walletLocked': Node().locked()
                 }
     
     allAccounts = []

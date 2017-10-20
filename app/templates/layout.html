@@ -33,13 +33,14 @@
     <!-- Header Menu -->
 	<div class="right menu">
 		 {% if menuInfo %}
-		 <a title="Lists all operations to be proposed" class="item" href="{{ url_for('pending_operations') }}"><i class="large in cart icon"></i> {{ menuInfo["numberOfOpenTransactions"] }}</a>
-				 <div class="ui dropdown right item"><!-- <table><tr><td>Account</td></tr><tr><td> -->{{menuInfo['account']['toString']}}<!-- </td></tr></table> --> <i class="dropdown icon"></i>
-		 	<div class="menu">
-    			<!-- <a class="item" href="{{ url_for('pending_operations') }}">Pending Operations</a>
-    			<div class="ui divider"></div> -->
+			 <a title="Lists all operations to be proposed" class="item" href="{{ url_for('pending_operations') }}"><i class="large in cart icon"></i> {{ menuInfo["numberOfOpenTransactions"] }}</a>
+			 <div class="ui dropdown right item"><!-- <table><tr><td>Account</td></tr><tr><td> -->{{menuInfo['account']['toString']}}<!-- </td></tr></table> --> 
+			 	<i class="dropdown icon"></i>
+			 	<div class="menu">
+	   			<!-- <a class="item" href="{{ url_for('pending_operations') }}">Pending Operations</a>
+	   			<div class="ui divider"></div> -->
 			    <a class="item" href="{{ url_for('account_info') }}">Account information</a>
-    			<div class="ui dropdown item">Switch Account <i class="dropdown icon"></i>
+	   			<div class="ui dropdown item">Switch Account <i class="dropdown icon"></i>
 				 	<div class="menu">
 				 		{% for account in menuInfo['allAccounts'] %}
 				        <a class="item" href="{{ url_for('account_select', accountId=account['id'], next=request.url) }}">{{account['toString']}}</a>
@@ -47,8 +48,13 @@
 		    			<a class="item" href="{{ url_for('account_add') }}"><i class="small plus icon"></i>Add new</a>
 		   			</div>
 				 </div>
-   			</div>
-		 </div>
+	  			</div>
+			 </div>
+			 {% if menuInfo["walletLocked"] %}
+			 	<a class="item" href="{{ url_for('unlock') }}">Wallet <i class="lock icon"></i></a>
+			 {% else %}
+			 	<a class="item" href="{{ url_for('lock') }}">Wallet <i class="unlock icon"></i></a>
+			 {% endif %}
 		 {% else %}
 		 <a class="item" href="{{ url_for('account_activate') }}">Choose Account</a> 
 		 {% endif %}
