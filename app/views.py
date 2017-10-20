@@ -1,7 +1,8 @@
-from app.forms import OperationForm, PendingOperationsForms, TranslatedFieldForm,\
-    NewWalletForm, GetAccountForm
+from app.forms import OperationForm, TranslatedFieldForm,\
+    NewWalletForm, GetAccountForm, OperationsContainerForm
 from app.models import InternationalizedString, LanguageNotFoundException
-from app.node import Node, NodeException, NonScalableRequest
+from app.node import Node, NodeException, NonScalableRequest,\
+    BroadcastActiveOperationsExceptions
 from app.utils import render_template_menuinfo
 from flask import render_template, redirect, request, session, flash, url_for, make_response, abort
 from wtforms     import FormField
@@ -45,6 +46,12 @@ def account_select(accountId):
     try:
         accountName = Node().selectAccount(accountId)
         flash('Account ' + accountName + ' selected!')
+    except BroadcastActiveOperationsExceptions as e:
+        flash(e.message, category='error')
+        return redirect( url_for('pending_operations') )
+    except NodeException as e:
+        flash(e.message, category='error')
+        return redirect( url_for('overview') )
     except Exception as e:
         flash(e.__repr__(), category='error')
              
@@ -56,11 +63,11 @@ def account_add():
     form = GetAccountForm()
     formTitle = "Add Account to wallet"
      
-    if form.validate_on_submit():
+    if form.validate_on_submit(): # submit checks if account exists
         try:
-            Node().addAccountToWallet( form.name.data, form.password.data, form.role.data )
+            Node().addAccountToWallet( form.privateKey.data )
         except Exception as e:
-            flash(e.__repr__(), category='error')
+            flash('There was a problem adding the account to the wallet.', category='error')
         
         redirect(utils.processNextArgument( request.args.get('next'), url_for('overview'))) 
              
@@ -137,25 +144,34 @@ def overview(typeName=None, identifier=None):
 @app.route("/cart", methods=['post','get'])
 @unlocked_wallet_required
 def pending_operations():
-    pendingOperationsForm = PendingOperationsForms()
-    pending_operations_active = True
+#     pendingOperationsForm = OperationsContainerForm()
     
-    if pendingOperationsForm.validate_on_submit():
-        flash('Operations have been flushed, not broadcasted yet.')
-        Node().getActiveTransaction().ops = []
-        
-    
+#     if pendingOperationsForm.validate_on_submit():
+#         flash('Operations have been flushed, not broadcasted yet.')
+#         Node().getActiveTransaction().ops = []
+            
     # construct operationsform from active transaction
-    transaction = Node().getOpenTransaction()
-    
+    transaction = Node().getPendingTransaction()
     if transaction:
-        for op in transaction.ops:
-            operationForm = OperationForm()
-            operationForm.name = op.__repr__() 
-            pendingOperationsForm.operations.append_entry(operationForm)
+        containerList = [ utils.prepareTransactionDataForRendering(transaction) ]
+    del transaction
+            
+    return render_template_menuinfo("pendingOperations.html", **locals())
+
+@app.route("/proposals", methods=['post','get'])
+@unlocked_wallet_required
+def votable_proposals():
+#     pendingOperationsForm = OperationsContainerForm()
     
+#     if pendingOperationsForm.validate_on_submit():
+#         pass
     
-    return render_template_menuinfo("cart.html", **locals())
+    proposals = Node().getAllProposals()
+    if proposals:
+        containerList = utils.prepareProposalsDataForRendering(proposals) 
+    del proposals
+    
+    return render_template_menuinfo("votableProposals.html", **locals())
 
 def findAndProcessTranslatons(form):
     for field in form._fields.values():

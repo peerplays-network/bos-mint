@@ -24,3 +24,9 @@
 
  </div>
 {% endmacro %}
+
+{%- macro render_int_string(stringList) -%}
+{% for item in stringList %}
+	{{ item[0] }} - {{ item[1] }}, 
+{% endfor %}
+{%- endmacro -%}

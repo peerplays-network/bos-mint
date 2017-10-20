@@ -1,0 +1,25 @@
+{% from "_forms.html" import quickform, parsefield %}
+{% extends "layout.html" %}
+
+{% block content %}
+<h2>Pending operations</h2>
+
+{% if containerList|length > 0 %}
+{% set onlyOne = containerList|length == 1 %}
+<div class="ui styled accordion">
+	{% for operationContainer in containerList %}
+  		{{ operationContainer(active=onlyOne)|safe }}
+  	{% endfor %}
+</div>
+
+{% else %}
+
+<div class="ui styled accordion">
+  <div class="title">
+    No operation was created yet
+  </div>
+</div>
+
+{% endif %}
+
+{% endblock %}

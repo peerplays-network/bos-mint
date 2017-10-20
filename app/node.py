@@ -8,6 +8,7 @@ from peerplays.event import Events, Event
 from peerplays.bettingmarketgroup import BettingMarketGroup, BettingMarketGroups
 from peerplays.bettingmarket import BettingMarkets, BettingMarket
 from peerplays.rule import Rules
+from peerplays.proposal import Proposals
 
 class NodeException(Exception):
     """ All exceptions thrown by the underlying data service will be wrapped with this exception
@@ -24,11 +25,14 @@ class NodeException(Exception):
             self.message = self.message + '. ' + cause.__repr__()
 
 class NonScalableRequest(NodeException):
-    """ All exceptions thrown by the underlying data service will be wrapped with this exception
-    """
     def __init__(self):
         Exception.__init__(self)
         self.message = 'This request would mean to much effort'
+        
+class BroadcastActiveOperationsExceptions(NodeException):
+    def __init__(self):
+        Exception.__init__(self)
+        self.message = 'Broadcast or cancel the pending operations first'
 
 class ApiServerDown(NodeException):
     pass
@@ -48,7 +52,7 @@ class Node(object):
     
     #: The static connection
     node = None
-    openProposal = None
+    pendingProposal = None
 
     def __init__(self, url=None, num_retries=1, **kwargs):
         """ This class is a singelton and makes sure that only one
@@ -84,6 +88,18 @@ class Node(object):
         except Exception as ex:
             raise NodeException(cause=ex)
         
+    def validateAccount(self, privateKey):
+        try:
+            return self.get_node().wallet.getAccountFromPrivateKey(privateKey)
+        except Exception as ex:
+            raise NodeException(cause=ex)
+        
+    def ensureProposal(self):
+        # deprecated code, can be removed with next peerplays update
+        if not Node.pendingProposal:
+            # no active proposal, create one
+            Node.pendingProposal = self.get_node().proposal(proposer=self.getProposerAccountName())
+        
     def getSelectedAccount(self):
         try:
             # so far default is always active
@@ -93,6 +109,9 @@ class Node(object):
         
     def selectAccount(self, accountId):
         try:
+            # if there are any pending operations the user need to finish that first
+            if self.getOpenProposal() and len(self.getOpenProposal().list_operations()) > 0:
+                raise BroadcastActiveOperationsExceptions
             account = Account(accountId, peerplays_instance=self.get_node())
             self.get_node().config["default_account"] = account['name'] 
             return account['id'] + ' - ' + account['name']
@@ -106,15 +125,11 @@ class Node(object):
         except Exception as ex:
             raise NodeException(cause=ex)
         
-    def addAccountToWallet(self, name, pwd, role='active'):
-        # so far default is always active
-        
-        # check in someway that aaount exists
-        from peerplaysbase.account import PasswordKey 
-        pkey = PasswordKey(name, pwd, role)
+    def addAccountToWallet(self, privateKey, publicKey):
         try:
-            account = self.getAccount(name)
-            self.get_node().wallet.addPrivateKey( pkey.get_private() )
+            # ensure public key belongs to an account
+            self.validateAccount( privateKey ),
+            self.get_node().wallet.addPrivateKey( privateKey )
         except Exception as ex:
             raise NodeException(message=str(ex), cause=ex)
         
@@ -125,23 +140,25 @@ class Node(object):
         except Exception as ex:
             raise NodeException(cause=ex)
         
-    def getOpenTransaction(self):
+    def getAllProposals(self):
         try:
-            # so far default is openProposal
-            return Node.openProposal
+            return Proposals("witness-account", peerplays_instance=self.get_node())
         except Exception as ex:
             raise NodeException(cause=ex)
-            
-    def isLastOpAProposal(self, transactionToCheck):
-        operations = transactionToCheck['operations'] 
-        return operations[len(operations)-1][0] == 22
         
-            
-    def ensureProposal(self):
-        # deprecated code, can be removed with next peerplays update
-        if not Node.openProposal:
-            # no active proposal, create one
-            Node.openProposal = self.get_node().proposal(proposer=self.getProposerAccountName())
+    def getPendingProposal(self):
+        try:
+            # so far default is pendingProposal
+            return Node.pendingProposal
+        except Exception as ex:
+            raise NodeException(cause=ex)
+        
+    def getPendingTransaction(self):
+        try:
+            # so far default is pendingProposal
+            return Node.pendingProposal
+        except Exception as ex:
+            raise NodeException(cause=ex)
             
     def getProposerAccountName(self):
         return self.getSelectedAccountName()
@@ -249,70 +266,70 @@ class Node(object):
     @proposedOperation
     def createSport(self, istrings):
         try:
-            return self.get_node().sport_create( istrings, account=self.getActiveAccountName(), append_to=self.getActiveTransaction() )
+            return self.get_node().sport_create( istrings, account=self.getSelectedAccountName(), append_to=self.getPendingProposal() )
         except Exception as ex:
             raise NodeException(cause=ex)
         
     @proposedOperation
     def createEventGroup(self, istrings, sportId):
         try:
-            return self.get_node().event_group_create(istrings, sportId, self.getActiveAccountName(), append_to=self.getActiveTransaction() )
+            return self.get_node().event_group_create(istrings, sportId, self.getSelectedAccountName(), append_to=self.getPendingProposal() )
         except Exception as ex:
             raise NodeException(cause=ex) 
         
     @proposedOperation
     def createEvent(self, name, season, startTime, eventGroupId):
         try:
-            return self.get_node().event_create(name, season, startTime, eventGroupId, self.getActiveAccountName(), append_to=self.getActiveTransaction() )
+            return self.get_node().event_create(name, season, startTime, eventGroupId, self.getSelectedAccountName(), append_to=self.getPendingProposal() )
         except Exception as ex:
             raise NodeException(cause=ex) 
         
     @proposedOperation
     def createBettingMarketGroup(self, description, eventId, bettingMarketRuleId, asset):
         try:
-            return self.get_node().betting_market_group_create(description, eventId, bettingMarketRuleId, asset, self.getActiveAccountName(), append_to=self.getActiveTransaction() )
+            return self.get_node().betting_market_group_create(description, eventId, bettingMarketRuleId, asset, self.getSelectedAccountName(), append_to=self.getPendingProposal() )
         except Exception as ex:
             raise NodeException(cause=ex) 
         
     @proposedOperation
     def createBettingMarket(self, payoutCondition, description, bettingMarketGroupId):
         try:
-            return self.get_node().betting_market_create(payoutCondition, description, bettingMarketGroupId, self.getActiveAccountName(), append_to=self.getActiveTransaction() )
+            return self.get_node().betting_market_create(payoutCondition, description, bettingMarketGroupId, self.getSelectedAccountName(), append_to=self.getPendingProposal() )
         except Exception as ex:
             raise NodeException(cause=ex) 
         
     @proposedOperation
     def updateSport(self, sportId, istrings):
         try:
-            return self.get_node().sport_update( sportId, istrings, self.getActiveAccountName(), append_to=self.getActiveTransaction() ) 
+            return self.get_node().sport_update( sportId, istrings, self.getSelectedAccountName(), append_to=self.getPendingProposal() ) 
         except Exception as ex:
             raise NodeException(cause=ex) 
         
     @proposedOperation
     def updateEventGroup(self, eventGroupId, istrings, sportId):
         try:
-            return self.get_node().event_group_update( eventGroupId, istrings, sportId, self.getActiveAccountName(), append_to=self.getActiveTransaction() ) 
+            return self.get_node().event_group_update( eventGroupId, istrings, sportId, self.getSelectedAccountName(), append_to=self.getPendingProposal() ) 
         except Exception as ex:
             raise NodeException(cause=ex, message=ex.__str__()) 
         
     @proposedOperation
     def updateEvent(self, eventId, name, season, startTime, eventGroupId):
         try:
-            return self.get_node().event_update( eventId, name, season, startTime, eventGroupId, self.getActiveAccountName(), append_to=self.getActiveTransaction() ) 
+            return self.get_node().event_update( eventId, name, season, startTime, eventGroupId, self.getSelectedAccountName(), append_to=self.getPendingProposal() ) 
         except Exception as ex:
             raise NodeException(cause=ex, message=ex.__str__()) 
         
     @proposedOperation
     def updateBettingMarketGroup(self, bmgId, description, eventId, rulesId, freeze=False, delayBets=False):
         try:
-            return self.get_node().betting_market_group_update( bmgId, description, eventId, rulesId, freeze, delayBets, self.getActiveAccountName(), append_to=self.getActiveTransaction() ) 
+            return self.get_node().betting_market_group_update( bmgId, description, eventId, rulesId, freeze, delayBets, self.getSelectedAccountName(), append_to=self.getPendingProposal() ) 
         except Exception as ex:
             raise NodeException(cause=ex, message=ex.__str__()) 
 
     @proposedOperation    
     def updateBettingMarket(self, bmId, payout_condition, descriptions, bmgId):
         try:
-            return self.get_node().betting_market_update(  bmId, payout_condition, descriptions, bmgId, self.getActiveAccountName(), append_to=self.getActiveTransaction() ) 
+            return self.get_node().betting_market_update(  bmId, payout_condition, descriptions, bmgId, self.getSelectedAccountName(), append_to=self.getPendingProposal() ) 
         except Exception as ex:
             raise NodeException(cause=ex, message=ex.__str__()) 
         

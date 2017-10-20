@@ -28,15 +28,16 @@
      <img class="logo" src="{{ url_for('static', filename='img/logo.png') }}" />
     </a> 
     <div class="item"></div>
-    <div class="item"><h4 class="ui header">Manual Intervention Module</h4></div>
+    <div class="item"><h4 class="ui header">Witness Manual Intervention Module</h4></div>
+	<a title="Lists all votable proposals" class="item" href="{{ url_for('votable_proposals') }}"><i class="thumbs up icon"></i><i class="thumbs down icon"></i> {{ menuInfo["numberOfVotableProposals"] }}</a>    
     <!-- Header Menu -->
-
 	<div class="right menu">
 		 {% if menuInfo %}
-		 <div class="ui dropdown right item"><!-- <table><tr><td>Account</td></tr><tr><td> -->{{menuInfo['account']['toString']}}<!-- </td></tr></table> --> <i class="dropdown icon"></i>
+		 <a title="Lists all operations to be proposed" class="item" href="{{ url_for('pending_operations') }}"><i class="large in cart icon"></i> {{ menuInfo["numberOfOpenTransactions"] }}</a>
+				 <div class="ui dropdown right item"><!-- <table><tr><td>Account</td></tr><tr><td> -->{{menuInfo['account']['toString']}}<!-- </td></tr></table> --> <i class="dropdown icon"></i>
 		 	<div class="menu">
-    			<a class="item" href="{{ url_for('pending_operations') }}">Pending Operations</a>
-    			<div class="ui divider"></div>
+    			<!-- <a class="item" href="{{ url_for('pending_operations') }}">Pending Operations</a>
+    			<div class="ui divider"></div> -->
 			    <a class="item" href="{{ url_for('account_info') }}">Account information</a>
     			<div class="ui dropdown item">Switch Account <i class="dropdown icon"></i>
 				 	<div class="menu">
@@ -48,7 +49,6 @@
 				 </div>
    			</div>
 		 </div>
-		 <a class="item" href="{{ url_for('pending_operations') }}"><i class="large in cart icon"></i> {{ menuInfo["numberOfOpenTransactions"] }}</a>
 		 {% else %}
 		 <a class="item" href="{{ url_for('account_activate') }}">Choose Account</a> 
 		 {% endif %}

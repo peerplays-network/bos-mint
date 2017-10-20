@@ -1,4 +1,5 @@
 import re
+
 from flask import current_app
 from flask_wtf import FlaskForm
 from wtforms import (
@@ -78,15 +79,6 @@ class UnlockPassword(object):
             raise ValidationError(self.message)
         except Exception as e:
             raise ValidationError(str(e))
-        
-class UnlockAccount(object):
-    def __init__(self, message="Either the account does not exist or the password is invalid!"):
-        self.message = message
-
-    def __call__(self, form, field):
-        # validate account
-        pass
-
 
 validators = {
     'email': [
@@ -102,10 +94,6 @@ validators = {
     ],
     'unlock': [
         UnlockPassword()
-    ],
-    'unlockAccount': [
-        DataRequired(),
-        UnlockAccount()
     ]
 }
 
@@ -142,10 +130,30 @@ class NewWalletForm(FlaskForm):
     submit = SubmitField("Create new wallet")
     
 class GetAccountForm(FlaskForm):
-    name     = TextField('Account name', validators=[DataRequired()])
-    password = PasswordField('Password', validators['unlockAccount'])
-    role     = TextField('Role', validators=[DataRequired()])
+    name     = TextField('Name', validators=[Optional()])
+    password = PasswordField('Password', validators=[Optional()])
+    role     = TextField('Role', validators=[Optional()])
+    
+    privateKey     = TextField('Private Key (will be calculated from above information if not given)', validators=[Optional()])
     submit = SubmitField("Login")
+
+    def validate(self):
+        if not FlaskForm.validate(self):
+            return False
+        if self.name.data and self.password.data and self.role.data:
+            from peerplaysbase.account import PasswordKey 
+            pkey = PasswordKey(self.name.data, self.password.data, self.role.data)
+            self.privateKey.data = pkey.get_private_key()
+            
+        if self.privateKey.data:
+            try:
+                Node().validateAccount(self.privateKey.data),
+                return True
+            except Exception:
+                self.privateKey.errors.append("No account connected to this private key")
+                return False
+        else:
+            return False
             
 class NewSportForm(FlaskForm):
     name   = FormField(TranslatedFieldForm)
@@ -315,9 +323,9 @@ class NewBettingMarketForm(FlaskForm):
 class OperationForm(FlaskForm):
     name  = StringField(label='Name', render_kw = { 'disabled' : True }) 
     
-class PendingOperationsForms(FlaskForm):
-    operations = FieldList(FormField(OperationForm, label=""), min_entries=0, label="List of operations")
-    submit     = SubmitField("Broadcast")
+class OperationsContainerForm(FlaskForm):
+#     submit     = SubmitField("Broadcast")
+    pass
     
     
 class AmountForm(FlaskForm):

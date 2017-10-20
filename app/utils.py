@@ -4,6 +4,7 @@ from functools import wraps
 from datetime import datetime
 from app.node import Node
 from tkinter.constants import CURRENT
+from peerplays.cli.proposal import proposals
 
 # dictionary to configure types (Sport, EventGroup, etc.) 
 #  title: human readable title
@@ -153,21 +154,145 @@ def render_template_menuinfo(tmpl_name, **kwargs):
     menuInfo = getMenuInfo()
     return render_template( tmpl_name, menuInfo=menuInfo, **kwargs)
 
+
+class RenderTemplateWidget(object):
+    """
+        Base template for every widget
+        Enables the possibility of rendering a template
+         inside a template with run time options
+    """
+    template = 'appbuilder/general/widgets/render.html'
+    template_args = None
+
+    def __init__(self, **kwargs):
+        self.template_args = kwargs
+
+    def  __repr__(self, **kwargs):  
+        return self.__call__(**kwargs)   
+
+    def __call__(self, **kwargs):
+        from flask.globals import _request_ctx_stack
+        ctx = _request_ctx_stack.top
+        jinja_env = ctx.app.jinja_env
+
+        template = jinja_env.get_template(self.template)
+        args = self.template_args.copy()
+        args.update(kwargs)
+        return template.render(args)
+    
+class OperationsContainerWidget(RenderTemplateWidget):
+    template = 'widgets/operationContainer.html'    
+    
+    def __init__(self, **kwargs):
+        if not kwargs.get('operations'):
+            kwargs['operations'] = []
+        
+        super(OperationsContainerWidget, self).__init__(**kwargs)
+        
+    def addOperation(self, operationId, data):
+        ow = OperationWidget(operationId=operationId,data=data)
+        self.template_args['operations'].append( ow )
+        
+class OperationWidget(RenderTemplateWidget):
+    template = None
+    
+    def __init__(self, **kwargs):
+        super(OperationWidget, self).__init__(**kwargs)
+        
+        if kwargs['operationId'] == 22:       
+            self.template = 'widgets/operation_proposal.html'   
+            
+            # add child operations
+            operation = kwargs['data']
+            self.template_args['title']     = 'Proposal' 
+            self.template_args['listItems'] = [ ( 'Fee', operation['fee']),
+                                    ( 'Fee paying account', operation['fee_paying_account']),
+                                    ( 'Expiration time', operation['expiration_time']) ]
+                        
+            for tmpOp in operation['proposed_ops']:
+                self.addOperation( tmpOp['op'][0], tmpOp['op'][1] )
+             
+        elif kwargs['operationId'] == 47:
+            self.template = 'widgets/operation_sport_create.html'
+        elif kwargs['operationId'] == 49:            
+            self.template = 'widgets/operation_event_group_create.html'
+        elif kwargs['operationId'] == 51:
+            self.template = 'widgets/operation_event_create.html'
+        elif kwargs['operationId'] == 53:
+            self.template = 'widgets/operation_betting_market_rule_create.html'
+        elif kwargs['operationId'] == 55:
+            self.template = 'widgets/operation_betting_market_group_create.html'
+        elif kwargs['operationId'] == 56:
+            self.template = 'widgets/operation_betting_market_create.html'
+        
+        else:
+            self.template = 'widgets/operation_unknown.html'
+
+    def addOperation(self, operationId, data):
+        if not self.template_args.get('operations'):
+            self.template_args['operations'] = []
+        
+        ow = OperationWidget(operationId=operationId,data=data)
+        self.template_args['operations'].append( ow )
+
+def prepareProposalsDataForRendering(proposals):
+    tmpList = []
+    for proposal in proposals:
+        # ensure the parent expiration time is the shortest time
+        if proposal['expiration_time'] < proposal['proposed_transaction']['expiration']:
+            raise Exception('Expiration times are differing')
+        
+        ocw = OperationsContainerWidget(
+                title='Proposal ' + proposal['id'],
+                listItems=[ ( 'Expiration time', proposal['expiration_time']),
+                             ( 'Review period time', proposal['review_period_time'])  ],
+                buttonNegative='Reject',
+                buttonPositive='Accept'
+            )
+        
+        for operation in proposal['proposed_transaction']['operations']:
+            ocw.addOperation( operation[0], operation[1] )
+            
+        tmpList.append(ocw)
+        
+    return tmpList
+
+def prepareTransactionDataForRendering(transaction):
+    # ensure the parent expiration time is the shortest time
+    if transaction.proposal_expiration < transaction.proposal_review:
+        raise Exception('Expiration times are differing')
+    
+    ocw = OperationsContainerWidget(
+                title='Current transaction details',
+                listItems=[ ( 'Proposer', transaction.proposer),
+                            ( 'Expiration time', transaction.proposal_expiration) ],
+                buttonNegative='Discard',
+                buttonPositive='Broadcast'
+            )
+    
+    tmp = transaction.get_parent().__repr__()
+    for operation in transaction.get_parent()['operations']:
+        ocw.addOperation( operation[0], operation[1] )
+    
+    return ocw
+
 def getMenuInfo():
     account = Node().getSelectedAccount();
     
-    currentTransaction = Node().getOpenTransaction()
+    currentTransaction = Node().getPendingTransaction()
     if not currentTransaction:
         operations = []
     else:
-        operations = Node().getOpenTransaction().ops
+        operations = Node().getPendingTransaction().ops
      
+    votableProposals = Node().getAllProposals()
         
     menuInfo = { 
             'account': { 'id': account.identifier, 
                          'name': account.name, 
                          'toString': account.identifier + ' - ' + account.name },
-            'numberOfOpenTransactions': len(operations)
+            'numberOfOpenTransactions': len(operations),
+            'numberOfVotableProposals': len(votableProposals)
                 }
     
     allAccounts = []
