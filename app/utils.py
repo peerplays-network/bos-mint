@@ -1,10 +1,11 @@
+# -*- coding: utf-8 -*-
+
 from flask import redirect, flash, url_for, request, render_template
 from flask_security import current_user
 from functools import wraps
 from datetime import datetime
 from app.node import Node
-from tkinter.constants import CURRENT
-from peerplays.cli.proposal import proposals
+from app.istring import InternationalizedString
 
 # dictionary to configure types (Sport, EventGroup, etc.) 
 #  title: human readable title
@@ -15,6 +16,7 @@ TYPENAMES = {
                  'bettingmarketgroup': {'title': 'Betting market group' },
                  'bettingmarket': {'title': 'Betting market' },
                  'bet': {'title': 'Bet' },
+                 'bettingmarketgrouprule': {'title': 'Betting market group rule'}
                }
 
     
@@ -27,28 +29,28 @@ TYPE_GET_ALL = { # get list of objects for typename, containing id, typeName and
       'eventgroup': lambda tmpSportId: [ { 
                                           'id' : x["id"], 
                                           'typeName': 'eventgroup',
-                                          'toString': x["id"] + ' - ' + x["name"][0][1]  
+                                          'toString': toString( x ),  
                                          } for x in Node().getEventGroups(tmpSportId) ],
       'event': lambda tmpEventGroupId: [ { 
                                           'id' : x["id"], 
                                           'typeName': 'event',
-                                          'toString': x["id"] + ' - ' + x["name"][0][1]  
+                                          'toString': toString( x ),  
                                          } for x in Node().getEvents(tmpEventGroupId) ], 
       'bettingmarketgroup': lambda tmpEventId: [ { 
                                           'id' : x["id"], 
                                           'typeName': 'bettingmarketgroup',
-                                          'toString': x["id"] + ' - ' + x["description"][0][1]  
+                                          'toString': toString( x ),  
                                          } for x in Node().getBettingMarketGroups(tmpEventId) ],
       'bettingmarket': lambda tmpBMGId: [ { 
                                           'id' : x["id"], 
                                           'typeName': 'bettingmarket',
-                                          'toString': x["id"] + ' - ' + x["description"][0][1]  
+                                          'toString': toString( x ),   
                                          } for x in Node().getBettingMarkets(tmpBMGId) ],
-      'bettingmarketrule': lambda unusedId: [ { 
+      'bettingmarketgrouprule': lambda unusedId: [ { 
                                           'id' : x["id"], 
-                                          'typeName': 'bettingmarketrule',
-                                          'toString': x["id"] + ' - ' + x["name"][0][1]  
-                                         } for x in Node().getBettingMarketRules() if x is not None ],
+                                          'typeName': 'bettingmarketgrouprule',
+                                          'toString': toString( x ),  
+                                         } for x in Node().getBettingMarketGroupRules() if x is not None ],
       'bet': lambda tmpBMGId: [  ], # not implemented yet
     }
 
@@ -57,6 +59,7 @@ TYPE_GET = { # get list of objects for typename, containing id, typeName and toS
       'eventgroup'        : lambda tmpId: Node().getEventGroup(tmpId),
       'event'             : lambda tmpId: Node().getEvent(tmpId), 
       'bettingmarketgroup': lambda tmpId: Node().getBettingMarketGroup(tmpId),
+      'bettingmarketgrouprule' : lambda tmpId: Node().getBettingMarketGroupRule(tmpId),
       'bettingmarket'     : lambda tmpId: Node().getBettingMarket(tmpId),
       'bet'               : lambda tmpId: None, # not implemented yet
     }
@@ -67,6 +70,7 @@ PARENTTYPE_GET = {
   'eventgroup'        : lambda tmpId: Node().getEventGroup(tmpId).sport.identifier,
   'event'             : lambda tmpId: Node().getEvent(tmpId).eventgroup.identifier,
   'bettingmarketgroup': lambda tmpId: Node().getBettingMarketGroup(tmpId).event.identifier,
+  'bettingmarketgrouprule' : lambda tmpId: None,
   'bettingmarket'     : lambda tmpId: Node().getBettingMarket(tmpId).bettingmarketgroup.identifier,
   'bet'               : lambda tmpId: tmpId,
 }
@@ -77,6 +81,7 @@ CHILD_TYPE = {
                  'eventgroup': 'event',
                  'event': 'bettingmarketgroup',
                  'bettingmarketgroup': 'bettingmarket',
+                 'bettingmarketgrouprule': None,
                  'bettingmarket': 'bet'
                }
 
@@ -86,13 +91,29 @@ PARENT_TYPE = {
                  'eventgroup': 'sport',
                  'event': 'eventgroup',
                  'bettingmarketgroup': 'event',
+                 'bettingmarketgrouprule': None,
                  'bettingmarket': 'bettingmarketgroup',
                  'bet': 'bettingmarket'
                }
 
 def toString(toBeFormatted):
+    def findEnglishOrFirst(listOfIStrings, desiredLanguage='en'):
+        return InternationalizedString.listToDict(listOfIStrings).get(desiredLanguage, listOfIStrings[0][1])
+        
     if toBeFormatted.get('name') and toBeFormatted.get('id'):
-        return toBeFormatted.get('name') + ' (' + toBeFormatted.get('id') + ')'
+        if isinstance( toBeFormatted.get('name'), list):
+            name = findEnglishOrFirst( toBeFormatted.get('name') )
+        else:
+            name = toBeFormatted.get('name')
+            
+        return name + ' (' + toBeFormatted.get('id') + ')'
+    elif toBeFormatted.get('description') and toBeFormatted.get('id'):
+        if isinstance( toBeFormatted.get('description'), list):
+            name = findEnglishOrFirst( toBeFormatted.get('description') )
+        else:
+            name = toBeFormatted.get('description')
+            
+        return name + ' (' + toBeFormatted.get('id') + ')'
     else:
         raise Exception 
 
@@ -198,7 +219,7 @@ def getMenuInfo():
 
 def processNextArgument(nextArg, default):
     if not nextArg:
-        return default
+        return url_for(default)
     
     if nextArg.startswith('/'):
         if nextArg:
@@ -211,4 +232,4 @@ def processNextArgument(nextArg, default):
                     return url_for(default)
     else:
         return nextArg
-             
+    

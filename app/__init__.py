@@ -29,7 +29,9 @@ app.config['MAIL_USE_SSL'] = False
 mail = Mail(app)
 
 # Config database
-app.config['SQLALCHEMY_DATABASE_URI'] = config["sql_database"]
+basedir = os.path.abspath(os.path.dirname(__file__))
+
+app.config['SQLALCHEMY_DATABASE_URI'] = config["sql_database"].format(cwd=basedir)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = config["debug"]
 db = SQLAlchemy(app)
@@ -40,13 +42,14 @@ app.config['ASSETS_DEBUG'] = config["debug"]
 # disable CSRF protection for now, fix and remove 
 app.config['WTF_CSRF_ENABLED'] = False
 
+from app import models
 
-# @app.before_first_request
-# def before_first_request():
-#     try:
-#         db.create_all()
-#     except Exception as e:
-#         app.logger.warning(str(e))
+@app.before_first_request
+def before_first_request():
+    try:
+        db.create_all()
+    except Exception as e:
+        app.logger.warning(str(e))
 
 
 @app.teardown_appcontext

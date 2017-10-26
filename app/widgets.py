@@ -38,6 +38,10 @@ class OperationsContainerWidget(RenderTemplateWidget):
         
         super(OperationsContainerWidget, self).__init__(**kwargs)
         
+    @property
+    def id(self):
+        return self.template_args['id']
+        
     def addOperation(self, operationId, data):
         ow = OperationWidget(operationId=operationId,data=data)
         self.template_args['operations'].append( ow )
@@ -77,7 +81,7 @@ class OperationWidget(RenderTemplateWidget):
 
 
 
-def prepareProposalsDataForRendering(proposals):
+def prepareProposalsDataForRendering(proposals, accountId=None):
     tmpList = []
     for proposal in proposals:
         # ensure the parent expiration time is the shortest time
@@ -96,9 +100,10 @@ def prepareProposalsDataForRendering(proposals):
         
         ocw = OperationsContainerWidget(
                 title='Proposal ' + proposal['id'],
+                id=proposal['id'],
                 listItems=tmpListItems,
                 buttonNegative='Reject',
-                buttonPositive='Accept',
+                buttonPositive='Approve',
                 buttonNegativeURL=url_for('votable_proposals_reject', proposalId=proposal['id']), 
                 buttonPositiveURL=url_for('votable_proposals_accept', proposalId=proposal['id'])
             )

@@ -7,7 +7,7 @@ from peerplays.eventgroup import EventGroups, EventGroup
 from peerplays.event import Events, Event
 from peerplays.bettingmarketgroup import BettingMarketGroup, BettingMarketGroups
 from peerplays.bettingmarket import BettingMarkets, BettingMarket
-from peerplays.rule import Rules
+from peerplays.rule import Rules, Rule
 from peerplays.proposal import Proposals
 
 class NodeException(Exception):
@@ -27,7 +27,7 @@ class NodeException(Exception):
 class NonScalableRequest(NodeException):
     def __init__(self):
         Exception.__init__(self)
-        self.message = 'This request would mean to much effort'
+        self.message = 'This request would mean to select all objects of this type, please select a parent'
         
 class BroadcastActiveOperationsExceptions(NodeException):
     def __init__(self):
@@ -149,9 +149,9 @@ class Node(object):
         except Exception as ex:
             raise NodeException(cause=ex)
         
-    def getAllProposals(self):
+    def getAllProposals(self, accountName="witness-account"):
         try:
-            return Proposals("witness-account", peerplays_instance=self.get_node())
+            return Proposals(accountName, peerplays_instance=self.get_node())
         except Exception as ex:
             raise NodeException(cause=ex)
         
@@ -247,11 +247,11 @@ class Node(object):
         except Exception as ex:
             raise NodeException(message="BettingMarketGroup could not be loaded", cause=ex)
         
-    def getBettingMarketRules(self):
+    def getBettingMarketGroupRules(self):
         try:
             return Rules(peerplays_instance=self.get_node()).rules
         except Exception as ex:
-            raise NodeException(message="BettingMarketRules could not be loaded", cause=ex)
+            raise NodeException(message="BettingMarketGroupRules could not be loaded", cause=ex)
         
     def getBettingMarketGroups(self, eventId):
         if not eventId:
@@ -264,6 +264,12 @@ class Node(object):
     def getBettingMarket(self, bmId):
         try:
             return BettingMarket(bmId, peerplays_instance=self.get_node())
+        except Exception as ex:
+            raise NodeException(message="BettingMarkets could not be loaded", cause=ex)
+        
+    def getBettingMarketGroupRule(self, bmgrId):
+        try:
+            return Rule(bmgrId, peerplays_instance=self.get_node())
         except Exception as ex:
             raise NodeException(message="BettingMarkets could not be loaded", cause=ex)
         
@@ -311,6 +317,13 @@ class Node(object):
             raise NodeException(cause=ex) 
         
     @proposedOperation
+    def createBettingMarketGroupRule(self, name, description):
+        try:
+            return self.get_node().betting_market_rules_create(name, description, self.getSelectedAccountName(), append_to=self.getPendingProposal() )
+        except Exception as ex:
+            raise NodeException(cause=ex) 
+        
+    @proposedOperation
     def updateSport(self, sportId, istrings):
         try:
             return self.get_node().sport_update( sportId, istrings, self.getSelectedAccountName(), append_to=self.getPendingProposal() ) 
@@ -335,6 +348,13 @@ class Node(object):
     def updateBettingMarketGroup(self, bmgId, description, eventId, rulesId, freeze=False, delayBets=False):
         try:
             return self.get_node().betting_market_group_update( bmgId, description, eventId, rulesId, freeze, delayBets, self.getSelectedAccountName(), append_to=self.getPendingProposal() ) 
+        except Exception as ex:
+            raise NodeException(cause=ex, message=ex.__str__()) 
+
+    @proposedOperation
+    def updateBettingMarketGroupRule(self, bmgrId, name, description):
+        try:
+            return self.get_node().betting_market_rules_update( bmgrId, name, description, self.getSelectedAccountName(), append_to=self.getPendingProposal() ) 
         except Exception as ex:
             raise NodeException(cause=ex, message=ex.__str__()) 
 

@@ -1,46 +1,55 @@
-from app.forms import TranslatedFieldForm, NewWalletForm, GetAccountForm
-from app.models import InternationalizedString, LanguageNotFoundException
+from app.forms import TranslatedFieldForm, NewWalletForm, GetAccountForm,\
+    ApprovalForm
+from app.istring import InternationalizedString, LanguageNotFoundException
 from app.node import Node, NodeException, NonScalableRequest, BroadcastActiveOperationsExceptions
 from app.utils import render_template_menuinfo
 from flask import render_template, redirect, request, session, flash, url_for, make_response, abort
-from wtforms import FormField
+from wtforms import FormField, SubmitField
 
 from . import app, db, forms, config
 from .utils import unlocked_wallet_required
 from app import utils, widgets
 from peerplays.exceptions import WalletExists
+from app.models import LocalProposal, ViewConfiguration
 
 # InternationalizedString = namedtuple('InternationalizedString', ['country', 'text'])
 # Sport = namedtuple('Sport', ['names', 'submit'])
 ###############################################################################
 # Homepage
 ###############################################################################
+
+
 @app.route('/')
 def index():
     return redirect(url_for('overview'))
+
 
 @app.route('/lock', methods=['GET', 'POST'])
 def lock():
     Node().lock()
     return redirect(url_for('overview'))
 
+
 @app.route('/unlock', methods=['GET', 'POST'])
 def unlock():
     unlockForm = forms.UnlockForm()
 
     if unlockForm.validate_on_submit():
-        return redirect(utils.processNextArgument( request.args.get('next'), url_for('overview'))) 
+        return redirect(utils.processNextArgument(
+            request.args.get('next'), url_for('overview')))
 
     return render_template_menuinfo('unlock.html', **locals())
+
 
 @app.route('/account/info')
 def account_info():
     account = Node().getSelectedAccount()
-    
+
     form = forms.AccountForm()
-    form.fill( account )
-    
+    form.fill(account)
+
     return render_template_menuinfo("account.html", **locals())
+
 
 @app.route("/account/select/<accountId>", methods=['GET', 'POST'])
 def account_select(accountId):
@@ -49,114 +58,171 @@ def account_select(accountId):
         flash('Account ' + accountName + ' selected!')
     except BroadcastActiveOperationsExceptions as e:
         flash(e.message, category='error')
-        return redirect( url_for('pending_operations') )
+        return redirect(url_for('pending_operations'))
     except NodeException as e:
         flash(e.message, category='error')
-        return redirect( url_for('overview') )
+        return redirect(url_for('overview'))
     except Exception as e:
         flash(e.__repr__(), category='error')
-             
-    return redirect(utils.processNextArgument( request.args.get('next'), url_for('overview'))) 
+
+    return redirect(utils.processNextArgument(
+        request.args.get('next'), url_for('overview')))
+
 
 @app.route("/account/add", methods=['GET', 'POST'])
 @unlocked_wallet_required
 def account_add():
     form = GetAccountForm()
     formTitle = "Add Account to wallet"
-     
-    if form.validate_on_submit(): # submit checks if account exists
+
+    if form.validate_on_submit():
+        # submit checks if account exists
         try:
-            Node().addAccountToWallet( form.privateKey.data )
+            Node().addAccountToWallet(form.privateKey.data)
         except Exception as e:
-            flash('There was a problem adding the account to the wallet.', category='error')
-        
-        redirect(utils.processNextArgument( request.args.get('next'), url_for('overview'))) 
-             
+            flash('There was a problem adding the account to the wallet.', 
+                  category='error')
+
+        redirect(utils.processNextArgument(
+            request.args.get('next'), url_for('overview'))) 
+
     return render_template_menuinfo('generic.html', **locals())
+
 
 @app.route("/wallet/new", methods=['GET', 'POST'])
 def newwallet():
     form = NewWalletForm()
     formTitle = "Enter password to create new wallet"
     formMessage = "A local wallet will be automatically created. This local wallet is encrypted with your password, and will contain any private keys belonging to your accounts. It is important that you take the time to backup this wallet once created!"
-    
+
     if form.validate_on_submit():
         try:
-            Node().wallet_create( form.password.data ) 
-            return redirect(utils.processNextArgument( request.args.get('next'), 'index'))
+            Node().wallet_create(form.password.data)
+            return redirect(utils.processNextArgument(
+                request.args.get('next'), 'index'))
         except WalletExists as e:
             flash('There is already an open wallet.', category='error')
         except Exception as e:
             flash(e.__repr__(), category='error')
-            
+
     return render_template_menuinfo('generic.html', **locals())
 
+
 @app.route('/overview')
+@app.route('/overview/<typeName>')
 @app.route('/overview/<typeName>/<identifier>')
 def overview(typeName=None, identifier=None):
     # selected ids
-    selected = { }
-    
-    # same structure for all chain elements    
-    def buildChainElement( tmpList, title, typeName ):
-        return { 'list':     tmpList,
-                 'title':    title,
-                 'typeName': typeName }
-    
+    selected = {}
+
+    # same structure for all chain elements
+    def buildChainElement(tmpList, title, typeName):
+        if typeName == 'bettingmarketgroup':
+            return { 'list':     tmpList,
+                    'title':    title,
+                 'typeName': typeName,
+                'extraLink': [ {'title': 'Create ' + utils.getTitle('bettingmarketgrouprule'),
+                                 'link':  'bettingmarketgrouprule_new',
+                                 'icon': 'plus' },
+                               {'title': 'List ' + utils.getTitle('bettingmarketgrouprule') + 's',
+                                 'link':  'overview',
+                             'argument': ('typeName', 'bettingmarketgrouprule'),
+                                 'icon': 'unhide' }
+                                ] }
+        else:
+            return { 'list':     tmpList,
+                    'title':    title,
+                    'typeName': typeName }
+
     # build reverse chain starting with the one selected
     reverseChain = []
-    if typeName:
-        tmpTypeName   = utils.getChildType(typeName)
+    if typeName and identifier:
+        tmpTypeName = utils.getChildType(typeName)
+    elif typeName and not identifier:
+        # overview of desired typeName
+        tmpTypeName = typeName
     else:
         # in this case the user only wants the sports
         tmpTypeName = 'sport'
 
     # reverse through all parents starting with the type given by typeName
-    tmpParentIdentifier = identifier 
+    tmpParentIdentifier = identifier
     while tmpTypeName and not tmpTypeName == 'sport':
         try:
             # build chain element for tmpTypeName
-            tmpChainElement = buildChainElement( utils.getTypesGetter(tmpTypeName)(tmpParentIdentifier), utils.getTitle(tmpTypeName), tmpTypeName )
+            tmpChainElement = buildChainElement(
+                utils.getTypesGetter(tmpTypeName)(tmpParentIdentifier),
+                utils.getTitle(tmpTypeName), tmpTypeName)
         except NodeException as e:
             flash(e.message, category='error')
-            return render_template_menuinfo('index.html', **locals())
+            return redirect(url_for('overview'))
         
         tmpTypeName   = utils.getParentType(tmpTypeName)
-        selected[tmpTypeName]      = tmpParentIdentifier
-        tmpParentIdentifier = utils.getParentTypeGetter(tmpTypeName)(tmpParentIdentifier)
+        if tmpTypeName:
+            selected[tmpTypeName]      = tmpParentIdentifier
+            tmpParentIdentifier = utils.getParentTypeGetter(tmpTypeName)(tmpParentIdentifier)
                         
-        reverseChain.append( tmpChainElement )
+        if isinstance(tmpChainElement, list):
+            for item in tmpChainElement:
+                reverseChain.append( item )
+        else:
+            reverseChain.append( tmpChainElement )
        
-    listChain = buildChainElement( utils.getTypesGetter('sport')(None), utils.getTitle('sport'), 'sport' )
+    if tmpTypeName == 'sport':
+        sportElement = buildChainElement( utils.getTypesGetter('sport')(None), utils.getTitle('sport'), 'sport' )
+        reverseChain.append( sportElement )
     
     reverseChain.reverse()
+    listChain = reverseChain[0]
     if reverseChain:
-        tmpChainElement = listChain
+        tmpChainElement = []
         for chainElement in reverseChain:
-            
-            tmpChainElement["nextChainElement"] = chainElement
+            if tmpChainElement:
+                tmpChainElement["nextChainElement"] = chainElement
+                
             tmpChainElement = chainElement
                    
     del tmpTypeName, tmpParentIdentifier
                
     return render_template_menuinfo('index.html', **locals())
 
-@app.route("/pending/discard")
+@app.route("/pending/discard", methods=['GET', 'POST'])
 @unlocked_wallet_required
 def pending_operations_discard():
     Node().discardPendingTransaction()
     flash('All pending operations have been discarded.')
+    
+    if session.get('automatic_approval', False):
+        pass
+    
     return redirect(url_for('pending_operations'))
 
-@app.route("/pending/broadcast")
+@app.route("/pending/broadcast", methods=['POST'])
 @unlocked_wallet_required
 def pending_operations_broadcast():
-    Node().broadcastPendingTransaction()
-    flash('All pending operations have been broadcasted.')        
-    return redirect(url_for('pending_operations'))
-
-@app.route("/pending", methods=['post','get'])
+    if ViewConfiguration.get('automatic_approval', 'enabled', False):
+        Node().get_node().blocking = True
+    
+    try:
+        answer = Node().broadcastPendingTransaction()
+        
+        if ViewConfiguration.get('automatic_approval', 'enabled', False):
+            proposalId = answer['trx']['operation_results'][0][1]
+            flash('All pending operations have been broadcasted and the resulting proposal has been approved.')
+            Node().acceptProposal(proposalId)
+        else:
+            flash('All pending operations have been broadcasted.')
+        
+        return redirect(url_for('pending_operations'))  
+    except Exception as e:
+        Node().get_node().blocking = False
+        raise e
+        
+@app.route("/pending", methods=['get'])
 def pending_operations():
+    form = ApprovalForm()
+    form.approve.data = ViewConfiguration.get('automatic_approval', 'enabled', False)
+        
     # construct operationsform from active transaction
     transaction = Node().getPendingTransaction()
     if transaction:
@@ -165,26 +231,59 @@ def pending_operations():
             
     return render_template_menuinfo("pendingOperations.html", **locals())
 
+@app.route("/pending/automaticapproval", methods=['post'])
+def automatic_approval():
+    form = ApprovalForm()
+        
+    if form.validate_on_submit(): 
+        ViewConfiguration.set('automatic_approval', 'enabled', form.approve.data)
+                    
+    return redirect(url_for('pending_operations'))
+
 @app.route("/proposals", methods=['post','get'])
 def votable_proposals():
-    proposals = Node().getAllProposals()
-    if proposals:
-        containerList = widgets.prepareProposalsDataForRendering(proposals) 
-    del proposals
-    
-    return render_template_menuinfo("votableProposals.html", **locals())
+    try:
+        proposals = Node().getAllProposals()
+        if proposals:
+            accountId = Node().getSelectedAccount()['id']
+            
+            containerList = widgets.prepareProposalsDataForRendering(proposals)
+            containerReview = {}
+            reviewedProposals = LocalProposal.getAllAsList()
+            
+            for proposal in proposals:
+                if proposal['id'] in reviewedProposals:
+                    # if the proposal is stored in the localproposals database it already has been reviewed, but maybe 
+                    # rejected
+                    containerReview[proposal['id']] = {'reviewed': True, 'approved': accountId in proposal.get('available_active_approvals') }
+                elif accountId in proposal.get('available_active_approvals'):
+                    # already approved ones also go into the reviewed column, even without a localproposal entry
+                    containerReview[proposal['id']] = {'reviewed': True, 'approved': True }
+             
+        del proposals
+        
+        return render_template_menuinfo("votableProposals.html", **locals())
+    except NodeException as e:
+        flash(e.message, category='error')
+        return redirect(url_for("overview"))
 
 @app.route("/proposals/accept/<proposalId>", methods=['post','get'])
 @unlocked_wallet_required
 def votable_proposals_accept(proposalId):
     Node().acceptProposal(proposalId)
+    LocalProposal.wasReviewed(proposalId)
     flash('Proposal (' + proposalId + ') has been accepted')
     return redirect(url_for('votable_proposals'))
 
 @app.route("/proposals/reject/<proposalId>", methods=['post','get'])
 @unlocked_wallet_required
 def votable_proposals_reject(proposalId):
-    Node().rejectProposal(proposalId)
+    try:
+        Node().rejectProposal(proposalId)
+    except Exception as e:
+        pass
+    
+    LocalProposal.wasReviewed(proposalId)
     flash('Proposal (' + proposalId + ') has been rejected')
     return redirect(url_for('votable_proposals'))
 
@@ -248,6 +347,11 @@ def event_new(parentId):
 def bettingmarketgroup_new(parentId): 
     return genericNewForm( forms.NewBettingMarketGroupForm, parentId )
 
+@app.route("/bettingmarketgrouprule/new", methods=['post','get'])
+@unlocked_wallet_required
+def bettingmarketgrouprule_new(parentId=None): 
+    return genericNewForm( forms.NewBettingMarketGroupRuleForm )
+
 @app.route("/bettingmarket/new/<parentId>", methods=['post','get'])
 @unlocked_wallet_required
 def bettingmarket_new(parentId): 
@@ -258,7 +362,7 @@ def bettingmarket_new(parentId):
 def bet_new(): 
     return render_template_menuinfo('index.html', **locals())
 
-def genericUpdate(formClass, selectId):
+def genericUpdate(formClass, selectId, removeSubmits=False):
     typeName = formClass.getTypeName()
     
     selectFunction  = utils.getTypeGetter(typeName)
@@ -282,7 +386,7 @@ def genericUpdate(formClass, selectId):
         return render_template_menuinfo("update.html", **locals())
     
     typeNameTitle = utils.getTitle(typeName)
-    
+        
     if not selectId:
         if form.submit.data:
             return redirect(url_for(typeName + '_update', selectId=form.select.data))
@@ -302,12 +406,31 @@ def genericUpdate(formClass, selectId):
         return render_template_menuinfo("update.html", **locals())
     
     form.init(selectedObject)
-    
+            
     # first request? populate selected object
     if not form.submit.data:
         # preselect 
         form.select.data = selectId
         form.fill(selectedObject)
+        
+    if removeSubmits:
+        typeNameAction = 'Details of'
+#         del form.submit
+        for fieldName in form._fields.keys():
+            field = form._fields[fieldName]
+#                 
+            if isinstance(field, SubmitField):
+                delattr(form, fieldName)
+            elif isinstance(field, FormField):
+                for subfieldName in field.form._fields.keys():
+                    subField = field.form._fields[subfieldName]
+                    if isinstance(subField, SubmitField):
+                        delattr(field.form, subfieldName)
+                        
+        return render_template_menuinfo("update.html", **locals())
+    
+    else:
+        typeNameAction = 'Update'
     
     if form.validate_on_submit(): # user submitted, wants to change  
         # all data was entered correctly, validate and update sport
@@ -353,5 +476,41 @@ def bettingmarket_update(selectId=None):
     formClass = forms.NewBettingMarketForm
     return genericUpdate(formClass, selectId )
 
+@app.route("/bettingmarketgrouprule/update", methods=['post','get'])
+@app.route("/bettingmarketgrouprule/update/<selectId>", methods=['post','get'])
+@unlocked_wallet_required
+def bettingmarketgrouprule_update(selectId=None):
+    formClass = forms.NewBettingMarketGroupRuleForm
+    return genericUpdate(formClass, selectId )
 
+@app.route("/sport/details/<selectId>")
+def sport_details(selectId):
+    return genericUpdate(forms.NewSportForm, selectId, True )
+
+@app.route("/eventgroup/details/<selectId>")
+def eventgroup_details(selectId):
+    formClass = forms.NewEventGroupForm
+    
+    return genericUpdate(formClass, selectId, True )
+    
+@app.route("/event/details/<selectId>")
+def event_details(selectId):
+    formClass = forms.NewEventForm
+                    
+    return genericUpdate(formClass, selectId, True )
+    
+@app.route("/bettingmarketgroup/details/<selectId>")
+def bettingmarketgroup_details(selectId):
+    formClass = forms.NewBettingMarketGroupForm
+    return genericUpdate(formClass, selectId, True )
+
+@app.route("/bettingmarketgrouprule/details/<selectId>")
+def bettingmarketgrouprule_details(selectId):
+    formClass = forms.NewBettingMarketGroupRuleForm
+    return genericUpdate(formClass, selectId, True )
+    
+@app.route("/bettingmarket/details/<selectId>")
+def bettingmarket_details(selectId):
+    formClass = forms.NewBettingMarketForm
+    return genericUpdate(formClass, selectId, True )
     

@@ -20,11 +20,16 @@
      href="{{ url_for('overview', typeName=entry['typeName'], identifier=entry['id'] ) }}">
  	  	{{ entry['toString'] }}
   </a>
-   <div class="ui inline dropdown">
+   <div class="ui right inline dropdown">
     <i class="dropdown icon"></i>
     <div class="menu">
+      <a class="item" href="{{ url_for(entry['typeName'] + '_details', selectId=entry['id'], next=request.path ) }}">
+      	<i title="Details" class="large unhide icon"></i>
+      	Details
+      </a>
       <a class="item" href="{{ url_for(entry['typeName'] + '_update', selectId=entry['id'], next=request.path ) }}">
-      	<i title="Update" class="large edit icon"></i>Update
+      	<i title="Update" class="large edit icon"></i>
+      	Update
       </a>
     </div>
   </div>
@@ -39,6 +44,17 @@
   <a class="item" href="{{ url_for(listChain['typeName'] + '_new', next=request.path) }}">
   {% endif %}
   <span><i class="small plus icon"></i> Create {{ listChain['title'] }}</span></a>
+  {% if listChain['extraLink'] %}
+  {% for extra in listChain['extraLink'] %}
+  	{% if extra['argument'] %}
+  		<a class="item" href="{{ url_for(extra['link']) }}/{{extra['argument'][1]}}"><!-- this a hack, look up proper JinJa2 -->
+  	{% else %}
+  		<a class="item" href="{{ url_for(extra['link'] ) }}">
+	{% endif %}
+  	<span><i class="small {{ extra['icon'] }} icon"></i> {{ extra['title'] }}</span></a>
+  {% endfor %}
+  {% endif %}
+  
 </div>
 {% if listChain['nextChainElement'] %}
 {{ popListChainMenuStyle( listChain['nextChainElement'], listChain ) }}

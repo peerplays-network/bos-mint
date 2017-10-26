@@ -33,8 +33,7 @@
     <!-- Header Menu -->
 	<div class="right menu">
 		 {% if menuInfo %}
-			 <a title="Lists all operations to be proposed" class="item" href="{{ url_for('pending_operations') }}"><i class="large in cart icon"></i> {{ menuInfo["numberOfOpenTransactions"] }}</a>
-			 <div class="ui dropdown right item"><!-- <table><tr><td>Account</td></tr><tr><td> -->{{menuInfo['account']['toString']}}<!-- </td></tr></table> --> 
+		 	<div class="ui dropdown right item"><!-- <table><tr><td>Account</td></tr><tr><td> -->{{menuInfo['account']['toString']}}<!-- </td></tr></table> --> 
 			 	<i class="dropdown icon"></i>
 			 	<div class="menu">
 	   			<!-- <a class="item" href="{{ url_for('pending_operations') }}">Pending Operations</a>
@@ -50,11 +49,12 @@
 				 </div>
 	  			</div>
 			 </div>
+			 <a title="Lists all operations to be proposed" class="item" href="{{ url_for('pending_operations') }}"><i class="large in cart icon"></i> {{ menuInfo["numberOfOpenTransactions"] }}</a>
 			 {% if menuInfo["walletLocked"] %}
-			 	<a class="item" href="{{ url_for('unlock') }}">Wallet <i class="lock icon"></i></a>
+			 	<a title="Local wallet is locked. Click to unlock" class="item" href="{{ url_for('unlock') }}"><i class="lock icon"></i></a>
 			 {% else %}
-			 	<a class="item" href="{{ url_for('lock') }}">Wallet <i class="unlock icon"></i></a>
-			 {% endif %}
+			 	<a title="Local wallet is unlocked. Click to lock" class="item" href="{{ url_for('lock') }}"><i class="unlock icon"></i></a>
+			 {% endif %}			 
 		 {% else %}
 		 <a class="item" href="{{ url_for('account_activate') }}">Choose Account</a> 
 		 {% endif %}
@@ -68,7 +68,7 @@
   </div>
 
   <!-- Block Content Wrapper -->
-  <div class="ui main container ">
+  <div class="ui main container">
    <div class="ui grid">
     <div class="column">
      <!-- Block Content Begin -->

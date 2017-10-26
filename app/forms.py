@@ -27,7 +27,7 @@ from wtforms.validators import (
     Optional,
     NumberRange
 )
-from app.models import InternationalizedString, LanguageNotFoundException
+from app.istring import InternationalizedString, LanguageNotFoundException
 from app.node import Node
 import datetime
 from app import views, utils
@@ -136,7 +136,7 @@ class NewWalletForm(FlaskForm):
 class GetAccountForm(FlaskForm):
     name     = TextField('Name', validators=[Optional()])
     password = PasswordField('Password', validators=[Optional()])
-    role     = TextField('Role', validators=[Optional()])
+    role     = TextField('Role', validators=[Optional()], default='active', render_kw={'disabled': True})
     
     privateKey     = TextField('Private Key (will be calculated from above information if not given)', validators=[Optional()])
     submit = SubmitField("Login")
@@ -247,7 +247,7 @@ class NewEventForm(FlaskForm):
 class NewBettingMarketGroupForm(FlaskForm):
     event = SelectField("Event", validators=[DataRequired()], choices=None)
     description   = FormField(TranslatedFieldForm)
-    bettingmarketrule = SelectField("Betting market rule", validators=[DataRequired()], choices=selectDictToList(utils.getTypesGetter('bettingmarketrule')(None)))
+    bettingmarketrule = SelectField("Betting market group rule", validators=[DataRequired()], choices=selectDictToList(utils.getTypesGetter('bettingmarketgrouprule')(None)))
     asset = TextField(label='Asset', render_kw={'disabled': True})
     submit = SubmitField("Submit")
     
@@ -324,6 +324,31 @@ class NewBettingMarketForm(FlaskForm):
                                   InternationalizedString.parseToList(self.description),  
                                   self.bettingmarketgroup.data)
     
+class NewBettingMarketGroupRuleForm(FlaskForm):
+    name        = FormField(TranslatedFieldForm, label="Name")
+    description = FormField(TranslatedFieldForm, label="Description")
+    submit = SubmitField("Submit")
+    
+    @classmethod
+    def getTypeName(cls):
+        return 'bettingmarketgrouprule'
+    
+    def init(self, selectedObject, default=None):
+        pass
+        
+    def fill(self, selectedObject):
+        self.name.fill( selectedObject['name'] )
+        self.description.fill( selectedObject['description'] )
+        
+    def create(self):
+        return Node().createBettingMarketGroupRule(InternationalizedString.parseToList(self.name),
+                                  InternationalizedString.parseToList(self.description))
+        
+    def update(self, selectedId):
+        return Node().updateBettingMarketGroupRule(selectedId, 
+                                  InternationalizedString.parseToList(self.name),
+                                  InternationalizedString.parseToList(self.description))
+    
 # class OperationForm(FlaskForm):
 #     name  = StringField(label='Name', render_kw = { 'disabled' : True }) 
 #     
@@ -331,23 +356,31 @@ class NewBettingMarketForm(FlaskForm):
 # #     submit     = SubmitField("Broadcast")
 #     pass
         
+class ApprovalForm(FlaskForm):
+    approve = BooleanField()
+        
 class AmountForm(FlaskForm):
     symbol = TextField(label='Asset', validators=[DataRequired()], render_kw={'disabled' : True})
     
 class AccountForm(FlaskForm):
     id   = TextField(label='Id', validators=[DataRequired()], render_kw={'disabled' : True})
     name = TextField(label='Name', validators=[DataRequired()], render_kw={'disabled' : True})
-    membershipExpirationDate = TextField(label='Membership expiration', validators=[DataRequired()], render_kw={'disabled' : True})
+    
+    #membershipExpirationDate = TextField(label='Membership expiration', validators=[DataRequired()], render_kw={'disabled' : True})
     
     balances = FieldList(FormField(AmountForm, label=''), label='Balances', min_entries=0)
     
     def fill(self, account):
         self.id.data = account['id']
         self.name.data = account['name']
-        self.membershipExpirationDate.data = account['membership_expiration_date']
+        
+        # self.membershipExpirationDate.data = account['membership_expiration_date']
         
         for balance in account.balances:
             tmpForm = AmountForm()
             tmpForm.symbol  = str(balance.amount) + ' ' + balance.symbol
             self.balances.append_entry( tmpForm )
+
+
+
 
