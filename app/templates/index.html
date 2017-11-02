@@ -31,6 +31,12 @@
       	<i title="Update" class="large edit icon"></i>
       	Update
       </a>
+      {% for sublink in entry['extraLink'] %}
+  	  	<a class="item" href="{{ url_for(sublink['link'], selectId=entry['id'], next=request.path) }}">
+      		<i title="{{ sublink['title'] }}" class="large {{ sublink['icon'] }} icon"></i>
+      		{{ sublink['title'] }}
+      	</a>
+      {% endfor %}
     </div>
   </div>
   </div>

@@ -34,38 +34,46 @@ from app import views, utils
 from peerplays.event import Event
 from peerplays.bettingmarketgroup import BettingMarketGroup
 from peerplays.eventgroup import EventGroup
+from peerplays.bettingmarket import BettingMarket
+
 
 def selectDictToList(sourceDictionary):
-    return [ (x['id'], x['toString']) for x in sourceDictionary ]
-    
+    return [(x['id'], x['toString']) for x in sourceDictionary]
+
+
 def buildUpdateForm(typeName, selectChoices, newFormClass, selected=None):
-    # All objects have their own Form for their creation. This reuses those forms and adds 
-    # a selection field
+    # All objects have their own Form for their creation. This reuses those
+    # forms and adds a selection field
     class _UpdateForm(FlaskForm):
         pass
-    
+
     selectChoices = selectDictToList(selectChoices)
 
     # select is the preselected default. if set, choice field gets disabled
     if not selected:
-        select = SelectField(label=utils.getTitle(typeName), validators=[DataRequired()], choices=selectChoices)
+        select = SelectField(label=utils.getTitle(typeName),
+                             validators=[DataRequired()],
+                             choices=selectChoices)
     else:
-        select = SelectField(label=utils.getTitle(typeName), validators=[DataRequired()], choices=selectChoices, render_kw={"disabled": True})
-    
-    if selected:   
+        select = SelectField(label=utils.getTitle(typeName),
+                             validators=[DataRequired()],
+                             choices=selectChoices,
+                             render_kw={"disabled": True})
+
+    if selected:
         select.data = selected
-        
+
     setattr(_UpdateForm, 'select', select)
-    
+
     # readjust creation counter for display ordering of fields
     baseCounter = select.creation_counter;
-    
+
     for idx, entry in enumerate(newFormClass.__dict__.items()):
         if not entry[0].startswith('_'):
             if (not selected and entry[0].startswith('submit')) or selected:
                 entry[1].creation_counter = baseCounter + idx + 1
                 setattr(_UpdateForm, entry[0], entry[1]) 
-    
+
     form = _UpdateForm()
     return form
 
@@ -158,210 +166,237 @@ class GetAccountForm(FlaskForm):
                 return False
         else:
             return False
-            
+
+
 class NewSportForm(FlaskForm):
-    name   = FormField(TranslatedFieldForm)
+    name = FormField(TranslatedFieldForm)
     submit = SubmitField("Submit")
-    
+
     @classmethod
     def getTypeName(cls):
         return 'sport'
-    
+
     def init(self, selectedObject, defaultSelectedId=None):
         pass
-        
+
     def fill(self, selectedObject):
-        self.name.fill( selectedObject['name'] )
-        
+        self.name.fill(selectedObject['name'])
+
     def create(self):
-        return Node().createSport( InternationalizedString.parseToList(self.name.translations) )
-        
+        return Node().createSport(
+            InternationalizedString.parseToList(self.name.translations))
+
     def update(self, selectedId):
-        return Node().updateSport( selectedId, InternationalizedString.parseToList(self.name) )
+        return Node().updateSport(selectedId, 
+                                  InternationalizedString.parseToList(self.name))
+
 
 class NewEventGroupForm(FlaskForm):
-    sport  = SelectField("Sport", validators=[DataRequired()], choices=Node().getSportsAsList())
-    name   = FormField(TranslatedFieldForm)
+    sport = SelectField("Sport", validators=[DataRequired()],
+                        choices=None)
+    name = FormField(TranslatedFieldForm)
     submit = SubmitField("Submit")
-    
+
     @classmethod
     def getTypeName(cls):
         return 'eventgroup'
-    
+
     def init(self, selectedObject, default=None):
+        self.sport.choices = selectDictToList(
+             utils.getComprisedTypesGetter('sport')(None))
         if default:
             self.sport.data = default['parentId']
-        
+
     def fill(self, selectedObject):
         self.sport.data = selectedObject.sport['id']
-        self.name.fill( selectedObject['name'] )
-        
+        self.name.fill(selectedObject['name'])
+
     def create(self):
-        return Node().createEventGroup( InternationalizedString.parseToList(self.name), self.sport.data )
-        
+        return Node().createEventGroup(InternationalizedString.parseToList(self.name), self.sport.data)
+
     def update(self, selectedId):
-        return Node().updateEventGroup( selectedId, InternationalizedString.parseToList(self.name), self.sport.data )
-        
-    
+        return Node().updateEventGroup(selectedId, InternationalizedString.parseToList(self.name), self.sport.data)
+
+
 class NewEventForm(FlaskForm):
-    eventgroup = SelectField("Event group", validators=[DataRequired()], choices=None)
-    name   = FormField(TranslatedFieldForm, label="Name")
+    eventgroup = SelectField("Event group",
+                             validators=[DataRequired()], choices=None)
+    name = FormField(TranslatedFieldForm, label="Name")
     season = FormField(TranslatedFieldForm, label="Season")
-    start  = DateTimeField("Start", format='%Y-%m-%d %H:%M:%S', default=datetime.datetime.now(), validators=[DataRequired()])
+    start = DateTimeField("Start", format='%Y-%m-%d %H:%M:%S',
+                          default=datetime.datetime.now(),
+                          validators=[DataRequired()])
     submit = SubmitField("Submit")
-    
+
     @classmethod
     def getTypeName(cls):
         return 'event'
-    
+
     def init(self, selectedObject, default=None):
         sportId = None
-        if isinstance( selectedObject, EventGroup ):
+        if isinstance(selectedObject, EventGroup):
             sportId = selectedObject['sport_id']
-        else:
+        elif isinstance(selectedObject, Event):
             sportId = selectedObject.eventgroup.sport['id']
-            
+        elif isinstance(selectedObject, dict) and selectedObject.get('parentId', None):
+            sportId = selectedObject.get('parentId')
+
         # choices need to be filled at all times
-        self.eventgroup.choices = selectDictToList(utils.getTypesGetter('eventgroup')(sportId))
+        self.eventgroup.choices = selectDictToList(
+            utils.getComprisedTypesGetter('eventgroup')(sportId))
         if default:
             self.eventgroup.data = default['parentId']
-        
+
     def fill(self, selectedObject):
         self.eventgroup.data = selectedObject.eventgroup['id']
-        self.name.fill( selectedObject['name'] )
-        self.season.fill( selectedObject['season'] )
-        
+        self.name.fill(selectedObject['name'])
+        self.season.fill(selectedObject['season'])
+
     def create(self):
-        return Node().createEvent(InternationalizedString.parseToList(self.name), 
-                                  InternationalizedString.parseToList(self.season),
-                                  self.start.data,
-                                  self.eventgroup.data )
-        
-    def update(self, selectedId):
-        return Node().updateEvent(selectedId, 
-                                  InternationalizedString.parseToList(self.name), 
+        return Node().createEvent(InternationalizedString.parseToList(self.name),
                                   InternationalizedString.parseToList(self.season),
                                   self.start.data,
                                   self.eventgroup.data)
-    
+
+    def update(self, selectedId):
+        return Node().updateEvent(selectedId,
+                                  InternationalizedString.parseToList(self.name),
+                                  InternationalizedString.parseToList(self.season),
+                                  self.start.data,
+                                  self.eventgroup.data)
+
+
 class NewBettingMarketGroupForm(FlaskForm):
     event = SelectField("Event", validators=[DataRequired()], choices=None)
-    description   = FormField(TranslatedFieldForm)
-    bettingmarketrule = SelectField("Betting market group rule", validators=[DataRequired()], choices=selectDictToList(utils.getTypesGetter('bettingmarketgrouprule')(None)))
+    description = FormField(TranslatedFieldForm)
+    bettingmarketrule = SelectField("Betting market group rule",
+                                    validators=[DataRequired()],
+                                    choices=selectDictToList(
+                                        utils.getComprisedTypesGetter('bettingmarketgrouprule')(None)))
     asset = TextField(label='Asset', render_kw={'disabled': True})
     submit = SubmitField("Submit")
-    
+
     @classmethod
     def getTypeName(cls):
         return 'bettingmarketgroup'
-    
+
     def init(self, selectedObject, default=None):
         # choices need to be filled at all times
         eventGroupId = None
-        if isinstance( selectedObject, Event ):
+        if isinstance(selectedObject, Event):
             eventGroupId = selectedObject['event_group_id']
-        else:
+        elif isinstance(selectedObject, BettingMarketGroup):
             eventGroupId = selectedObject.event['event_group_id']
-            
-        self.event.choices = selectDictToList(utils.getTypesGetter('event')(eventGroupId))
+        elif isinstance(selectedObject, dict) and selectedObject.get('parentId', None):
+            eventGroupId = selectedObject.get('parentId')
+
+        self.event.choices = selectDictToList(
+            utils.getComprisedTypesGetter('event')(eventGroupId))
         if default:
             self.event.data = default['parentId']
-            
+
         self.asset.data = 'PPY'
-        
+
     def fill(self, selectedObject):
-        self.event.data    = selectedObject['event_id']
+        self.event.data = selectedObject['event_id']
         self.bettingmarketrule.data = selectedObject['rules_id']
-        self.description.fill( selectedObject['description'] )
-        
+        self.description.fill(selectedObject['description'])
+
     def create(self):
-        return Node().createBettingMarketGroup(InternationalizedString.parseToList(self.description), 
-                                               self.event.data,
-                                               self.bettingmarketrule.data, 
-                                               self.asset.data)
-        
+        return Node().createBettingMarketGroup(
+                        InternationalizedString.parseToList(self.description),
+                        self.event.data,
+                        self.bettingmarketrule.data,
+                        self.asset.data)
+
     def update(self, selectedId):
-        return Node().updateBettingMarketGroup(selectedId, 
-                                  InternationalizedString.parseToList(self.description), 
-                                  self.event.data,
-                                  self.bettingmarketrule.data)
-    
+        return Node().updateBettingMarketGroup(
+                        selectedId,
+                        InternationalizedString.parseToList(self.description),
+                        self.event.data,
+                        self.bettingmarketrule.data)
+
+
 class NewBettingMarketForm(FlaskForm):
-    bettingmarketgroup = SelectField("Betting market group", validators=[DataRequired()], choices=None)
-    description     = FormField(TranslatedFieldForm, label="Description")
+    bettingmarketgroup = SelectField("Betting market group", 
+                                     validators=[DataRequired()], choices=None)
+    description = FormField(TranslatedFieldForm, label="Description")
     payoutCondition = FormField(TranslatedFieldForm, label="Payout condition")
     submit = SubmitField("Submit")
-    
+
     @classmethod
     def getTypeName(cls):
         return 'bettingmarket'
-    
+
     def init(self, selectedObject, default=None):
         eventId = None
-        if isinstance( selectedObject, BettingMarketGroup ):
+        if isinstance(selectedObject, BettingMarketGroup):
             eventId = selectedObject['event_id']
-        else:
+        elif isinstance(selectedObject, BettingMarket):
             eventId = selectedObject.bettingmarketgroup['event_id']
-            
+        elif isinstance(selectedObject, dict) and selectedObject.get('parentId', None):
+            eventId = selectedObject.get('parentId')
+
         self.bettingmarketgroup.choices = selectDictToList(
-            utils.getTypesGetter('bettingmarketgroup')(eventId))
+            utils.getComprisedTypesGetter('bettingmarketgroup')(eventId))
         if default:
             self.bettingmarketgroup.data = default['parentId']
-        
+
     def fill(self, selectedObject):
-        self.bettingmarketgroup.data    = selectedObject['group_id']
-        self.payoutCondition.fill( selectedObject['payout_condition'] )
-        self.description.fill( selectedObject['description'] )
-        
+        self.bettingmarketgroup.data = selectedObject['group_id']
+        self.payoutCondition.fill(selectedObject['payout_condition'])
+        self.description.fill(selectedObject['description'])
+
     def create(self):
-        return Node().createBettingMasrket(InternationalizedString.parseToList(self.payoutCondition),
-                                  InternationalizedString.parseToList(self.description),  
-                                  self.bettingmarketgroup.data)
-        
+        return Node().createBettingMasrket(
+                    InternationalizedString.parseToList(self.payoutCondition),
+                    InternationalizedString.parseToList(self.description),
+                    self.bettingmarketgroup.data)
+
     def update(self, selectedId):
-        return Node().updateBettingMarket(selectedId, 
-                                  InternationalizedString.parseToList(self.payoutCondition),
-                                  InternationalizedString.parseToList(self.description),  
-                                  self.bettingmarketgroup.data)
-    
+        return Node().updateBettingMarket(
+                    selectedId,
+                    InternationalizedString.parseToList(self.payoutCondition),
+                    InternationalizedString.parseToList(self.description),
+                    self.bettingmarketgroup.data)
+
+
 class NewBettingMarketGroupRuleForm(FlaskForm):
-    name        = FormField(TranslatedFieldForm, label="Name")
+    name = FormField(TranslatedFieldForm, label="Name")
     description = FormField(TranslatedFieldForm, label="Description")
     submit = SubmitField("Submit")
-    
+
     @classmethod
     def getTypeName(cls):
         return 'bettingmarketgrouprule'
-    
+
     def init(self, selectedObject, default=None):
         pass
-        
+
     def fill(self, selectedObject):
-        self.name.fill( selectedObject['name'] )
-        self.description.fill( selectedObject['description'] )
-        
+        self.name.fill(selectedObject['name'])
+        self.description.fill(selectedObject['description'])
+
     def create(self):
-        return Node().createBettingMarketGroupRule(InternationalizedString.parseToList(self.name),
-                                  InternationalizedString.parseToList(self.description))
-        
+        return Node().createBettingMarketGroupRule(
+            InternationalizedString.parseToList(self.name),
+            InternationalizedString.parseToList(self.description))
+
     def update(self, selectedId):
-        return Node().updateBettingMarketGroupRule(selectedId, 
-                                  InternationalizedString.parseToList(self.name),
-                                  InternationalizedString.parseToList(self.description))
-    
-# class OperationForm(FlaskForm):
-#     name  = StringField(label='Name', render_kw = { 'disabled' : True }) 
-#     
-# class OperationsContainerForm(FlaskForm):
-# #     submit     = SubmitField("Broadcast")
-#     pass
-        
+        return Node().updateBettingMarketGroupRule(
+            selectedId,
+            InternationalizedString.parseToList(self.name),
+            InternationalizedString.parseToList(self.description))
+
+
 class ApprovalForm(FlaskForm):
     approve = BooleanField()
-        
+
+
 class AmountForm(FlaskForm):
     symbol = TextField(label='Asset', validators=[DataRequired()], render_kw={'disabled' : True})
-    
+
+
 class AccountForm(FlaskForm):
     id   = TextField(label='Id', validators=[DataRequired()], render_kw={'disabled' : True})
     name = TextField(label='Name', validators=[DataRequired()], render_kw={'disabled' : True})

@@ -4,64 +4,55 @@ from flask import redirect, flash, url_for, request, render_template
 from flask_security import current_user
 from functools import wraps
 from datetime import datetime
-from app.node import Node
+from app.node import Node, NodeException
 from app.istring import InternationalizedString
+from peerplaysbase.operationids import getOperationNameForId
+from app import wrapper, tostring
 
-# dictionary to configure types (Sport, EventGroup, etc.) 
+# dictionary to configure types (Sport, EventGroup, etc.)
 #  title: human readable title
 TYPENAMES = {
-                 'sport': {'title': 'Sport' },
-                 'eventgroup': {'title': 'Event group' },
-                 'event': {'title': 'Event' },
-                 'bettingmarketgroup': {'title': 'Betting market group' },
-                 'bettingmarket': {'title': 'Betting market' },
-                 'bet': {'title': 'Bet' },
+                 'sport': {'title': 'Sport'},
+                 'eventgroup': {'title': 'Event group'},
+                 'event': {'title': 'Event'},
+                 'bettingmarketgroup': {'title': 'Betting market group'},
+                 'bettingmarket': {'title': 'Betting market'},
+                 'bet': {'title': 'Bet'},
                  'bettingmarketgrouprule': {'title': 'Betting market group rule'}
                }
 
-    
-TYPE_GET_ALL = { # get list of objects for typename, containing id, typeName and toString field
-      'sport' :     lambda unusedId: [ { 
-                               'id' : x["id"], 
-                               'typeName': 'sport',
-                               'toString': x["name"][0][1] + ' (' + x["id"] + ')',
-                              } for x in Node().getSports() ],
-      'eventgroup': lambda tmpSportId: [ { 
-                                          'id' : x["id"], 
-                                          'typeName': 'eventgroup',
-                                          'toString': toString( x ),  
-                                         } for x in Node().getEventGroups(tmpSportId) ],
-      'event': lambda tmpEventGroupId: [ { 
-                                          'id' : x["id"], 
-                                          'typeName': 'event',
-                                          'toString': toString( x ),  
-                                         } for x in Node().getEvents(tmpEventGroupId) ], 
-      'bettingmarketgroup': lambda tmpEventId: [ { 
-                                          'id' : x["id"], 
-                                          'typeName': 'bettingmarketgroup',
-                                          'toString': toString( x ),  
-                                         } for x in Node().getBettingMarketGroups(tmpEventId) ],
-      'bettingmarket': lambda tmpBMGId: [ { 
-                                          'id' : x["id"], 
-                                          'typeName': 'bettingmarket',
-                                          'toString': toString( x ),   
-                                         } for x in Node().getBettingMarkets(tmpBMGId) ],
-      'bettingmarketgrouprule': lambda unusedId: [ { 
-                                          'id' : x["id"], 
-                                          'typeName': 'bettingmarketgrouprule',
-                                          'toString': toString( x ),  
-                                         } for x in Node().getBettingMarketGroupRules() if x is not None ],
+# get list of objects for typename, containing id, typeName and toString field
+TYPE_GET_ALL = {
+      'sport': lambda unusedId: [
+          wrapper.Sport(**x) for x in Node().getSports()
+                                ],
+      'eventgroup': lambda tmpSportId: [
+          wrapper.EventGroup(**x) for x in Node().getEventGroups(tmpSportId)
+                                        ],
+      'event': lambda tmpEventGroupId: [
+          wrapper.Event(**x) for x in Node().getEvents(tmpEventGroupId)
+                                        ],
+      'bettingmarketgroup': lambda tmpEventId: [
+          wrapper.BettingMarketGroup(**x) for x in Node().getBettingMarketGroups(tmpEventId)
+                                                ],
+      'bettingmarket': lambda tmpBMGId: [
+          wrapper.BettingMarket(**x) for x in Node().getBettingMarkets(tmpBMGId)
+                                         ],
+      'bettingmarketgrouprule': lambda unusedId: [
+          wrapper.BettingMarketGroupRule(**x) for x in Node().getBettingMarketGroupRules() if x is not None
+                                                  ],
       'bet': lambda tmpBMGId: [  ], # not implemented yet
     }
 
-TYPE_GET = { # get list of objects for typename, containing id, typeName and toString field
-      'sport'             : lambda tmpId: Node().getSport(tmpId),
-      'eventgroup'        : lambda tmpId: Node().getEventGroup(tmpId),
-      'event'             : lambda tmpId: Node().getEvent(tmpId), 
-      'bettingmarketgroup': lambda tmpId: Node().getBettingMarketGroup(tmpId),
-      'bettingmarketgrouprule' : lambda tmpId: Node().getBettingMarketGroupRule(tmpId),
-      'bettingmarket'     : lambda tmpId: Node().getBettingMarket(tmpId),
-      'bet'               : lambda tmpId: None, # not implemented yet
+# get list of objects for typename, containing id, typeName and toString field
+TYPE_GET = {
+      'sport': lambda tmpId: wrapper.Sport(**Node().getSport(tmpId)),
+      'eventgroup': lambda tmpId: wrapper.EventGroup(**Node().getEventGroup(tmpId)),
+      'event': lambda tmpId: wrapper.Event(**Node().getEvent(tmpId)),
+      'bettingmarketgroup': lambda tmpId: wrapper.BettingMarketGroup(**Node().getBettingMarketGroup(tmpId)),
+      'bettingmarketgrouprule': lambda tmpId: wrapper.BettingMarketGroupRule(**Node().getBettingMarketGroupRule(tmpId)),
+      'bettingmarket': lambda tmpId: wrapper.BettingMarket(**Node().getBettingMarket(tmpId)),
+      'bet': lambda tmpId: None, # not implemented yet
     }
 
 # get object for typename, containing id of parent object
@@ -96,53 +87,143 @@ PARENT_TYPE = {
                  'bet': 'bettingmarket'
                }
 
+TYPENAME_TO_NEWOP_MAP = {
+                 'sport': 'sport_create',
+                 'eventgroup': 'event_group_create',
+                 'event': 'event_create',
+                 'bettingmarketgroup': 'betting_market_group_create',
+                 'bettingmarketgrouprule': 'betting_market_rules_create',
+                 'bettingmarket': 'betting_market_create',
+                 'bet': 'bet_create',
+               }
+
+TYPENAME_TO_UPDATEOP_MAP = {
+                 'sport': 'sport_update',
+                 'eventgroup': 'event_group_update',
+                 'event': 'event_update',
+                 'bettingmarketgroup': 'betting_market_group_update',
+                 'bettingmarketgrouprule': 'betting_market_rules_update',
+                 'bettingmarket': 'betting_market_update'
+               }
+
+
 def toString(toBeFormatted):
-    def findEnglishOrFirst(listOfIStrings, desiredLanguage='en'):
-        return InternationalizedString.listToDict(listOfIStrings).get(desiredLanguage, listOfIStrings[0][1])
-        
-    if toBeFormatted.get('name') and toBeFormatted.get('id'):
-        if isinstance( toBeFormatted.get('name'), list):
-            name = findEnglishOrFirst( toBeFormatted.get('name') )
+    raise Exception
+
+
+def getComprisedParentByIdGetter(typeName):
+    def doGet(parentId):
+        # unifies objects on the blockchain and in the cache
+        if parentId and parentId.startswith('0.0'):
+            return getParentByIdFromPendingProposalGetter(typeName)(parentId)
         else:
-            name = toBeFormatted.get('name')
-            
-        return name + ' (' + toBeFormatted.get('id') + ')'
-    elif toBeFormatted.get('description') and toBeFormatted.get('id'):
-        if isinstance( toBeFormatted.get('description'), list):
-            name = findEnglishOrFirst( toBeFormatted.get('description') )
-        else:
-            name = toBeFormatted.get('description')
-            
-        return name + ' (' + toBeFormatted.get('id') + ')'
-    else:
-        raise Exception 
+            return getParentByIdGetter(typeName)(parentId)
+
+    return doGet
+
+
+def getParentByIdFromPendingProposalGetter(typeName):
+    parentTypeName = PARENT_TYPE.get(typeName)
+
+    def doGet(parentId):
+        bufferedObjects = getProposalOperations(Node().get_node().tx())
+
+        for bufferedObject in bufferedObjects:
+            if bufferedObject['typeName'] == parentTypeName\
+                    and bufferedObject['id'] == parentId:
+                return bufferedObject
+
+        raise NodeException("There was no creation operation found for a "
+                            + PARENT_TYPE.get(typeName) + " with identifier="
+                            + str(parentId))
+
+    return doGet
+
 
 def getParentByIdGetter(typeName):
     parentTypeName = PARENT_TYPE.get(typeName)
     if parentTypeName:
         return TYPE_GET.get(parentTypeName)
-    
+
     return None
+
 
 def getChildType(typeName):
     return CHILD_TYPE.get(typeName)
 
+
 def getParentType(typeName):
     return PARENT_TYPE.get(typeName)
+
 
 def getParentTypeGetter(typeName):
     return PARENTTYPE_GET.get(typeName)
 
+
+def getComprisedParentTypeGetter(typeName):
+    def doGet(selectedId):
+        # unifies objects on the blockchain and in the cache
+        if selectedId and selectedId.startswith('0.0'):
+            bufferedObjects = getProposalOperations(Node().get_node().tx())
+            for bufferedObject in bufferedObjects:
+                if bufferedObject['id'] == selectedId:
+                    return bufferedObject['parentId']
+            else:
+                return None
+        else:
+            return getParentTypeGetter(typeName)(selectedId)
+
+    return doGet
+
+
 def getTypeGetter(typeName):
     return TYPE_GET.get(typeName)
 
+
 def getTypesGetter(typeName):
     return TYPE_GET_ALL.get(typeName)
-    
+
+
+def getComprisedTypesGetter(typeName):
+
+    def doGet(parentId):
+        # unifies objects on the blockchain and in the cache
+        if parentId and parentId.startswith('0.0'):
+            get1 = []
+        else:
+            get1 = getTypesGetter(typeName)(parentId)
+
+        get2 = getTypesFromPendingProposalGetter(typeName)(parentId)
+        
+        # allow cache to override
+        bufferDict = {item['id']:item for item in get1+get2}
+        
+        
+        return bufferDict.values()
+
+    return doGet
+
+
+def getTypesFromPendingProposalGetter(typeName):
+    def doGet(parentId):
+        inBuffer = []
+
+        bufferedObjects = getProposalOperations(Node().get_node().tx())
+
+        for bufferedObject in bufferedObjects:
+            if bufferedObject['typeName'] == typeName and\
+                    (not parentId or bufferedObject['parentId'] == parentId):
+                inBuffer.append(bufferedObject)
+
+        return inBuffer
+
+    return doGet
+
 
 def getTitle(typeName):
     # insert configurable translation here
     return TYPENAMES[typeName]['title']
+
 
 def strfdelta(time, fmt):
     if not hasattr(time, "days"):  # dirty hack
@@ -155,6 +236,20 @@ def strfdelta(time, fmt):
     d["hours"], rem = divmod(time.seconds, 3600)
     d["minutes"], d["seconds"] = divmod(rem, 60)
     return fmt.format(**d)
+
+
+def requires_node(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        try:
+            return f(*args, **kwargs)
+        except NodeException as e:
+            flash(e.message, category='error')
+            # default operation after error?
+#             return redirect(url_for('overview'))
+            # for now still throw exception for debuggin
+            raise e
+    return decorated_function
 
 
 def unlocked_wallet_required(f):
@@ -194,7 +289,7 @@ def getMenuInfo():
     menuInfo = { 
             'account': { 'id': account.identifier, 
                          'name': account.name, 
-                         'toString': toString(account) },
+                         'toString': tostring.toString(account) },
             'numberOfOpenTransactions': len(operations),
             'numberOfVotableProposals': len(votableProposals),
             'walletLocked': Node().locked()
@@ -217,19 +312,61 @@ def getMenuInfo():
     
     return menuInfo
 
+
 def processNextArgument(nextArg, default):
     if not nextArg:
         return url_for(default)
-    
+
     if nextArg.startswith('/'):
         if nextArg:
             nextWords = nextArg.split(sep='/')
-            
+
             if nextWords[1] == 'overview':
                 try:
-                    return url_for('overview', typeName=nextWords[2], identifier=nextWords[3])
-                except:
+                    return url_for('overview',
+                                   typeName=nextWords[2],
+                                   identifier=nextWords[3])
+                except Exception:
                     return url_for(default)
     else:
         return nextArg
-    
+
+
+def isProposal(res):
+    return res['operations'][0][0] == 22
+
+
+def getProposalOperations(tx):
+    convertedOperations = []
+
+    if tx.get('operations', None):
+        if isProposal(tx):
+            # its a proposal, proceed
+            for idx, operation in enumerate(
+                                tx['operations'][0][1]['proposed_ops']):
+                operation = operation['op']
+                operationName = getOperationNameForId(operation[0])
+                typeName = 'unknown'
+                for tmpTypeName, newOpName in TYPENAME_TO_NEWOP_MAP.items():
+                    if newOpName == operationName:
+                        typeName = tmpTypeName
+
+                for tmpTypeName, newOpName in TYPENAME_TO_UPDATEOP_MAP.items():
+                    if newOpName == operationName:
+                        typeName = tmpTypeName
+
+                if typeName == 'unknown':
+                    raise Exception
+                # this is a hack. proper id construction __must__ be
+                # provided by backend
+                operationId = '0.0.' + str(idx)
+                tmpData = operation[1].copy()
+                tmpData.update({'operationName': operationName,
+                                'operationId': operationId})
+
+                bufferedObject = wrapper.mapOperationToObject(
+                                                typeName, tmpData)
+                convertedOperations.append(bufferedObject)
+
+    return convertedOperations
+

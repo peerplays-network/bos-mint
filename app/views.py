@@ -1,9 +1,11 @@
 from app.forms import TranslatedFieldForm, NewWalletForm, GetAccountForm,\
     ApprovalForm
 from app.istring import InternationalizedString, LanguageNotFoundException
-from app.node import Node, NodeException, NonScalableRequest, BroadcastActiveOperationsExceptions
-from app.utils import render_template_menuinfo
-from flask import render_template, redirect, request, session, flash, url_for, make_response, abort
+from app.node import Node, NodeException, NonScalableRequest,\
+                        BroadcastActiveOperationsExceptions
+from app.utils import render_template_menuinfo, requires_node
+from flask import render_template, redirect, request, session, flash,\
+                    url_for, make_response, abort
 from wtforms import FormField, SubmitField
 
 from . import app, db, forms, config
@@ -12,8 +14,6 @@ from app import utils, widgets
 from peerplays.exceptions import WalletExists
 from app.models import LocalProposal, ViewConfiguration
 
-# InternationalizedString = namedtuple('InternationalizedString', ['country', 'text'])
-# Sport = namedtuple('Sport', ['names', 'submit'])
 ###############################################################################
 # Homepage
 ###############################################################################
@@ -80,11 +80,11 @@ def account_add():
         try:
             Node().addAccountToWallet(form.privateKey.data)
         except Exception as e:
-            flash('There was a problem adding the account to the wallet.', 
+            flash('There was a problem adding the account to the wallet.',
                   category='error')
 
         redirect(utils.processNextArgument(
-            request.args.get('next'), url_for('overview'))) 
+            request.args.get('next'), url_for('overview')))
 
     return render_template_menuinfo('generic.html', **locals())
 
@@ -93,7 +93,11 @@ def account_add():
 def newwallet():
     form = NewWalletForm()
     formTitle = "Enter password to create new wallet"
-    formMessage = "A local wallet will be automatically created. This local wallet is encrypted with your password, and will contain any private keys belonging to your accounts. It is important that you take the time to backup this wallet once created!"
+    formMessage = "A local wallet will be automatically created."
+    + " This local wallet is encrypted with your password, and"
+    + " will contain any private keys belonging to your accounts."
+    + " It is important that you take the time to backup this wallet"
+    + " once created!"
 
     if form.validate_on_submit():
         try:
@@ -111,28 +115,71 @@ def newwallet():
 @app.route('/overview')
 @app.route('/overview/<typeName>')
 @app.route('/overview/<typeName>/<identifier>')
+@requires_node
 def overview(typeName=None, identifier=None):
     # selected ids
     selected = {}
 
-    # same structure for all chain elements
-    def buildChainElement(tmpList, title, typeName):
+    # same structure for all chain elements and list elements
+    def buildListElements(tmpList):
+            for entry in tmpList:
+                if entry['typeName'] == 'event':
+                    entry['extraLink'] = [{
+                            'title': 'Start',
+                            'link': 'event_start',
+                            'icon': 'lightning'
+                                           },
+                                          {
+                            'title': 'Finish',
+                            'link': 'event_finish',
+                            'icon': 'flag checkered'
+                                           }]
+                elif entry['typeName'] == 'bettingmarket':
+                    entry['extraLink'] = [{
+                            'title': 'Grade',
+                            'link': 'bettingmarket_grade',
+                            'icon': 'book'
+                                           }]
+                elif entry['typeName'] == 'bettingmarketgroup':
+                    entry['extraLink'] = [{
+                            'title': 'Freeze',
+                            'link': 'bettingmarketgroup_freeze',
+                            'icon': 'snowflake'
+                                           },
+                                          {
+                            'title': 'Unfreeze',
+                            'link': 'bettingmarketgroup_unfreeze',
+                            'icon': 'fire'
+                                           }]
+            return tmpList
+
+    def buildChainElement(parentId, typeName):
+        tmpList = utils.getComprisedTypesGetter(typeName)(parentId)
+        title = utils.getTitle(typeName)
+
         if typeName == 'bettingmarketgroup':
-            return { 'list':     tmpList,
-                    'title':    title,
-                 'typeName': typeName,
-                'extraLink': [ {'title': 'Create ' + utils.getTitle('bettingmarketgrouprule'),
-                                 'link':  'bettingmarketgrouprule_new',
-                                 'icon': 'plus' },
-                               {'title': 'List ' + utils.getTitle('bettingmarketgrouprule') + 's',
-                                 'link':  'overview',
-                             'argument': ('typeName', 'bettingmarketgrouprule'),
-                                 'icon': 'unhide' }
-                                ] }
+            return {
+                'list':     buildListElements(tmpList),
+                'title':    title,
+                'typeName': typeName,
+                'extraLink': [{
+                    'title': 'Create ' + utils.getTitle('bettingmarketgrouprule'),
+                    'link': 'bettingmarketgrouprule_new',
+                    'icon': 'plus'
+                              },
+                              {
+                    'title': 'List ' + utils.getTitle('bettingmarketgrouprule') + 's',
+                    'link':  'overview',
+                    'argument': ('typeName', 'bettingmarketgrouprule'),
+                    'icon': 'unhide'
+                              }
+                              ]}
         else:
-            return { 'list':     tmpList,
-                    'title':    title,
-                    'typeName': typeName }
+            return {
+                'list':     buildListElements(tmpList),
+                'title':    title,
+                'typeName': typeName
+                   }
 
     # build reverse chain starting with the one selected
     reverseChain = []
@@ -148,30 +195,25 @@ def overview(typeName=None, identifier=None):
     # reverse through all parents starting with the type given by typeName
     tmpParentIdentifier = identifier
     while tmpTypeName and not tmpTypeName == 'sport':
-        try:
-            # build chain element for tmpTypeName
-            tmpChainElement = buildChainElement(
-                utils.getTypesGetter(tmpTypeName)(tmpParentIdentifier),
-                utils.getTitle(tmpTypeName), tmpTypeName)
-        except NodeException as e:
-            flash(e.message, category='error')
-            return redirect(url_for('overview'))
-        
-        tmpTypeName   = utils.getParentType(tmpTypeName)
+        # build chain element for tmpTypeName
+        tmpChainElement = buildChainElement(tmpParentIdentifier,
+                                            tmpTypeName)
+
+        tmpTypeName = utils.getParentType(tmpTypeName)
         if tmpTypeName:
-            selected[tmpTypeName]      = tmpParentIdentifier
-            tmpParentIdentifier = utils.getParentTypeGetter(tmpTypeName)(tmpParentIdentifier)
-                        
+            selected[tmpTypeName] = tmpParentIdentifier
+            tmpParentIdentifier = utils.getComprisedParentTypeGetter(tmpTypeName)(tmpParentIdentifier)
+
         if isinstance(tmpChainElement, list):
             for item in tmpChainElement:
-                reverseChain.append( item )
+                reverseChain.append(item)
         else:
-            reverseChain.append( tmpChainElement )
-       
+            reverseChain.append(tmpChainElement)
+
     if tmpTypeName == 'sport':
-        sportElement = buildChainElement( utils.getTypesGetter('sport')(None), utils.getTitle('sport'), 'sport' )
-        reverseChain.append( sportElement )
-    
+        sportElement = buildChainElement(None, 'sport')
+        reverseChain.append(sportElement)
+
     reverseChain.reverse()
     listChain = reverseChain[0]
     if reverseChain:
@@ -185,6 +227,7 @@ def overview(typeName=None, identifier=None):
     del tmpTypeName, tmpParentIdentifier
                
     return render_template_menuinfo('index.html', **locals())
+
 
 @app.route("/pending/discard", methods=['GET', 'POST'])
 @unlocked_wallet_required
@@ -296,100 +339,117 @@ def findAndProcessTranslatons(form):
         
     return False
 
+
 def genericNewForm(formClass, parentId=None):
     # look into https://github.com/Semantic-Org/Semantic-UI/issues/2978 for highlighting the chosen menu branch as well
     form = formClass()
-    typeName      = formClass.getTypeName()
-    typeNameTitle = utils.getTitle( typeName )
-    
+    typeName = formClass.getTypeName()
+    typeNameTitle = utils.getTitle(typeName)
+
     selectedParent = None
-    default        = None
+    default = None
     if parentId:
-        selectedParent = utils.getParentByIdGetter(typeName)(parentId)
-        default = { 'parentId': parentId }
-        
+        selectedParent = utils.getComprisedParentByIdGetter(typeName)(parentId)
+        default = {'parentId': parentId}
+
     form.init(selectedParent, default)
-    
+
     # Which button was pressed?
     if findAndProcessTranslatons(form):
         return render_template_menuinfo("new.html", **locals())
-        
+
     elif form.submit.data and form.validate_on_submit():
         # Create new sport
-        try:
-            proposal = form.create()
-            flash("A creation proposal for a new " + utils.getTitle(typeName) + " was created.")
-            return redirect(utils.processNextArgument( request.args.get('next'), 'index'))
-        except NodeException as e:
-            flash(e.message, category='error')
-            raise e.cause
-    
+        operation = form.create()
+        flash("A creation proposal for a new "
+              + utils.getTitle(typeName) + " was created and will be"
+              + " displayed with a relative id in the overview.")
+        return redirect(url_for('overview',
+                        typeName=operation['typeName'],
+                        identifier=operation['id']))
+
     return render_template_menuinfo("new.html", **locals())
 
-@app.route("/sport/new", methods=['post','get'])
-@unlocked_wallet_required
-def sport_new(): 
-    return genericNewForm( forms.NewSportForm )
 
-@app.route("/eventgroup/new", methods=['post','get'])    
-@app.route("/eventgroup/new/<parentId>", methods=['post','get'])
+@app.route("/sport/new", methods=['post', 'get'])
 @unlocked_wallet_required
-def eventgroup_new(parentId=None): 
-    return genericNewForm( forms.NewEventGroupForm, parentId ) 
+@requires_node
+def sport_new():
+    return genericNewForm(forms.NewSportForm)
 
-@app.route("/event/new/<parentId>", methods=['post','get'])
-@unlocked_wallet_required
-def event_new(parentId): 
-    return genericNewForm( forms.NewEventForm, parentId )
 
-@app.route("/bettingmarketgroup/new/<parentId>", methods=['post','get'])
+@app.route("/eventgroup/new", methods=['post', 'get'])
+@app.route("/eventgroup/new/<parentId>", methods=['post', 'get'])
 @unlocked_wallet_required
-def bettingmarketgroup_new(parentId): 
-    return genericNewForm( forms.NewBettingMarketGroupForm, parentId )
+@requires_node
+def eventgroup_new(parentId=None):
+    return genericNewForm(forms.NewEventGroupForm, parentId)
 
-@app.route("/bettingmarketgrouprule/new", methods=['post','get'])
-@unlocked_wallet_required
-def bettingmarketgrouprule_new(parentId=None): 
-    return genericNewForm( forms.NewBettingMarketGroupRuleForm )
 
-@app.route("/bettingmarket/new/<parentId>", methods=['post','get'])
+@app.route("/event/new/<parentId>", methods=['post', 'get'])
 @unlocked_wallet_required
-def bettingmarket_new(parentId): 
-    return genericNewForm( forms.NewBettingMarketForm, parentId )
+@requires_node
+def event_new(parentId):
+    return genericNewForm(forms.NewEventForm, parentId)
 
-@app.route("/bet/new", methods=['post','get'])
+
+@app.route("/bettingmarketgroup/new/<parentId>", methods=['post', 'get'])
 @unlocked_wallet_required
-def bet_new(): 
+@requires_node
+def bettingmarketgroup_new(parentId):
+    return genericNewForm(forms.NewBettingMarketGroupForm, parentId)
+
+
+@app.route("/bettingmarketgrouprule/new", methods=['post', 'get'])
+@unlocked_wallet_required
+@requires_node
+def bettingmarketgrouprule_new(parentId=None):
+    return genericNewForm(forms.NewBettingMarketGroupRuleForm)
+
+
+@app.route("/bettingmarket/new/<parentId>", methods=['post', 'get'])
+@unlocked_wallet_required
+@requires_node
+def bettingmarket_new(parentId):
+    return genericNewForm(forms.NewBettingMarketForm, parentId)
+
+
+@app.route("/bet/new", methods=['post', 'get'])
+@unlocked_wallet_required
+@requires_node
+def bet_new():
     return render_template_menuinfo('index.html', **locals())
+
 
 def genericUpdate(formClass, selectId, removeSubmits=False):
     typeName = formClass.getTypeName()
-    
-    selectFunction  = utils.getTypeGetter(typeName)
+
+    selectFunction = utils.getTypeGetter(typeName)
     choicesFunction = utils.getTypesGetter(typeName)
-            
+
     try:
-        # maybe only query the selected object, if one is preselected, saves traffic
-        # currently: always query all
+        # maybe only query the selected object, if one is preselected, 
+        # saves traffic currently: always query all
         parentId = None
         if selectId:
             parentId = utils.getParentTypeGetter(typeName)(selectId)
-            
-        form = forms.buildUpdateForm(typeName, 
+
+        form = forms.buildUpdateForm(typeName,
                                      choicesFunction(parentId),
                                      formClass,
-                                     selectId )
+                                     selectId)
     except NonScalableRequest as e:
         return redirect(url_for('overview'))
     except NodeException as e:
         flash(e.message, category='error')
         return render_template_menuinfo("update.html", **locals())
-    
+
     typeNameTitle = utils.getTitle(typeName)
-        
+
     if not selectId:
         if form.submit.data:
-            return redirect(url_for(typeName + '_update', selectId=form.select.data))
+            return redirect(url_for(typeName + '_update',
+                                    selectId=form.select.data))
         else:
             return render_template_menuinfo("update.html", **locals())
 
@@ -404,21 +464,23 @@ def genericUpdate(formClass, selectId, removeSubmits=False):
     # user wants to add language?
     if findAndProcessTranslatons(form):
         return render_template_menuinfo("update.html", **locals())
-    
+
     form.init(selectedObject)
-            
+
     # first request? populate selected object
     if not form.submit.data:
         # preselect 
         form.select.data = selectId
         form.fill(selectedObject)
-        
+
     if removeSubmits:
+        # remove submit button
+        # todo: disable any and all user input
         typeNameAction = 'Details of'
-#         del form.submit
+
         for fieldName in form._fields.keys():
             field = form._fields[fieldName]
-#                 
+
             if isinstance(field, SubmitField):
                 delattr(form, fieldName)
             elif isinstance(field, FormField):
@@ -426,91 +488,134 @@ def genericUpdate(formClass, selectId, removeSubmits=False):
                     subField = field.form._fields[subfieldName]
                     if isinstance(subField, SubmitField):
                         delattr(field.form, subfieldName)
-                        
+
         return render_template_menuinfo("update.html", **locals())
-    
+
     else:
         typeNameAction = 'Update'
-    
-    if form.validate_on_submit(): # user submitted, wants to change  
+
+    if form.validate_on_submit():
+        # user submitted, wants to change
         # all data was entered correctly, validate and update sport
         proposal = form.update(selectedObject['id'])
-        flash("An update proposal  for " + utils.getTitle(typeName) + " (id=" + selectId + ") was created.")
-        return redirect(utils.processNextArgument( request.args.get('next'), 'index'))
-        
+        flash("An update proposal  for " + utils.getTitle(typeName)
+              + " (id=" + selectId + ") was created.")
+        return redirect(utils.processNextArgument(
+                                request.args.get('next'), 'index'))
+
     return render_template_menuinfo("update.html", **locals())
 
-@app.route("/sport/update", methods=['post','get'])
-@app.route("/sport/update/<selectId>", methods=['post','get'])
+
+@app.route("/sport/update", methods=['post', 'get'])
+@app.route("/sport/update/<selectId>", methods=['post', 'get'])
 @unlocked_wallet_required
 def sport_update(selectId=None):
-    return genericUpdate(forms.NewSportForm, selectId )
+    return genericUpdate(forms.NewSportForm, selectId)
 
-@app.route("/eventgroup/update", methods=['post','get'])
-@app.route("/eventgroup/update/<selectId>", methods=['post','get'])
+
+@app.route("/eventgroup/update", methods=['post', 'get'])
+@app.route("/eventgroup/update/<selectId>", methods=['post', 'get'])
 @unlocked_wallet_required
 def eventgroup_update(selectId=None):
     formClass = forms.NewEventGroupForm
-    
-    return genericUpdate(formClass, selectId )
-    
-@app.route("/event/update", methods=['post','get'])
-@app.route("/event/update/<selectId>", methods=['post','get'])
+
+    return genericUpdate(formClass, selectId)
+
+
+@app.route("/event/update", methods=['post', 'get'])
+@app.route("/event/update/<selectId>", methods=['post', 'get'])
 @unlocked_wallet_required
 def event_update(selectId=None):
     formClass = forms.NewEventForm
-                    
-    return genericUpdate(formClass, selectId )
-    
-@app.route("/bettingmarketgroup/update", methods=['post','get'])
-@app.route("/bettingmarketgroup/update/<selectId>", methods=['post','get'])
+    return genericUpdate(formClass, selectId)
+
+
+@app.route("/bettingmarketgroup/update", methods=['post', 'get'])
+@app.route("/bettingmarketgroup/update/<selectId>", methods=['post', 'get'])
 @unlocked_wallet_required
 def bettingmarketgroup_update(selectId=None):
     formClass = forms.NewBettingMarketGroupForm
-    return genericUpdate(formClass, selectId )
-    
-@app.route("/bettingmarket/update", methods=['post','get'])
-@app.route("/bettingmarket/update/<selectId>", methods=['post','get'])
+    return genericUpdate(formClass, selectId)
+
+
+@app.route("/bettingmarket/update", methods=['post', 'get'])
+@app.route("/bettingmarket/update/<selectId>", methods=['post', 'get'])
 @unlocked_wallet_required
 def bettingmarket_update(selectId=None):
     formClass = forms.NewBettingMarketForm
-    return genericUpdate(formClass, selectId )
+    return genericUpdate(formClass, selectId)
 
-@app.route("/bettingmarketgrouprule/update", methods=['post','get'])
-@app.route("/bettingmarketgrouprule/update/<selectId>", methods=['post','get'])
+
+@app.route("/bettingmarketgrouprule/update", methods=['post', 'get'])
+@app.route("/bettingmarketgrouprule/update/<selectId>", methods=['post', 'get'])
 @unlocked_wallet_required
 def bettingmarketgrouprule_update(selectId=None):
     formClass = forms.NewBettingMarketGroupRuleForm
-    return genericUpdate(formClass, selectId )
+    return genericUpdate(formClass, selectId)
+
 
 @app.route("/sport/details/<selectId>")
 def sport_details(selectId):
-    return genericUpdate(forms.NewSportForm, selectId, True )
+    return genericUpdate(forms.NewSportForm, selectId, True)
+
 
 @app.route("/eventgroup/details/<selectId>")
 def eventgroup_details(selectId):
     formClass = forms.NewEventGroupForm
-    
-    return genericUpdate(formClass, selectId, True )
-    
+    return genericUpdate(formClass, selectId, True)
+
+
 @app.route("/event/details/<selectId>")
 def event_details(selectId):
     formClass = forms.NewEventForm
-                    
-    return genericUpdate(formClass, selectId, True )
-    
+    return genericUpdate(formClass, selectId, True)
+
+
 @app.route("/bettingmarketgroup/details/<selectId>")
 def bettingmarketgroup_details(selectId):
     formClass = forms.NewBettingMarketGroupForm
-    return genericUpdate(formClass, selectId, True )
+    return genericUpdate(formClass, selectId, True)
+
 
 @app.route("/bettingmarketgrouprule/details/<selectId>")
 def bettingmarketgrouprule_details(selectId):
     formClass = forms.NewBettingMarketGroupRuleForm
-    return genericUpdate(formClass, selectId, True )
-    
+    return genericUpdate(formClass, selectId, True)
+
+
 @app.route("/bettingmarket/details/<selectId>")
 def bettingmarket_details(selectId):
     formClass = forms.NewBettingMarketForm
-    return genericUpdate(formClass, selectId, True )
-    
+    return genericUpdate(formClass, selectId, True)
+
+
+@app.route("/event/start/<selectId>", methods=['post', 'get'])
+@unlocked_wallet_required
+def event_start(selectId=None):
+    return redirect(url_for('overview'))
+
+
+@app.route("/event/finish/<selectId>", methods=['post', 'get'])
+@unlocked_wallet_required
+def event_finish(selectId=None):
+    return redirect(url_for('overview'))
+
+
+@app.route("/bettingmarket/grade/<selectId>", methods=['post', 'get'])
+@unlocked_wallet_required
+def bettingmarket_grade(selectId=None):
+    return redirect(url_for('overview'))
+
+
+@app.route("/bettingmarketgroup/freeze/<selectId>", methods=['post', 'get'])
+@unlocked_wallet_required
+def bettingmarketgroup_freeze(selectId=None):
+    return redirect(url_for('overview'))
+
+
+@app.route("/bettingmarketgroup/unfreeze/<selectId>", methods=['post', 'get'])
+@unlocked_wallet_required
+def bettingmarketgroup_unfreeze(selectId=None):
+    return redirect(url_for('overview'))
+
+

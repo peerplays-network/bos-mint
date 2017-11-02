@@ -1,15 +1,12 @@
-'''
-Created on 12.10.2017
-
-@author: schiessl
-'''
 # -*- coding: utf-8 -*-
+
 
 class LanguageNotFoundException(BaseException):
     pass
 
+
 class InternationalizedString(object):
-    LANGUAGES=[
+    LANGUAGES = [
         ("ab", "Abkhazian"),
         ("aa", "Afar"),
         ("af", "Afrikaans"),
@@ -212,39 +209,39 @@ class InternationalizedString(object):
         Constructor
         '''
         self.country = country
-        self.text    = text
-        
+        self.text = text
+
         if self.country not in [x[0] for x in InternationalizedString.LANGUAGES] and not country == self.UNKNOWN:
             raise LanguageNotFoundException
-        
-        
+
     def getForm(self):
         from app.forms import InternationalizedStringForm
         lng = InternationalizedStringForm()
         lng.country = self.country
-        lng.text    = self.text 
+        lng.text = self.text
         return lng
-    
+
     @classmethod
     def listToDict(cls, listOfIStrings):
-        return { x[0]: x[1] for x in listOfIStrings }
-    
+        return {x[0]: x[1] for x in listOfIStrings}
+
     @classmethod
     def getChoices(cls):
-        return [ ( x[0], x[0] + " - " + x[1] ) for x in InternationalizedString.LANGUAGES ]
+        return [(x[0], x[0] + " - " + x[1]) for x in InternationalizedString.LANGUAGES]
 
     @classmethod
     def parseToList(cls, fieldListOfInternationalizedString):
         from app.forms import TranslatedFieldForm
         from wtforms import FormField
-        
+
         istrings = list()
-        
-        if isinstance(fieldListOfInternationalizedString, FormField) and isinstance(fieldListOfInternationalizedString.form, TranslatedFieldForm):
+
+        if isinstance(fieldListOfInternationalizedString, FormField) and\
+           isinstance(fieldListOfInternationalizedString.form, TranslatedFieldForm):
             fieldListOfInternationalizedString = fieldListOfInternationalizedString.form.translations
-        
+
         for ffield in fieldListOfInternationalizedString.entries:
             istrings.append([ffield.data["country"], ffield.data["text"]])
-        
+
         return istrings
 
