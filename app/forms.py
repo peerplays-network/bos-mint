@@ -30,7 +30,7 @@ from wtforms.validators import (
 from app.istring import InternationalizedString, LanguageNotFoundException
 from app.node import Node
 import datetime
-from app import views, utils
+from app import views, utils, wrapper
 from peerplays.event import Event
 from peerplays.bettingmarketgroup import BettingMarketGroup
 from peerplays.eventgroup import EventGroup
@@ -208,7 +208,7 @@ class NewEventGroupForm(FlaskForm):
             self.sport.data = default['parentId']
 
     def fill(self, selectedObject):
-        self.sport.data = selectedObject.sport['id']
+        self.sport.data = selectedObject['sport_id']
         self.name.fill(selectedObject['name'])
 
     def create(self):
@@ -238,7 +238,7 @@ class NewEventForm(FlaskForm):
             sportId = selectedObject['sport_id']
         elif isinstance(selectedObject, Event):
             sportId = selectedObject.eventgroup.sport['id']
-        elif isinstance(selectedObject, dict) and selectedObject.get('parentId', None):
+        elif isinstance(selectedObject, wrapper.EventGroup):
             sportId = selectedObject.get('parentId')
 
         # choices need to be filled at all times
@@ -287,7 +287,7 @@ class NewBettingMarketGroupForm(FlaskForm):
             eventGroupId = selectedObject['event_group_id']
         elif isinstance(selectedObject, BettingMarketGroup):
             eventGroupId = selectedObject.event['event_group_id']
-        elif isinstance(selectedObject, dict) and selectedObject.get('parentId', None):
+        elif isinstance(selectedObject, wrapper.Event):
             eventGroupId = selectedObject.get('parentId')
 
         self.event.choices = selectDictToList(
@@ -334,7 +334,7 @@ class NewBettingMarketForm(FlaskForm):
             eventId = selectedObject['event_id']
         elif isinstance(selectedObject, BettingMarket):
             eventId = selectedObject.bettingmarketgroup['event_id']
-        elif isinstance(selectedObject, dict) and selectedObject.get('parentId', None):
+        elif isinstance(selectedObject, wrapper.BettingMarketGroup):
             eventId = selectedObject.get('parentId')
 
         self.bettingmarketgroup.choices = selectDictToList(
@@ -348,7 +348,7 @@ class NewBettingMarketForm(FlaskForm):
         self.description.fill(selectedObject['description'])
 
     def create(self):
-        return Node().createBettingMasrket(
+        return Node().createBettingMarket(
                     InternationalizedString.parseToList(self.payoutCondition),
                     InternationalizedString.parseToList(self.description),
                     self.bettingmarketgroup.data)

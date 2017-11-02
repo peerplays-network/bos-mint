@@ -130,7 +130,7 @@
  {%- if id %} id="{{id}}"{% endif -%}
  {%- if method %} method="{{method}}"{% endif %}
  {%- if form.errors %} class="ui form error"{% else %} class="ui form"{% endif %}>
-  <!-- {{ form.hidden_tag() }} -->
+  {{ form.hidden_tag() }}
   {%- for field in form %}
    {%- if field.type != "CSRFTokenField" and field.type != "HiddenField" and field.name != skip %}
     {%- if field.type == "SubmitField" -%}

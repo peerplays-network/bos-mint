@@ -46,12 +46,12 @@ TYPE_GET_ALL = {
 
 # get list of objects for typename, containing id, typeName and toString field
 TYPE_GET = {
-      'sport': lambda tmpId: wrapper.Sport(**Node().getSport(tmpId)),
-      'eventgroup': lambda tmpId: wrapper.EventGroup(**Node().getEventGroup(tmpId)),
-      'event': lambda tmpId: wrapper.Event(**Node().getEvent(tmpId)),
-      'bettingmarketgroup': lambda tmpId: wrapper.BettingMarketGroup(**Node().getBettingMarketGroup(tmpId)),
-      'bettingmarketgrouprule': lambda tmpId: wrapper.BettingMarketGroupRule(**Node().getBettingMarketGroupRule(tmpId)),
-      'bettingmarket': lambda tmpId: wrapper.BettingMarket(**Node().getBettingMarket(tmpId)),
+      'sport': lambda tmpId: Node().getSport(tmpId),
+      'eventgroup': lambda tmpId: Node().getEventGroup(tmpId),
+      'event': lambda tmpId: Node().getEvent(tmpId),
+      'bettingmarketgroup': lambda tmpId: Node().getBettingMarketGroup(tmpId),
+      'bettingmarketgrouprule': lambda tmpId: Node().getBettingMarketGroupRule(tmpId),
+      'bettingmarket': lambda tmpId: Node().getBettingMarket(tmpId),
       'bet': lambda tmpId: None, # not implemented yet
     }
 
@@ -169,7 +169,7 @@ def getComprisedParentTypeGetter(typeName):
                 if bufferedObject['id'] == selectedId:
                     return bufferedObject['parentId']
             else:
-                return None
+                return selectedId
         else:
             return getParentTypeGetter(typeName)(selectedId)
 
@@ -194,11 +194,9 @@ def getComprisedTypesGetter(typeName):
             get1 = getTypesGetter(typeName)(parentId)
 
         get2 = getTypesFromPendingProposalGetter(typeName)(parentId)
-        
+
         # allow cache to override
-        bufferDict = {item['id']:item for item in get1+get2}
-        
-        
+        bufferDict = {item['id']: item for item in get1+get2}
         return bufferDict.values()
 
     return doGet
@@ -248,6 +246,8 @@ def requires_node(f):
             # default operation after error?
 #             return redirect(url_for('overview'))
             # for now still throw exception for debuggin
+#             if e.cause:
+#                 raise e.cause
             raise e
     return decorated_function
 

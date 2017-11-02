@@ -11,7 +11,7 @@ class BlockchainIdentifiable(dict):
         # todo: properly initilize dict here
         self.__dict__ = kwargs
         dict.__init__(self, kwargs)
-        
+
         if not kwargs.get('toString'):
             self.toString = tostring.toString(self.__dict__)
             self['toString'] = self.toString
@@ -30,7 +30,7 @@ class BlockchainIdentifiable(dict):
         if default:
             return kwargs.get(name, default)
         else:
-            return kwargs.get(name)
+            return kwargs[name]
 
 
 class Sport(BlockchainIdentifiable):
@@ -102,14 +102,17 @@ class Event(BlockchainIdentifiable):
             raise NodeException(
                 'Trying to instantiate a new Event from unknown operation')
 
-    def __init__(self, **kwargs):
-        kwargs['typeName'] = 'event'
-        kwargs['parentId'] = self.kwGet(kwargs, 'event_group_id')
-        BlockchainIdentifiable.__init__(self, **kwargs)
-        self.name = self.kwGet(kwargs, 'name')
-        self.season = self.kwGet(kwargs, 'season')
-        self.start_time = self.kwGet(kwargs, 'start_time')
-        self.event_group_id = self.kwGet(kwargs, 'event_group_id')
+    def __init__(self, *args, **kwargs):
+        if kwargs:
+            kwargs['typeName'] = 'event'
+            kwargs['parentId'] = self.kwGet(kwargs, 'event_group_id')
+            BlockchainIdentifiable.__init__(self, **kwargs)
+            self.name = self.kwGet(kwargs, 'name')
+            self.season = self.kwGet(kwargs, 'season')
+            self.start_time = self.kwGet(kwargs, 'start_time')
+            self.event_group_id = self.kwGet(kwargs, 'event_group_id')
+        else:
+            object = args[0]
 
 
 class BettingMarketGroup(BlockchainIdentifiable):
@@ -135,7 +138,7 @@ class BettingMarketGroup(BlockchainIdentifiable):
                 'Trying to instantiate a new BettingMarketGroup from unknown operation')
 
     def __init__(self, **kwargs):
-        kwargs['typeName'] = 'bettingmarket'
+        kwargs['typeName'] = 'bettingmarketgroup'
         kwargs['parentId'] = self.kwGet(kwargs, 'event_id')
         BlockchainIdentifiable.__init__(self, **kwargs)
         self.description = self.kwGet(kwargs, 'description')
@@ -177,13 +180,13 @@ class BettingMarket(BlockchainIdentifiable):
             return {'id': operationData['operationId'],
                     'payout_condition': operationData['payout_condition'],
                     'description': operationData['description'],
-                    'betting_market_group_id': operationData['group_id']}
+                    'group_id': operationData['group_id']}
         elif operationData.get('operationName', None) == 'betting_market_update':
             return {'pendingOperationId': operationData['operationId'],
                     'id': operationData['betting_market_id'],
                     'payout_condition': operationData['new_payout_condition'],
                     'description': operationData['new_description'],
-                    'betting_market_group_id': operationData['new_group_id']}
+                    'group_id': operationData['new_group_id']}
         else:
             from app.node import NodeException
             raise NodeException('Trying to instantiate a new sport from unknown operation')
@@ -192,9 +195,9 @@ class BettingMarket(BlockchainIdentifiable):
         kwargs['typeName'] = 'bettingmarket'
         kwargs['parentId'] = self.kwGet(kwargs, 'group_id')
         BlockchainIdentifiable.__init__(self, **kwargs)
-        self.payoutCondition = self.kwGet(kwargs, 'payout_condition')
+        self.payout_condition = self.kwGet(kwargs, 'payout_condition')
         self.description = self.kwGet(kwargs, 'description')
-        self.bettingMarketGroupId = self.kwGet(kwargs, 'group_id')
+        self.group_id = self.kwGet(kwargs, 'group_id')
 
 
 class Bet(BlockchainIdentifiable):

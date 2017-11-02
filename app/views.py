@@ -277,8 +277,8 @@ def pending_operations():
 @app.route("/pending/automaticapproval", methods=['post'])
 def automatic_approval():
     form = ApprovalForm()
-        
-    if form.validate_on_submit(): 
+
+    if form.validate_on_submit():
         ViewConfiguration.set('automatic_approval', 'enabled', form.approve.data)
                     
     return redirect(url_for('pending_operations'))
@@ -509,6 +509,7 @@ def genericUpdate(formClass, selectId, removeSubmits=False):
 @app.route("/sport/update", methods=['post', 'get'])
 @app.route("/sport/update/<selectId>", methods=['post', 'get'])
 @unlocked_wallet_required
+@requires_node
 def sport_update(selectId=None):
     return genericUpdate(forms.NewSportForm, selectId)
 
@@ -516,6 +517,7 @@ def sport_update(selectId=None):
 @app.route("/eventgroup/update", methods=['post', 'get'])
 @app.route("/eventgroup/update/<selectId>", methods=['post', 'get'])
 @unlocked_wallet_required
+@requires_node
 def eventgroup_update(selectId=None):
     formClass = forms.NewEventGroupForm
 
@@ -525,6 +527,7 @@ def eventgroup_update(selectId=None):
 @app.route("/event/update", methods=['post', 'get'])
 @app.route("/event/update/<selectId>", methods=['post', 'get'])
 @unlocked_wallet_required
+@requires_node
 def event_update(selectId=None):
     formClass = forms.NewEventForm
     return genericUpdate(formClass, selectId)
@@ -533,6 +536,7 @@ def event_update(selectId=None):
 @app.route("/bettingmarketgroup/update", methods=['post', 'get'])
 @app.route("/bettingmarketgroup/update/<selectId>", methods=['post', 'get'])
 @unlocked_wallet_required
+@requires_node
 def bettingmarketgroup_update(selectId=None):
     formClass = forms.NewBettingMarketGroupForm
     return genericUpdate(formClass, selectId)
@@ -541,6 +545,7 @@ def bettingmarketgroup_update(selectId=None):
 @app.route("/bettingmarket/update", methods=['post', 'get'])
 @app.route("/bettingmarket/update/<selectId>", methods=['post', 'get'])
 @unlocked_wallet_required
+@requires_node
 def bettingmarket_update(selectId=None):
     formClass = forms.NewBettingMarketForm
     return genericUpdate(formClass, selectId)
@@ -549,41 +554,48 @@ def bettingmarket_update(selectId=None):
 @app.route("/bettingmarketgrouprule/update", methods=['post', 'get'])
 @app.route("/bettingmarketgrouprule/update/<selectId>", methods=['post', 'get'])
 @unlocked_wallet_required
+@requires_node
 def bettingmarketgrouprule_update(selectId=None):
     formClass = forms.NewBettingMarketGroupRuleForm
     return genericUpdate(formClass, selectId)
 
 
 @app.route("/sport/details/<selectId>")
+@requires_node
 def sport_details(selectId):
     return genericUpdate(forms.NewSportForm, selectId, True)
 
 
 @app.route("/eventgroup/details/<selectId>")
+@requires_node
 def eventgroup_details(selectId):
     formClass = forms.NewEventGroupForm
     return genericUpdate(formClass, selectId, True)
 
 
 @app.route("/event/details/<selectId>")
+@requires_node
 def event_details(selectId):
     formClass = forms.NewEventForm
     return genericUpdate(formClass, selectId, True)
 
 
 @app.route("/bettingmarketgroup/details/<selectId>")
+@requires_node
 def bettingmarketgroup_details(selectId):
     formClass = forms.NewBettingMarketGroupForm
     return genericUpdate(formClass, selectId, True)
 
 
 @app.route("/bettingmarketgrouprule/details/<selectId>")
+@requires_node
 def bettingmarketgrouprule_details(selectId):
     formClass = forms.NewBettingMarketGroupRuleForm
     return genericUpdate(formClass, selectId, True)
 
 
 @app.route("/bettingmarket/details/<selectId>")
+@requires_node
 def bettingmarket_details(selectId):
     formClass = forms.NewBettingMarketForm
     return genericUpdate(formClass, selectId, True)
