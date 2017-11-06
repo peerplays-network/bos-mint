@@ -2,7 +2,7 @@ from flask import url_for
 from peerplaysbase import operationids
 import os.path
 from app.node import Node
-from app import utils
+from app import utils, tostring
 
 class RenderTemplateWidget(object):
     """
@@ -94,9 +94,9 @@ def prepareProposalsDataForRendering(proposals, accountId=None):
         if proposal.get('review_period_time'):
             tmpListItems.append( ('Review period time', proposal['review_period_time']) )
         if proposal.get('available_active_approvals'):
-            tmpListItems.append( ('Available active approvals', [ utils.toString(x) for x in Node().getAccounts(proposal['available_active_approvals']) ] ) )
+            tmpListItems.append( ('Available active approvals', [ tostring.toString(x) for x in Node().getAccounts(proposal['available_active_approvals']) ] ) )
         if proposal.get('required_active_approvals'):
-            tmpListItems.append( ('Required approvals', [ utils.toString(x) for x in Node().getAccounts(proposal['required_active_approvals'])]) )
+            tmpListItems.append( ('Required approvals', [ tostring.toString(x) for x in Node().getAccounts(proposal['required_active_approvals'])]) )
         
         ocw = OperationsContainerWidget(
                 title='Proposal ' + proposal['id'],

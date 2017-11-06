@@ -2,10 +2,12 @@
 from app.istring import InternationalizedString
 
 
-def toString(toBeFormatted):
-    def findEnglishOrFirst(listOfIStrings, desiredLanguage='en'):
-        return InternationalizedString.listToDict(listOfIStrings).get(
+def findEnglishOrFirst(listOfIStrings, desiredLanguage='en'):
+    return InternationalizedString.listToDict(listOfIStrings).get(
             desiredLanguage, listOfIStrings[0][1])
+
+
+def toString(toBeFormatted):
 
     if toBeFormatted.get('name') and toBeFormatted.get('id'):
         if isinstance(toBeFormatted.get('name'), list):

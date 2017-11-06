@@ -2,7 +2,7 @@
 {% from "_forms.html" import quickform, parsefield %}
 
 {% block content %}
-<h1 class="ui header">Peerplays Overview</h1><br/>
+<h1 class="ui header">Bookie Overview</h1><br/>
 {% if listChain %}
 <div class="ui grid">
 <div></div><!-- empty for design -->
@@ -53,7 +53,7 @@
   {% if listChain['extraLink'] %}
   {% for extra in listChain['extraLink'] %}
   	{% if extra['argument'] %}
-  		<a class="item" href="{{ url_for(extra['link']) }}/{{extra['argument'][1]}}"><!-- this a hack, look up proper JinJa2 -->
+  		<a class="item" href="{{ url_for(extra['link'], **{extra['argument'][0]: extra['argument'][1]} ) }}"><!-- this a hack, look up proper JinJa2 -->
   	{% else %}
   		<a class="item" href="{{ url_for(extra['link'] ) }}">
 	{% endif %}

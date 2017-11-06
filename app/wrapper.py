@@ -89,12 +89,14 @@ class Event(BlockchainIdentifiable):
         if operationData.get('operationName', None) == 'event_create':
             return {'id': operationData['operationId'],
                     'name': operationData['name'],
+                    'season': operationData['season'],
                     'start_time': operationData['start_time'],
                     'event_group_id': operationData['event_group_id']}
         elif operationData.get('operationName', None) == 'event_update':
             return {'pendingOperationId': operationData['operationId'],
                     'id': operationData['event_id'],
                     'name': operationData['new_name'],
+                    'season': operationData['newseason'],
                     'start_time': operationData['new_startTime'],
                     'event_group_id': operationData['new_event_group_id']}
         else:

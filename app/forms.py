@@ -30,7 +30,7 @@ from wtforms.validators import (
 from app.istring import InternationalizedString, LanguageNotFoundException
 from app.node import Node
 import datetime
-from app import views, utils, wrapper
+from app import views, utils, wrapper, tostring
 from peerplays.event import Event
 from peerplays.bettingmarketgroup import BettingMarketGroup
 from peerplays.eventgroup import EventGroup
@@ -109,20 +109,26 @@ validators = {
     ]
 }
 
+
 class InternationalizedStringForm(FlaskForm):
-    country = SelectField("Language", validators=[DataRequired()], choices=InternationalizedString.getChoices())
-    text    = StringField('Text', validators=[DataRequired()],)
-    
+    country = SelectField("Language",
+                          validators=[DataRequired()],
+                          choices=InternationalizedString.getChoices())
+    text = StringField('Text', validators=[DataRequired()],)
+
+
 class TranslatedFieldForm(FlaskForm):
-    translations = FieldList(FormField(InternationalizedStringForm, label=""), min_entries=1, label="")
-    addLanguage  = SubmitField("Add translation")
-    
+    translations = FieldList(FormField(InternationalizedStringForm, label=""),
+                             min_entries=1,
+                             label="")
+    addLanguage = SubmitField("Add translation")
+
     def fill(self, translationsList):
         # empty the fieldlist
         while len(self.translations) > 0:
             self.translations.pop_entry()
-            
-        for country,text in translationsList:
+
+        for country, text in translationsList:
             try:
                 lng = InternationalizedString( country, text )
             except LanguageNotFoundException:
@@ -318,8 +324,9 @@ class NewBettingMarketGroupForm(FlaskForm):
 
 
 class NewBettingMarketForm(FlaskForm):
-    bettingmarketgroup = SelectField("Betting market group", 
-                                     validators=[DataRequired()], choices=None)
+    bettingmarketgroup = SelectField("Betting market group",
+                                     validators=[DataRequired()],
+                                     choices=None)
     description = FormField(TranslatedFieldForm, label="Description")
     payoutCondition = FormField(TranslatedFieldForm, label="Payout condition")
     submit = SubmitField("Submit")
@@ -393,18 +400,111 @@ class ApprovalForm(FlaskForm):
     approve = BooleanField()
 
 
+class BettingMarketResolveForm(FlaskForm):
+    identifier = HiddenField('Identifier')
+    description = StringField('Description',
+                              render_kw={'readonly': True})
+    resolution = SelectField("Resolution",
+                             validators=[DataRequired()],
+                             choices=[("win", "win"),
+                                      ("not_win", "not_win"),
+                                      ("cancel", "cancel")]
+                             )
+
+
+class BettingMarketGroupResolveForm(FlaskForm):
+    event = SelectField("Event", validators=[DataRequired()], choices=None)
+
+    bettingmarketgroup = SelectField("Betting market group",
+                                     validators=[DataRequired()],
+                                     choices=None)
+
+    bettingmarkets = FieldList(FormField(BettingMarketResolveForm, label=""),
+                               min_entries=0,
+                               label="Betting markets")
+
+    submit = SubmitField("Submit")
+
+    @property
+    def title(self):
+        return "Betting market group resolution"
+
+    @property
+    def id(self):
+        return "bettingMarketGroupResolveForm"
+
+    def initEvents(self, selectedObject, default=None):
+        # choices need to be filled at all times
+        eventGroupId = None
+        if isinstance(selectedObject, str):
+            eventGroupId = selectedObject
+        elif isinstance(selectedObject, Event):
+            eventGroupId = selectedObject['event_group_id']
+        elif isinstance(selectedObject, BettingMarketGroup):
+            eventGroupId = selectedObject.event['event_group_id']
+        elif isinstance(selectedObject, wrapper.Event):
+            eventGroupId = selectedObject.get('parentId')
+
+        self.event.choices = selectDictToList(
+            utils.getComprisedTypesGetter('event')(eventGroupId))
+
+        if default:
+            self.event.data = default
+
+    def initGroups(self, selectedObject, default=None):
+        eventId = None
+        if isinstance(selectedObject, str):
+            eventId = selectedObject
+        elif isinstance(selectedObject, BettingMarketGroup):
+            eventId = selectedObject['event_id']
+        elif isinstance(selectedObject, BettingMarket):
+            eventId = selectedObject.bettingmarketgroup['event_id']
+        elif isinstance(selectedObject, wrapper.BettingMarketGroup):
+            eventId = selectedObject.get('parentId')
+        elif isinstance(selectedObject, Event):
+            eventId = selectedObject['id']
+        elif isinstance(selectedObject, wrapper.Event):
+            eventId = selectedObject.get('id')
+
+        self.bettingmarketgroup.choices = selectDictToList(
+            utils.getComprisedTypesGetter('bettingmarketgroup')(eventId))
+        if default:
+            self.bettingmarketgroup.data = default
+
+    def fillMarkets(self, selectedBettingMargetGroup):
+        bettingMarketGroupId = None
+        if isinstance(selectedBettingMargetGroup, str):
+            bettingMarketGroupId = selectedBettingMargetGroup
+
+        bettingMarkets = Node().getBettingMarkets(bettingMarketGroupId)
+
+        for market in bettingMarkets:
+            tmpForm = BettingMarketResolveForm()
+            tmpForm.identifier = market['id']
+            tmpForm.description = tostring.findEnglishOrFirst(market['description'])
+            self.bettingmarkets.append_entry(tmpForm)
+
+    def fill(self, selectedObject):
+        pass
+
+
 class AmountForm(FlaskForm):
-    symbol = TextField(label='Asset', validators=[DataRequired()], render_kw={'disabled' : True})
+    symbol = TextField(label='Asset',
+                       validators=[DataRequired()],
+                       render_kw={'disabled' : True})
 
 
 class AccountForm(FlaskForm):
-    id   = TextField(label='Id', validators=[DataRequired()], render_kw={'disabled' : True})
-    name = TextField(label='Name', validators=[DataRequired()], render_kw={'disabled' : True})
-    
-    #membershipExpirationDate = TextField(label='Membership expiration', validators=[DataRequired()], render_kw={'disabled' : True})
-    
-    balances = FieldList(FormField(AmountForm, label=''), label='Balances', min_entries=0)
-    
+    id = TextField(label='Id',
+                   validators=[DataRequired()],
+                   render_kw={'disabled': True})
+    name = TextField(label='Name',
+                     validators=[DataRequired()],
+                     render_kw={'disabled': True})
+    balances = FieldList(FormField(AmountForm, label=''),
+                         label='Balances',
+                         min_entries=0)
+
     def fill(self, account):
         self.id.data = account['id']
         self.name.data = account['name']

@@ -1,5 +1,5 @@
 from app.forms import TranslatedFieldForm, NewWalletForm, GetAccountForm,\
-    ApprovalForm
+    ApprovalForm, BettingMarketGroupResolveForm
 from app.istring import InternationalizedString, LanguageNotFoundException
 from app.node import Node, NodeException, NonScalableRequest,\
                         BroadcastActiveOperationsExceptions
@@ -25,12 +25,14 @@ def index():
 
 
 @app.route('/lock', methods=['GET', 'POST'])
+@requires_node
 def lock():
     Node().lock()
     return redirect(url_for('overview'))
 
 
 @app.route('/unlock', methods=['GET', 'POST'])
+@requires_node
 def unlock():
     unlockForm = forms.UnlockForm()
 
@@ -42,6 +44,7 @@ def unlock():
 
 
 @app.route('/account/info')
+@requires_node
 def account_info():
     account = Node().getSelectedAccount()
 
@@ -52,6 +55,7 @@ def account_info():
 
 
 @app.route("/account/select/<accountId>", methods=['GET', 'POST'])
+@requires_node
 def account_select(accountId):
     try:
         accountName = Node().selectAccount(accountId)
@@ -59,11 +63,6 @@ def account_select(accountId):
     except BroadcastActiveOperationsExceptions as e:
         flash(e.message, category='error')
         return redirect(url_for('pending_operations'))
-    except NodeException as e:
-        flash(e.message, category='error')
-        return redirect(url_for('overview'))
-    except Exception as e:
-        flash(e.__repr__(), category='error')
 
     return redirect(utils.processNextArgument(
         request.args.get('next'), url_for('overview')))
@@ -71,6 +70,7 @@ def account_select(accountId):
 
 @app.route("/account/add", methods=['GET', 'POST'])
 @unlocked_wallet_required
+@requires_node
 def account_add():
     form = GetAccountForm()
     formTitle = "Add Account to wallet"
@@ -90,6 +90,7 @@ def account_add():
 
 
 @app.route("/wallet/new", methods=['GET', 'POST'])
+@requires_node
 def newwallet():
     form = NewWalletForm()
     formTitle = "Enter password to create new wallet"
@@ -172,6 +173,12 @@ def overview(typeName=None, identifier=None):
                     'link':  'overview',
                     'argument': ('typeName', 'bettingmarketgrouprule'),
                     'icon': 'unhide'
+                              },
+                              {
+                    'title': 'Resolve ' + utils.getTitle('bettingmarketgroup') + 's',
+                    'link':  'bettingmarketgroup_resolve_selectgroup',
+                    'argument': ('eventId', parentId),
+                    'icon': 'money'
                               }
                               ]}
         else:
@@ -180,6 +187,10 @@ def overview(typeName=None, identifier=None):
                 'title':    title,
                 'typeName': typeName
                    }
+
+    # bettingmarketroule has no parent or childs
+    if typeName == 'bettingmarketgrouprule':
+        redirect(url_for('overview', typeName='bettingmarketgrouprule'))
 
     # build reverse chain starting with the one selected
     reverseChain = []
@@ -623,6 +634,68 @@ def bettingmarket_grade(selectId=None):
 @unlocked_wallet_required
 def bettingmarketgroup_freeze(selectId=None):
     return redirect(url_for('overview'))
+
+
+@app.route("/bettingmarketgroup/resolve/selectevent/<eventGroupId>", methods=['get'])
+@requires_node
+def bettingmarketgroup_resolve_selectevent(eventGroupId=None):
+    form = BettingMarketGroupResolveForm()
+    form.initEvents(eventGroupId)
+
+    return render_template_menuinfo("generic.html", **locals())
+
+
+@app.route("/bettingmarketgroup/resolve/selectgroup/<eventId>", methods=['get', 'post'])
+@requires_node
+def bettingmarketgroup_resolve_selectgroup(eventId=None):
+    form = BettingMarketGroupResolveForm()
+
+    selectedEvent = Node().getEvent(eventId)
+
+    form.initEvents(selectedEvent['event_group_id'], eventId)
+    form.event.render_kw = {"disabled": True}
+
+    form.initGroups(selectedEvent)
+#     form.bettingmarketgroup.render_kw = {'onclick': "document.getElementById('bettingMarketGroupResolveForm').submit()"}
+
+    if form.validate_on_submit():
+        return redirect(url_for('bettingmarketgroup_resolve',
+                        bettingMarketGroupId=form.bettingmarketgroup.data))
+
+    return render_template_menuinfo("generic.html", **locals())
+
+
+@app.route("/bettingmarketgroup/resolve/<bettingMarketGroupId>", methods=['post', 'get'])
+@requires_node
+@unlocked_wallet_required
+def bettingmarketgroup_resolve(bettingMarketGroupId=None):
+    form = BettingMarketGroupResolveForm()
+
+    selectedBMG = Node().getBettingMarketGroup(bettingMarketGroupId)
+
+    form.initEvents(selectedBMG.event['event_group_id'])
+    form.initGroups(selectedBMG['event_id'])
+
+    if not form.submit.data:
+        form.fillMarkets(bettingMarketGroupId)
+
+        form.event.data = selectedBMG['event_id']
+        form.bettingmarketgroup.data = bettingMarketGroupId
+
+        form.event.render_kw = {"disabled": True}
+        form.bettingmarketgroup.render_kw = {"disabled": True}
+
+        # todo: this is weird, i dont understand why data is filled
+        for market in form.bettingmarkets:
+            market.resolution.data = None
+
+    if form.validate_on_submit():
+        resultList = []
+        for market in form.bettingmarkets:
+            resultList.append([market.identifier.data, market.resolution.data])
+        Node().resolveBettingMarketGroup(bettingMarketGroupId, resultList)
+
+    return render_template_menuinfo("generic.html", **locals())
 
 
 @app.route("/bettingmarketgroup/unfreeze/<selectId>", methods=['post', 'get'])

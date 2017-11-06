@@ -17,27 +17,25 @@ class NodeException(Exception):
         service will be wrapped with this exception
     """
     def __init__(self, message=None, cause=None):
-        Exception.__init__(self)
         self.cause = cause
 
-        if message:
-            self.message = message
-        else:
-            self.message = 'Error in the server communication'
+        if not message:
+            message = 'Error in the server communication'
         if cause:
-            self.message = self.message + '. ' + cause.__repr__()
+            message = message + ': ' + str(cause)
+
+        Exception.__init__(self, message)
 
 
 class NonScalableRequest(NodeException):
     def __init__(self):
-        Exception.__init__(self)
-        self.message = 'This request would mean to select all objects of this type, please select a parent'
+        NodeException.__init__(self,
+                               'This request would mean to select all objects of this type, please select a parent')
 
 
 class BroadcastActiveOperationsExceptions(NodeException):
     def __init__(self):
-        Exception.__init__(self)
-        self.message = 'Broadcast or cancel the pending operations first'
+        NodeException.__init__(self, 'Broadcast or cancel the pending operations first')
 
 
 class ApiServerDown(NodeException):
@@ -139,11 +137,11 @@ class Node(object):
             raise NodeException(cause=ex)
 
     def selectAccount(self, accountId):
+        # if there are any pending operations the user need to finish 
+        # that first
+        if self.getPendingTransaction() and len(self.getPendingTransaction().list_operations()) > 0:
+            raise BroadcastActiveOperationsExceptions
         try:
-            # if there are any pending operations the user need to finish 
-            # that first
-            if self.getPendingTransaction() and len(self.getPendingTransaction().list_operations()) > 0:
-                raise BroadcastActiveOperationsExceptions
             account = Account(accountId, peerplays_instance=self.get_node())
             self.get_node().config["default_account"] = account['name']
             return account['id'] + ' - ' + account['name']
@@ -417,30 +415,43 @@ class Node(object):
                 Node.pendingProposal = []
         except Exception as ex:
             raise NodeException(cause=ex)
-        
+
     def broadcastPendingTransaction(self):
         try:
             if Node.pendingProposal:
-                returnV =  self.get_node().broadcast()
-                self.get_node().clear() 
+                returnV = self.get_node().broadcast()
+                self.get_node().clear()
                 Node.pendingProposal = []
-                return returnV                
+                return returnV
         except Exception as ex:
             raise NodeException(cause=ex)
 
     def acceptProposal(self, proposalId):
         try:
-            return self.get_node().approveproposal([proposalId], 
-                                                   self.getSelectedAccountName(), 
-                                                   self.getSelectedAccountName())
+            return self.get_node().approveproposal(
+                                [proposalId],
+                                self.getSelectedAccountName(),
+                                self.getSelectedAccountName())
         except Exception as ex:
             raise NodeException(cause=ex)
-        
+
     def rejectProposal(self, proposalId):
         try:
-            return self.get_node().disapproveproposal([proposalId], 
-                                                   self.getSelectedAccountName(), 
-                                                   self.getSelectedAccountName())
+            return self.get_node().disapproveproposal(
+                            [proposalId],
+                            self.getSelectedAccountName(),
+                            self.getSelectedAccountName())
         except Exception as ex:
             raise NodeException(cause=ex)
+
+    def resolveBettingMarketGroup(self, bettingMarketGroupId, resultList):
+        try:
+            return self.get_node().betting_market_resolve(
+                            bettingMarketGroupId,
+                            resultList,
+                            self.getSelectedAccountName(),
+                            append_to=self.getPendingProposal())
+        except Exception as ex:
+            raise NodeException(cause=ex)
+
         

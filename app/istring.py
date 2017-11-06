@@ -63,7 +63,7 @@ class InternationalizedString(object):
         ("gv", "Gaelic (Manx)"),
         ("ka", "Georgian"),
         ("de", "German"),
-        ("el", "Greek"),
+        ("gr", "Greek"),
         ("kl", "Greenlandic"),
         ("gn", "Guarani"),
         ("gu", "Gujarati"),

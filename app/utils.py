@@ -242,12 +242,12 @@ def requires_node(f):
         try:
             return f(*args, **kwargs)
         except NodeException as e:
-            flash(e.message, category='error')
+            flash(str(e), category='error')
             # default operation after error?
 #             return redirect(url_for('overview'))
             # for now still throw exception for debuggin
-#             if e.cause:
-#                 raise e.cause
+            if e.cause:
+                raise e.cause
             raise e
     return decorated_function
 

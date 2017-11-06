@@ -3,10 +3,12 @@
 
 {% block content %}
 <table style="width: 100%"><tbody><tr><td>
-<h2>{{ formTitle }}</h2>
+<h2>{{ formTitle }}{% if form.title %}{{ form.title }}{% endif %}</h2>
 </td></tr></tbody></table><br />
 
+
 {{ quickform(form) }}
+
 
 {{ formMessage }}
 
