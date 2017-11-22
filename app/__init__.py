@@ -8,6 +8,9 @@ from flask_mail import Mail
 # Instanciate config
 config = yaml.load(open("config.yml").read())
 
+from pprint import pprint
+pprint(config)
+
 # Instanciate flask
 app = Flask(__name__)
 

@@ -277,7 +277,14 @@ def render_template_menuinfo(tmpl_name, **kwargs):
 
 
 def getMenuInfo():
-    account = Node().getSelectedAccount()
+    try:
+        account = Node().getSelectedAccount()
+        accountDict = {
+            'id': account.identifier,
+            'name': account.name,
+            'toString': tostring.toString(account)}
+    except:
+        accountDict = {'id': '-', 'name': '-', 'toString': '-'}
 
     currentTransaction = Node().getPendingTransaction()
     if not currentTransaction:
@@ -288,9 +295,7 @@ def getMenuInfo():
     votableProposals = Node().getAllProposals()
 
     menuInfo = {
-        'account': {'id': account.identifier,
-                    'name': account.name,
-                    'toString': tostring.toString(account)},
+        'account': accountDict,
         'numberOfOpenTransactions': len(operations),
         'numberOfVotableProposals': len(votableProposals),
         'walletLocked': Node().locked()

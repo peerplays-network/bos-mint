@@ -23,9 +23,9 @@ class LocalProposal(db.Model):
 
 
 class ViewConfiguration(db.Model):
-    name = db.Column(db.String, primary_key=True)
-    key = db.Column(db.String, primary_key=True)
-    value = db.Column(db.String)
+    name = db.Column(db.String(128), primary_key=True)
+    key = db.Column(db.String(128), primary_key=True)
+    value = db.Column(db.String(128))
 
     @classmethod
     def set(cls, name, key, value):

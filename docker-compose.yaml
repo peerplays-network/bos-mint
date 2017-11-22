@@ -1,0 +1,6 @@
+version: '3'
+services:
+ main:
+  image: boss:latest
+  ports:
+   - "8000:8000"

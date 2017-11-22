@@ -95,7 +95,7 @@ class Node(object):
                 node=self.url,
                 nobroadcast=config["nobroadcast"],
                 **self.kwargs
-           )
+            )
         except Exception:
             raise ApiServerDown
 
@@ -119,10 +119,12 @@ class Node(object):
                 proposer=self.getProposerAccountName())
 
     def getSelectedAccount(self):
+        # so far default is always active
         try:
-            # so far default is always active
-            return Account(self.get_node().config["default_account"],
-                           peerplays_instance=self.get_node())
+            return Account(
+                self.get_node().config["default_account"],
+                peerplays_instance=self.get_node()
+            )
         except Exception as ex:
             raise NodeException(cause=ex)
 
@@ -155,11 +157,20 @@ class Node(object):
         except Exception as ex:
             raise NodeException(cause=ex)
 
-    def addAccountToWallet(self, privateKey, publicKey):
+    def addAccountToWallet(self, privateKey):
         try:
             # ensure public key belongs to an account
             self.validateAccount(privateKey),
             self.get_node().wallet.addPrivateKey(privateKey)
+
+            if self.get_node().config["default_account"] is None:
+                accounts = self.getAllAccountsOfWallet()
+                if len(accounts):
+                    self.get_node().config["default_account"] = (
+                        accounts[0]["name"]
+                    )
+                    self.selectAccount(accounts[0]["account"]["id"])
+
         except Exception as ex:
             raise NodeException(message=str(ex), cause=ex)
 

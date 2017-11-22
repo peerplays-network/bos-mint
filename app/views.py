@@ -38,7 +38,7 @@ def unlock():
 
     if unlockForm.validate_on_submit():
         return redirect(utils.processNextArgument(
-            request.args.get('next'), url_for('overview')))
+            request.args.get('next'), 'overview'))
 
     return render_template_menuinfo('unlock.html', **locals())
 
@@ -65,7 +65,7 @@ def account_select(accountId):
         return redirect(url_for('pending_operations'))
 
     return redirect(utils.processNextArgument(
-        request.args.get('next'), url_for('overview')))
+        request.args.get('next'), 'overview'))
 
 
 @app.route("/account/add", methods=['GET', 'POST'])
@@ -80,11 +80,13 @@ def account_add():
         try:
             Node().addAccountToWallet(form.privateKey.data)
         except Exception as e:
-            flash('There was a problem adding the account to the wallet.',
-                  category='error')
+            flash(
+                'There was a problem adding the account to the wallet. ({})'.format(
+                    str(e)),
+                category='error')
 
         redirect(utils.processNextArgument(
-            request.args.get('next'), url_for('overview')))
+            request.args.get('next'), 'overview'))
 
     return render_template_menuinfo('generic.html', **locals())
 
@@ -94,11 +96,11 @@ def account_add():
 def newwallet():
     form = NewWalletForm()
     formTitle = "Enter password to create new wallet"
-    formMessage = "A local wallet will be automatically created."
-    + " This local wallet is encrypted with your password, and"
-    + " will contain any private keys belonging to your accounts."
-    + " It is important that you take the time to backup this wallet"
-    + " once created!"
+    formMessage = ("A local wallet will be automatically created." +
+        " This local wallet is encrypted with your password, and" +
+        " will contain any private keys belonging to your accounts." +
+        " It is important that you take the time to backup this wallet" +
+        " once created!")
 
     if form.validate_on_submit():
         try:
