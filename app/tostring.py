@@ -4,7 +4,7 @@ from app.istring import InternationalizedString
 
 def findEnglishOrFirst(listOfIStrings, desiredLanguage='en'):
     return InternationalizedString.listToDict(listOfIStrings).get(
-            desiredLanguage, listOfIStrings[0][1])
+        desiredLanguage, listOfIStrings[0][1])
 
 
 def toString(toBeFormatted):

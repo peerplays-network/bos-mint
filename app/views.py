@@ -126,32 +126,30 @@ def overview(typeName=None, identifier=None):
             for entry in tmpList:
                 if entry['typeName'] == 'event':
                     entry['extraLink'] = [{
-                            'title': 'Start',
-                            'link': 'event_start',
-                            'icon': 'lightning'
-                                           },
-                                          {
-                            'title': 'Finish',
-                            'link': 'event_finish',
-                            'icon': 'flag checkered'
-                                           }]
+                        'title': 'Start',
+                        'link': 'event_start',
+                        'icon': 'lightning'
+                    }, {
+                        'title': 'Finish',
+                        'link': 'event_finish',
+                        'icon': 'flag checkered'
+                    }]
                 elif entry['typeName'] == 'bettingmarket':
                     entry['extraLink'] = [{
-                            'title': 'Grade',
-                            'link': 'bettingmarket_grade',
-                            'icon': 'book'
-                                           }]
+                        'title': 'Grade',
+                        'link': 'bettingmarket_grade',
+                        'icon': 'book'
+                    }]
                 elif entry['typeName'] == 'bettingmarketgroup':
                     entry['extraLink'] = [{
-                            'title': 'Freeze',
-                            'link': 'bettingmarketgroup_freeze',
-                            'icon': 'snowflake'
-                                           },
-                                          {
-                            'title': 'Unfreeze',
-                            'link': 'bettingmarketgroup_unfreeze',
-                            'icon': 'fire'
-                                           }]
+                        'title': 'Freeze',
+                        'link': 'bettingmarketgroup_freeze',
+                        'icon': 'snowflake'
+                    }, {
+                        'title': 'Unfreeze',
+                        'link': 'bettingmarketgroup_unfreeze',
+                        'icon': 'fire'
+                    }]
             return tmpList
 
     def buildChainElement(parentId, typeName):
@@ -160,33 +158,31 @@ def overview(typeName=None, identifier=None):
 
         if typeName == 'bettingmarketgroup':
             return {
-                'list':     buildListElements(tmpList),
-                'title':    title,
+                'list': buildListElements(tmpList),
+                'title': title,
                 'typeName': typeName,
                 'extraLink': [{
                     'title': 'Create ' + utils.getTitle('bettingmarketgrouprule'),
                     'link': 'bettingmarketgrouprule_new',
                     'icon': 'plus'
-                              },
-                              {
+                }, {
                     'title': 'List ' + utils.getTitle('bettingmarketgrouprule') + 's',
-                    'link':  'overview',
+                    'link': 'overview',
                     'argument': ('typeName', 'bettingmarketgrouprule'),
                     'icon': 'unhide'
-                              },
-                              {
+                }, {
                     'title': 'Resolve ' + utils.getTitle('bettingmarketgroup') + 's',
-                    'link':  'bettingmarketgroup_resolve_selectgroup',
+                    'link': 'bettingmarketgroup_resolve_selectgroup',
                     'argument': ('eventId', parentId),
                     'icon': 'money'
-                              }
-                              ]}
+                }
+                ]}
         else:
             return {
-                'list':     buildListElements(tmpList),
-                'title':    title,
+                'list': buildListElements(tmpList),
+                'title': title,
                 'typeName': typeName
-                   }
+            }
 
     # bettingmarketroule has no parent or childs
     if typeName == 'bettingmarketgrouprule':
@@ -213,7 +209,8 @@ def overview(typeName=None, identifier=None):
         tmpTypeName = utils.getParentType(tmpTypeName)
         if tmpTypeName:
             selected[tmpTypeName] = tmpParentIdentifier
-            tmpParentIdentifier = utils.getComprisedParentTypeGetter(tmpTypeName)(tmpParentIdentifier)
+            tmpParentIdentifier = utils.getComprisedParentTypeGetter(
+                tmpTypeName)(tmpParentIdentifier)
 
         if isinstance(tmpChainElement, list):
             for item in tmpChainElement:
@@ -232,11 +229,11 @@ def overview(typeName=None, identifier=None):
         for chainElement in reverseChain:
             if tmpChainElement:
                 tmpChainElement["nextChainElement"] = chainElement
-                
+
             tmpChainElement = chainElement
-                   
+
     del tmpTypeName, tmpParentIdentifier
-               
+
     return render_template_menuinfo('index.html', **locals())
 
 
@@ -245,45 +242,48 @@ def overview(typeName=None, identifier=None):
 def pending_operations_discard():
     Node().discardPendingTransaction()
     flash('All pending operations have been discarded.')
-    
+
     if session.get('automatic_approval', False):
         pass
-    
+
     return redirect(url_for('pending_operations'))
+
 
 @app.route("/pending/broadcast", methods=['POST'])
 @unlocked_wallet_required
 def pending_operations_broadcast():
     if ViewConfiguration.get('automatic_approval', 'enabled', False):
         Node().get_node().blocking = True
-    
+
     try:
         answer = Node().broadcastPendingTransaction()
-        
+
         if ViewConfiguration.get('automatic_approval', 'enabled', False):
             proposalId = answer['trx']['operation_results'][0][1]
             flash('All pending operations have been broadcasted and the resulting proposal has been approved.')
             Node().acceptProposal(proposalId)
         else:
             flash('All pending operations have been broadcasted.')
-        
-        return redirect(url_for('pending_operations'))  
+
+        return redirect(url_for('pending_operations'))
     except Exception as e:
         Node().get_node().blocking = False
         raise e
-        
+
+
 @app.route("/pending", methods=['get'])
 def pending_operations():
     form = ApprovalForm()
     form.approve.data = ViewConfiguration.get('automatic_approval', 'enabled', False)
-        
+
     # construct operationsform from active transaction
     transaction = Node().getPendingTransaction()
     if transaction:
         containerList = [ widgets.prepareTransactionDataForRendering(transaction) ]
     del transaction
-            
+
     return render_template_menuinfo("pendingOperations.html", **locals())
+
 
 @app.route("/pending/automaticapproval", methods=['post'])
 def automatic_approval():
@@ -291,37 +291,39 @@ def automatic_approval():
 
     if form.validate_on_submit():
         ViewConfiguration.set('automatic_approval', 'enabled', form.approve.data)
-                    
+
     return redirect(url_for('pending_operations'))
 
-@app.route("/proposals", methods=['post','get'])
+
+@app.route("/proposals", methods=['post', 'get'])
 def votable_proposals():
     try:
         proposals = Node().getAllProposals()
         if proposals:
             accountId = Node().getSelectedAccount()['id']
-            
+
             containerList = widgets.prepareProposalsDataForRendering(proposals)
             containerReview = {}
             reviewedProposals = LocalProposal.getAllAsList()
-            
+
             for proposal in proposals:
                 if proposal['id'] in reviewedProposals:
-                    # if the proposal is stored in the localproposals database it already has been reviewed, but maybe 
+                    # if the proposal is stored in the localproposals database it already has been reviewed, but maybe
                     # rejected
-                    containerReview[proposal['id']] = {'reviewed': True, 'approved': accountId in proposal.get('available_active_approvals') }
+                    containerReview[proposal['id']] = {'reviewed': True, 'approved': accountId in proposal.get('available_active_approvals')}
                 elif accountId in proposal.get('available_active_approvals'):
                     # already approved ones also go into the reviewed column, even without a localproposal entry
-                    containerReview[proposal['id']] = {'reviewed': True, 'approved': True }
-             
+                    containerReview[proposal['id']] = {'reviewed': True, 'approved': True}
+
         del proposals
-        
+
         return render_template_menuinfo("votableProposals.html", **locals())
     except NodeException as e:
         flash(e.message, category='error')
         return redirect(url_for("overview"))
 
-@app.route("/proposals/accept/<proposalId>", methods=['post','get'])
+
+@app.route("/proposals/accept/<proposalId>", methods=['post', 'get'])
 @unlocked_wallet_required
 def votable_proposals_accept(proposalId):
     Node().acceptProposal(proposalId)
@@ -329,17 +331,19 @@ def votable_proposals_accept(proposalId):
     flash('Proposal (' + proposalId + ') has been accepted')
     return redirect(url_for('votable_proposals'))
 
-@app.route("/proposals/reject/<proposalId>", methods=['post','get'])
+
+@app.route("/proposals/reject/<proposalId>", methods=['post', 'get'])
 @unlocked_wallet_required
 def votable_proposals_reject(proposalId):
     try:
         Node().rejectProposal(proposalId)
     except Exception as e:
         pass
-    
+
     LocalProposal.wasReviewed(proposalId)
     flash('Proposal (' + proposalId + ') has been rejected')
     return redirect(url_for('votable_proposals'))
+
 
 def findAndProcessTranslatons(form):
     for field in form._fields.values():
@@ -347,7 +351,7 @@ def findAndProcessTranslatons(form):
             # an additional language line was requested
             field.translations.append_entry()
             return True
-        
+
     return False
 
 
@@ -372,9 +376,9 @@ def genericNewForm(formClass, parentId=None):
     elif form.submit.data and form.validate_on_submit():
         # Create new sport
         operation = form.create()
-        flash("A creation proposal for a new "
-              + utils.getTitle(typeName) + " was created and will be"
-              + " displayed with a relative id in the overview.")
+        flash("A creation proposal for a new " +
+              utils.getTitle(typeName) + " was created and will be" +
+              " displayed with a relative id in the overview.")
         return redirect(url_for('overview',
                         typeName=operation['typeName'],
                         identifier=operation['id']))
@@ -439,7 +443,7 @@ def genericUpdate(formClass, selectId, removeSubmits=False):
     choicesFunction = utils.getTypesGetter(typeName)
 
     try:
-        # maybe only query the selected object, if one is preselected, 
+        # maybe only query the selected object, if one is preselected,
         # saves traffic currently: always query all
         parentId = None
         if selectId:
@@ -480,7 +484,7 @@ def genericUpdate(formClass, selectId, removeSubmits=False):
 
     # first request? populate selected object
     if not form.submit.data:
-        # preselect 
+        # preselect
         form.select.data = selectId
         form.fill(selectedObject)
 
@@ -509,10 +513,10 @@ def genericUpdate(formClass, selectId, removeSubmits=False):
         # user submitted, wants to change
         # all data was entered correctly, validate and update sport
         proposal = form.update(selectedObject['id'])
-        flash("An update proposal  for " + utils.getTitle(typeName)
-              + " (id=" + selectId + ") was created.")
+        flash("An update proposal  for " + utils.getTitle(typeName) +
+              " (id=" + selectId + ") was created.")
         return redirect(utils.processNextArgument(
-                                request.args.get('next'), 'index'))
+            request.args.get('next'), 'index'))
 
     return render_template_menuinfo("update.html", **locals())
 
@@ -702,5 +706,3 @@ def bettingmarketgroup_resolve(bettingMarketGroupId=None):
 @unlocked_wallet_required
 def bettingmarketgroup_unfreeze(selectId=None):
     return redirect(url_for('overview'))
-
-

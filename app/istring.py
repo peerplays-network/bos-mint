@@ -211,7 +211,9 @@ class InternationalizedString(object):
         self.country = country
         self.text = text
 
-        if self.country not in [x[0] for x in InternationalizedString.LANGUAGES] and not country == self.UNKNOWN:
+        if self.country not in [
+            x[0] for x in InternationalizedString.LANGUAGES
+        ] and not country == self.UNKNOWN:
             raise LanguageNotFoundException
 
     def getForm(self):
@@ -227,7 +229,10 @@ class InternationalizedString(object):
 
     @classmethod
     def getChoices(cls):
-        return [(x[0], x[0] + " - " + x[1]) for x in InternationalizedString.LANGUAGES]
+        return [
+            (x[0], x[0] + " - " + x[1])
+            for x in InternationalizedString.LANGUAGES
+        ]
 
     @classmethod
     def parseToList(cls, fieldListOfInternationalizedString):
@@ -236,12 +241,17 @@ class InternationalizedString(object):
 
         istrings = list()
 
-        if isinstance(fieldListOfInternationalizedString, FormField) and\
-           isinstance(fieldListOfInternationalizedString.form, TranslatedFieldForm):
-            fieldListOfInternationalizedString = fieldListOfInternationalizedString.form.translations
+        if (
+            isinstance(
+                fieldListOfInternationalizedString, FormField) and
+            isinstance(
+                fieldListOfInternationalizedString.form, TranslatedFieldForm
+            )
+        ):
+            fieldListOfInternationalizedString = \
+                fieldListOfInternationalizedString.form.translations
 
         for ffield in fieldListOfInternationalizedString.entries:
             istrings.append([ffield.data["country"], ffield.data["text"]])
 
         return istrings
-

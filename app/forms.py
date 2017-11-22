@@ -1,6 +1,3 @@
-import re
-
-from flask import current_app, url_for
 from flask_wtf import FlaskForm
 from wtforms import (
     TextField,
@@ -66,13 +63,13 @@ def buildUpdateForm(typeName, selectChoices, newFormClass, selected=None):
     setattr(_UpdateForm, 'select', select)
 
     # readjust creation counter for display ordering of fields
-    baseCounter = select.creation_counter;
+    baseCounter = select.creation_counter
 
     for idx, entry in enumerate(newFormClass.__dict__.items()):
         if not entry[0].startswith('_'):
             if (not selected and entry[0].startswith('submit')) or selected:
                 entry[1].creation_counter = baseCounter + idx + 1
-                setattr(_UpdateForm, entry[0], entry[1]) 
+                setattr(_UpdateForm, entry[0], entry[1])
 
     form = _UpdateForm()
     return form
@@ -84,13 +81,14 @@ class UnlockPassword(object):
 
     def __call__(self, form, field):
         from .node import Node
-        from peerplays.wallet import NoWalletException, WrongMasterPasswordException
+        from peerplays.wallet import WrongMasterPasswordException
         try:
             Node().unlock(field.data)
         except WrongMasterPasswordException:
             raise ValidationError(self.message)
         except Exception as e:
             raise ValidationError(str(e))
+
 
 validators = {
     'email': [
@@ -130,28 +128,31 @@ class TranslatedFieldForm(FlaskForm):
 
         for country, text in translationsList:
             try:
-                lng = InternationalizedString( country, text )
+                lng = InternationalizedString(country, text)
             except LanguageNotFoundException:
                 # append an entry indicating the unknown language
-                lng = InternationalizedString( InternationalizedString.UNKNOWN, country + " - " + text )
+                lng = InternationalizedString(InternationalizedString.UNKNOWN, country + " - " + text)
 
-            # append entry to a FieldList creates forms from dictionary!                            
-            self.translations.append_entry( lng.getForm() )
-    
+            # append entry to a FieldList creates forms from dictionary!
+            self.translations.append_entry(lng.getForm())
+
+
 class UnlockForm(FlaskForm):
     password = PasswordField('Password', validators['unlock'])
     submit = SubmitField("Unlock wallet")
-    
+
+
 class NewWalletForm(FlaskForm):
     password_confirm = PasswordField('Password', validators=[ DataRequired() ])
     password = PasswordField('Confirm password', validators['password'])
     submit = SubmitField("Create new wallet")
-    
+
+
 class GetAccountForm(FlaskForm):
     name     = TextField('Name', validators=[Optional()])
     password = PasswordField('Password', validators=[Optional()])
     role     = TextField('Role', validators=[Optional()], default='active', render_kw={'disabled': True})
-    
+
     privateKey     = TextField('Private Key (will be calculated from above information if not given)', validators=[Optional()])
     submit = SubmitField("Login")
 
@@ -159,10 +160,10 @@ class GetAccountForm(FlaskForm):
         if not FlaskForm.validate(self):
             return False
         if self.name.data and self.password.data and self.role.data:
-            from peerplaysbase.account import PasswordKey 
+            from peerplaysbase.account import PasswordKey
             pkey = PasswordKey(self.name.data, self.password.data, self.role.data)
             self.privateKey.data = pkey.get_private_key()
-            
+
         if self.privateKey.data:
             try:
                 Node().validateAccount(self.privateKey.data),
@@ -193,8 +194,9 @@ class NewSportForm(FlaskForm):
             InternationalizedString.parseToList(self.name.translations))
 
     def update(self, selectedId):
-        return Node().updateSport(selectedId, 
-                                  InternationalizedString.parseToList(self.name))
+        return Node().updateSport(
+            selectedId,
+            InternationalizedString.parseToList(self.name))
 
 
 class NewEventGroupForm(FlaskForm):
@@ -209,7 +211,7 @@ class NewEventGroupForm(FlaskForm):
 
     def init(self, selectedObject, default=None):
         self.sport.choices = selectDictToList(
-             utils.getComprisedTypesGetter('sport')(None))
+            utils.getComprisedTypesGetter('sport')(None))
         if default:
             self.sport.data = default['parentId']
 
@@ -218,10 +220,13 @@ class NewEventGroupForm(FlaskForm):
         self.name.fill(selectedObject['name'])
 
     def create(self):
-        return Node().createEventGroup(InternationalizedString.parseToList(self.name), self.sport.data)
+        return Node().createEventGroup(
+            InternationalizedString.parseToList(self.name), self.sport.data)
 
     def update(self, selectedId):
-        return Node().updateEventGroup(selectedId, InternationalizedString.parseToList(self.name), self.sport.data)
+        return Node().updateEventGroup(
+            selectedId,
+            InternationalizedString.parseToList(self.name), self.sport.data)
 
 
 class NewEventForm(FlaskForm):
@@ -259,26 +264,29 @@ class NewEventForm(FlaskForm):
         self.season.fill(selectedObject['season'])
 
     def create(self):
-        return Node().createEvent(InternationalizedString.parseToList(self.name),
-                                  InternationalizedString.parseToList(self.season),
-                                  self.start.data,
-                                  self.eventgroup.data)
+        return Node().createEvent(
+            InternationalizedString.parseToList(self.name),
+            InternationalizedString.parseToList(self.season),
+            self.start.data,
+            self.eventgroup.data)
 
     def update(self, selectedId):
-        return Node().updateEvent(selectedId,
-                                  InternationalizedString.parseToList(self.name),
-                                  InternationalizedString.parseToList(self.season),
-                                  self.start.data,
-                                  self.eventgroup.data)
+        return Node().updateEvent(
+            selectedId,
+            InternationalizedString.parseToList(self.name),
+            InternationalizedString.parseToList(self.season),
+            self.start.data,
+            self.eventgroup.data)
 
 
 class NewBettingMarketGroupForm(FlaskForm):
     event = SelectField("Event", validators=[DataRequired()], choices=None)
     description = FormField(TranslatedFieldForm)
-    bettingmarketrule = SelectField("Betting market group rule",
-                                    validators=[DataRequired()],
-                                    choices=selectDictToList(
-                                        utils.getComprisedTypesGetter('bettingmarketgrouprule')(None)))
+    bettingmarketrule = SelectField(
+        "Betting market group rule",
+        validators=[DataRequired()],
+        choices=selectDictToList(
+            utils.getComprisedTypesGetter('bettingmarketgrouprule')(None)))
     asset = TextField(label='Asset', render_kw={'disabled': True})
     submit = SubmitField("Submit")
 
@@ -310,23 +318,24 @@ class NewBettingMarketGroupForm(FlaskForm):
 
     def create(self):
         return Node().createBettingMarketGroup(
-                        InternationalizedString.parseToList(self.description),
-                        self.event.data,
-                        self.bettingmarketrule.data,
-                        self.asset.data)
+            InternationalizedString.parseToList(self.description),
+            self.event.data,
+            self.bettingmarketrule.data,
+            self.asset.data)
 
     def update(self, selectedId):
         return Node().updateBettingMarketGroup(
-                        selectedId,
-                        InternationalizedString.parseToList(self.description),
-                        self.event.data,
-                        self.bettingmarketrule.data)
+            selectedId,
+            InternationalizedString.parseToList(self.description),
+            self.event.data,
+            self.bettingmarketrule.data)
 
 
 class NewBettingMarketForm(FlaskForm):
-    bettingmarketgroup = SelectField("Betting market group",
-                                     validators=[DataRequired()],
-                                     choices=None)
+    bettingmarketgroup = SelectField(
+        "Betting market group",
+        validators=[DataRequired()],
+        choices=None)
     description = FormField(TranslatedFieldForm, label="Description")
     payoutCondition = FormField(TranslatedFieldForm, label="Payout condition")
     submit = SubmitField("Submit")
@@ -356,16 +365,16 @@ class NewBettingMarketForm(FlaskForm):
 
     def create(self):
         return Node().createBettingMarket(
-                    InternationalizedString.parseToList(self.payoutCondition),
-                    InternationalizedString.parseToList(self.description),
-                    self.bettingmarketgroup.data)
+            InternationalizedString.parseToList(self.payoutCondition),
+            InternationalizedString.parseToList(self.description),
+            self.bettingmarketgroup.data)
 
     def update(self, selectedId):
         return Node().updateBettingMarket(
-                    selectedId,
-                    InternationalizedString.parseToList(self.payoutCondition),
-                    InternationalizedString.parseToList(self.description),
-                    self.bettingmarketgroup.data)
+            selectedId,
+            InternationalizedString.parseToList(self.payoutCondition),
+            InternationalizedString.parseToList(self.description),
+            self.bettingmarketgroup.data)
 
 
 class NewBettingMarketGroupRuleForm(FlaskForm):
@@ -404,12 +413,13 @@ class BettingMarketResolveForm(FlaskForm):
     identifier = HiddenField('Identifier')
     description = StringField('Description',
                               render_kw={'readonly': True})
-    resolution = SelectField("Resolution",
-                             validators=[DataRequired()],
-                             choices=[("win", "win"),
-                                      ("not_win", "not_win"),
-                                      ("cancel", "cancel")]
-                             )
+    resolution = SelectField(
+        "Resolution",
+        validators=[DataRequired()],
+        choices=[("win", "win"),
+                 ("not_win", "not_win"),
+                 ("cancel", "cancel")]
+    )
 
 
 class BettingMarketGroupResolveForm(FlaskForm):
@@ -481,7 +491,8 @@ class BettingMarketGroupResolveForm(FlaskForm):
         for market in bettingMarkets:
             tmpForm = BettingMarketResolveForm()
             tmpForm.identifier = market['id']
-            tmpForm.description = tostring.findEnglishOrFirst(market['description'])
+            tmpForm.description = tostring.findEnglishOrFirst(
+                market['description'])
             self.bettingmarkets.append_entry(tmpForm)
 
     def fill(self, selectedObject):
@@ -489,9 +500,10 @@ class BettingMarketGroupResolveForm(FlaskForm):
 
 
 class AmountForm(FlaskForm):
-    symbol = TextField(label='Asset',
-                       validators=[DataRequired()],
-                       render_kw={'disabled' : True})
+    symbol = TextField(
+        label='Asset',
+        validators=[DataRequired()],
+        render_kw={'disabled' : True})
 
 
 class AccountForm(FlaskForm):
@@ -508,14 +520,10 @@ class AccountForm(FlaskForm):
     def fill(self, account):
         self.id.data = account['id']
         self.name.data = account['name']
-        
+
         # self.membershipExpirationDate.data = account['membership_expiration_date']
-        
+
         for balance in account.balances:
             tmpForm = AmountForm()
-            tmpForm.symbol  = str(balance.amount) + ' ' + balance.symbol
-            self.balances.append_entry( tmpForm )
-
-
-
-
+            tmpForm.symbol = str(balance.amount) + ' ' + balance.symbol
+            self.balances.append_entry(tmpForm)

@@ -18,10 +18,10 @@ class BlockchainIdentifiable(dict):
 
 #     def create(self):
 #         pass
-# 
+#
 #     def update(self):
 #         pass
-# 
+#
 #     @classmethod
 #     def filterByParentId(self, parentId):
 #         pass
@@ -212,13 +212,12 @@ class Bet(BlockchainIdentifiable):
 
 def mapOperationToObject(typeName, operation):
     typeOpjectMap = {
-            'sport': Sport,
-            'eventgroup': EventGroup,
-            'event': Event,
-            'bettingmarketgroup': BettingMarketGroup,
-            'bettingmarket': BettingMarket,
-            'bettingmarketgrouprule': BettingMarketGroupRule
-        }
+        'sport': Sport,
+        'eventgroup': EventGroup,
+        'event': Event,
+        'bettingmarketgroup': BettingMarketGroup,
+        'bettingmarket': BettingMarket,
+        'bettingmarketgrouprule': BettingMarketGroupRule
+    }
     clazz = typeOpjectMap[typeName]
     return clazz(**clazz.translateOperation(operation))
-

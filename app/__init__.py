@@ -39,10 +39,11 @@ db = SQLAlchemy(app)
 # Assets
 app.config['ASSETS_DEBUG'] = config["debug"]
 
-# disable CSRF protection for now, fix and remove 
+# disable CSRF protection for now, fix and remove
 app.config['WTF_CSRF_ENABLED'] = False
 
 from app import models
+
 
 @app.before_first_request
 def before_first_request():
