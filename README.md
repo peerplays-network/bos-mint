@@ -6,24 +6,6 @@ blockchain.
 
 ## Setup
 
-### Dependencies
-
-    aptitude install python3-crypto \
-                     python3-ecdsa \
-                     mariadb-client \
-                     mariadb-server \
-                     mariadb-common \
-                     libmariadbclient-dev \
-                     pkg-config \
-                     libffi6 \
-                     libffi-dev \
-                     autoconf \
-                     libtool \
-                     build-essential \
-                     libssl-dev \
-                     nginx \
-                     supervisor
-
 ### Setup Python Environment
 
     pip3 install uwsgi virtualenv --user
@@ -35,3 +17,16 @@ blockchain.
 
     ./manage web
     (open browser with http://localhost:5000)
+
+
+# Docker
+
+## Build and Run Docker Container
+
+    $ cd bookied-ui
+    $ docker build -t boss:latest .
+    $ docker-compose up
+
+.. then open browser with URL:
+
+    http://localhost:8000
