@@ -1,14 +1,31 @@
 import yaml
-import sys
 import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_mail import Mail
+from pprint import pprint
 
 # Instanciate config
-config = yaml.load(open("config.yml").read())
-
-from pprint import pprint
+if os.path.isfile("config.yml"):
+    config = yaml.load(open("config.yml").read())
+else:
+    config = {
+        "debug": True,
+        "nobroadcast": False,
+        "witness_url": os.environ.get(
+            "WITNESS_URL",
+            "wss://peerplays-dev.blocktrades.info/ws"
+        ),
+        "mail_host": os.environ.get("MAIL_HOST"),
+        "mail_port": os.environ.get("MAIL_PORT", 25),
+        "mail_user": os.environ.get("MAIL_USER"),
+        "mail_pass": os.environ.get("MAIL_PASS"),
+        "mail_from": os.environ.get("MAIL_FROM", "boss@localhost"),
+        "mail_notify": os.environ.get("MAIL_NOTIFY"),
+        "project_name": os.environ.get("PROJECT_NAME", "PeerPlays-Boss"),
+        "secret_key": os.environ.get("SECRET_KEY", "RUR7LywKvncb4eoR"),
+        "sql_database": os.environ.get("SQL_DATABASE")
+    }
 pprint(config)
 
 # Instanciate flask
@@ -34,7 +51,8 @@ mail = Mail(app)
 # Config database
 basedir = os.path.abspath(os.path.dirname(__file__))
 
-app.config['SQLALCHEMY_DATABASE_URI'] = config["sql_database"].format(cwd=basedir)
+app.config['SQLALCHEMY_DATABASE_URI'] = config["sql_database"].format(
+    cwd=basedir)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = config["debug"]
 db = SQLAlchemy(app)

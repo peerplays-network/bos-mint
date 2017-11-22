@@ -1,11 +1,11 @@
+import os
 import sys
 import logging
 from logging.handlers import SMTPHandler, RotatingFileHandler
-from . import app, config
+from . import config
 
 
 def logmodule(module):
-    # log = app.logger
     thislog = logging.getLogger(module)
     thislog.addHandler(log_handler_mail)
     thislog.addHandler(log_handler_rotate)
@@ -14,30 +14,40 @@ def logmodule(module):
     return thislog
 
 
-log_handler_mail = SMTPHandler(config["mail_host"].split(":"),
-                               config["mail_from"],
-                               config["admins"],
-                               '[%s] Error' % config["project_name"],
-                               (config["mail_user"],
-                                config["mail_pass"]))
-log_handler_mail.setFormatter(logging.Formatter(
-    "Message type:       %(levelname)s\n" +
-    "Location:           %(pathname)s:%(lineno)d\n" +
-    "Module:             %(module)s\n" +
-    "Function:           %(funcName)s\n" +
-    "Time:               %(asctime)s\n" +
-    "\n" +
-    "Message:\n" +
-    "\n" +
-    "%(message)s\n"
-))
-log_handler_mail.setLevel(logging.WARNING)
+if (
+    "mail_notify" in config and
+    "mail_from" in config and
+    "mail_host" in config and
+    "mail_user" in config and
+    "mail_pass" in config
+):
+    log_handler_mail = SMTPHandler(
+        config["mail_host"].split(":"),
+        config["mail_from"],
+        config["mail_notify"],
+        '[%s] Error' % config["project_name"],
+        (config["mail_user"],
+         config["mail_pass"]))
+    log_handler_mail.setFormatter(logging.Formatter(
+        "Message type:       %(levelname)s\n" +
+        "Location:           %(pathname)s:%(lineno)d\n" +
+        "Module:             %(module)s\n" +
+        "Function:           %(funcName)s\n" +
+        "Time:               %(asctime)s\n" +
+        "\n" +
+        "Message:\n" +
+        "\n" +
+        "%(message)s\n"
+    ))
+    log_handler_mail.setLevel(logging.WARNING)
 
 ###############################################################################
 # stdout
 ###############################################################################
 log_handler_stdout = logging.StreamHandler(sys.stdout)
-log_handler_stdout.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+log_handler_stdout.setFormatter(
+    logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
 log_handler_stdout.setLevel(logging.INFO)
 
 ###############################################################################

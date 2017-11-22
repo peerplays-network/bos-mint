@@ -1,0 +1,15 @@
+debug: True
+nobroadcast: False
+witness_url: wss://peerplays-dev.blocktrades.info/ws
+
+mail_host: host:port
+mail_port: 25 
+mail_user: username
+mail_pass: password
+mail_from: local@localhost
+mail_notify: admin@example.com
+
+project_name: PeerPlays-Boss
+secret_key: RUR7LywKvncb4eoR
+
+sql_database: "{{cwd}}/database.sqlite"
