@@ -1,11 +1,9 @@
 FROM ubuntu:17.04
  
 # Update OS
-RUN \
-    sed -i 's/# \(.*multiverse$\)/\1/g' /etc/apt/sources.list && \
-    apt-get update && \
-    apt-get -y upgrade && \
-    apt-get install -y python3 python3-dev python3-pip libmysqlclient-dev libssl-dev
+RUN apt-get update
+RUN apt-get -y upgrade
+RUN apt-get install -y python3 python3-dev python3-pip libmysqlclient-dev libssl-dev
  
 # Create app directory
 RUN mkdir /app

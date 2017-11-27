@@ -24,7 +24,7 @@ else:
         "mail_notify": os.environ.get("MAIL_NOTIFY"),
         "project_name": os.environ.get("PROJECT_NAME", "PeerPlays-Boss"),
         "secret_key": os.environ.get("SECRET_KEY", "RUR7LywKvncb4eoR"),
-        "sql_database": os.environ.get("SQL_DATABASE")
+        "sql_database": os.environ.get("SQL_DATABASE", "{{cwd}}/database.sqlite")
     }
 pprint(config)
 
@@ -51,8 +51,7 @@ mail = Mail(app)
 # Config database
 basedir = os.path.abspath(os.path.dirname(__file__))
 
-app.config['SQLALCHEMY_DATABASE_URI'] = config["sql_database"].format(
-    cwd=basedir)
+app.config['SQLALCHEMY_DATABASE_URI'] = config["sql_database"].format(cwd=basedir)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = config["debug"]
 db = SQLAlchemy(app)
