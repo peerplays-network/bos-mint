@@ -4,10 +4,12 @@ import logging
 from logging.handlers import SMTPHandler, RotatingFileHandler
 from . import config
 
+log_handler_mail = None
 
 def logmodule(module):
     thislog = logging.getLogger(module)
-    thislog.addHandler(log_handler_mail)
+    if log_handler_mail:
+        thislog.addHandler(log_handler_mail)
     thislog.addHandler(log_handler_rotate)
     thislog.addHandler(log_handler_stdout)
     thislog.setLevel(logging.INFO)
@@ -17,7 +19,7 @@ def logmodule(module):
 if (
     "mail_notify" in config and
     "mail_from" in config and
-    "mail_host" in config and
+    "mail_host" in config and config["mail_host"] and
     "mail_user" in config and
     "mail_pass" in config
 ):

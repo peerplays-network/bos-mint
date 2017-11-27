@@ -5,6 +5,8 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_mail import Mail
 from pprint import pprint
 
+basedir = os.path.abspath(os.path.dirname(__file__))
+
 # Instanciate config
 if os.path.isfile("config.yml"):
     config = yaml.load(open("config.yml").read())
@@ -24,7 +26,7 @@ else:
         "mail_notify": os.environ.get("MAIL_NOTIFY"),
         "project_name": os.environ.get("PROJECT_NAME", "PeerPlays-Boss"),
         "secret_key": os.environ.get("SECRET_KEY", "RUR7LywKvncb4eoR"),
-        "sql_database": os.environ.get("SQL_DATABASE", "{{cwd}}/database.sqlite")
+        "sql_database": os.environ.get("SQL_DATABASE", "sqlite:///{cwd}/database.db".format(cwd=basedir))
     }
 pprint(config)
 
@@ -49,8 +51,6 @@ app.config['MAIL_USE_SSL'] = False
 mail = Mail(app)
 
 # Config database
-basedir = os.path.abspath(os.path.dirname(__file__))
-
 app.config['SQLALCHEMY_DATABASE_URI'] = config["sql_database"].format(cwd=basedir)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = config["debug"]

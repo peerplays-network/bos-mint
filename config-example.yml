@@ -12,4 +12,4 @@ mail_notify: admin@example.com
 project_name: PeerPlays-Boss
 secret_key: RUR7LywKvncb4eoR
 
-sql_database: "{{cwd}}/database.sqlite"
+sql_database: "sqlite://{cwd}/database.sqlite"
