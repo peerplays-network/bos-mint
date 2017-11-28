@@ -13,24 +13,15 @@ from app import wrapper
 
 
 class NodeException(Exception):
-    """ All exceptions thrown by the underlying data
-        service will be wrapped with this exception
-    """
-    def __init__(self, message=None, cause=None):
-        self.cause = cause
-
-        if not message:
-            message = 'Error in the server communication'
-        if cause:
-            message = message + ': ' + str(cause)
-
-        Exception.__init__(self, message)
+    pass
 
 
 class NonScalableRequest(NodeException):
     def __init__(self):
-        NodeException.__init__(self,
-                               'This request would mean to select all objects of this type, please select a parent')
+        NodeException.__init__(
+            self,
+            'This request would mean to select all objects of this type, please select a parent'
+        )
 
 
 class BroadcastActiveOperationsExceptions(NodeException):

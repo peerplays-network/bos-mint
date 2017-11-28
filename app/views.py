@@ -61,7 +61,7 @@ def account_select(accountId):
         accountName = Node().selectAccount(accountId)
         flash('Account ' + accountName + ' selected!')
     except BroadcastActiveOperationsExceptions as e:
-        flash(e.message, category='error')
+        flash(str(e), category='error')
         return redirect(url_for('pending_operations'))
 
     return redirect(utils.processNextArgument(
@@ -96,7 +96,8 @@ def account_add():
 def newwallet():
     form = NewWalletForm()
     formTitle = "Enter password to create new wallet"
-    formMessage = ("A local wallet will be automatically created." +
+    formMessage = (
+        "A local wallet will be automatically created." +
         " This local wallet is encrypted with your password, and" +
         " will contain any private keys belonging to your accounts." +
         " It is important that you take the time to backup this wallet" +
@@ -321,7 +322,7 @@ def votable_proposals():
 
         return render_template_menuinfo("votableProposals.html", **locals())
     except NodeException as e:
-        flash(e.message, category='error')
+        flash(str(e), category='error')
         return redirect(url_for("overview"))
 
 
@@ -458,7 +459,7 @@ def genericUpdate(formClass, selectId, removeSubmits=False):
     except NonScalableRequest as e:
         return redirect(url_for('overview'))
     except NodeException as e:
-        flash(e.message, category='error')
+        flash(str(e), category='error')
         return render_template_menuinfo("update.html", **locals())
 
     typeNameTitle = utils.getTitle(typeName)
@@ -475,7 +476,7 @@ def genericUpdate(formClass, selectId, removeSubmits=False):
         if selectId:
             selectedObject = selectFunction(selectId)
     except NodeException as e:
-        flash(e.message, category='error')
+        flash(str(e), category='error')
         return render_template_menuinfo("update.html", **locals())
 
     # user wants to add language?
