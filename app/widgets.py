@@ -122,8 +122,10 @@ def prepareProposalsDataForRendering(proposals, accountId=None):
             listItems=tmpListItems,
             buttonNegative='Reject',
             buttonPositive='Approve',
-            buttonNegativeURL=url_for('votable_proposals_reject', proposalId=proposal['id']),
-            buttonPositiveURL=url_for('votable_proposals_accept', proposalId=proposal['id'])
+            buttonNegativeURL=url_for('votable_proposals_reject',
+                                      proposalId=proposal['id']),
+            buttonPositiveURL=url_for('votable_proposals_accept',
+                                      proposalId=proposal['id'])
         )
 
         for operation in proposal['proposed_transaction']['operations']:
