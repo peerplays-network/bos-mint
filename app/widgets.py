@@ -100,8 +100,21 @@ def prepareProposalsDataForRendering(proposals, accountId=None):
             tmpListItems.append(('Available active approvals', [
                 tostring.toString(x) for x in Node().getAccounts(proposal['available_active_approvals'])]))
         if proposal.get('required_active_approvals'):
-            tmpListItems.append(('Required approvals', [
-                tostring.toString(x) for x in Node().getAccounts(proposal['required_active_approvals'])]))
+            approvalAccounts = Node().getAccounts(proposal['required_active_approvals'])
+            # special handling for witness account
+            accountList = []
+            for account in approvalAccounts:
+                if account["id"] == "1.2.1":
+                    for authAccount in account["active"]["account_auths"]:
+                        accountList.append(
+                            tostring.toString(
+                                Node().getAccount(authAccount[0])
+                            )
+                        )
+                else:
+                    accountList.append(tostring.toString(x))
+
+            tmpListItems.append(('Required approvals', accountList))
 
         ocw = OperationsContainerWidget(
             title='Proposal ' + proposal['id'],
