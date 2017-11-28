@@ -1,4 +1,4 @@
--e git://github.com/pbsa/python-peerplays@develop#egg=peerplays
+-e git+https://github.com/pbsa/python-peerplays.git@develop#egg=peerplays
 
 Flask
 Flask-Assets
