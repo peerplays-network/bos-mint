@@ -152,6 +152,10 @@ def overview(typeName=None, identifier=None):
                         'title': 'Unfreeze',
                         'link': 'bettingmarketgroup_unfreeze',
                         'icon': 'fire'
+                    }, {
+                        'title': 'Resolve',
+                        'link': 'bettingmarketgroup_resolve',
+                        'icon': 'money'
                     }]
             return tmpList
 
@@ -643,13 +647,13 @@ def bettingmarketgroup_freeze(selectId=None):
     return redirect(url_for('overview'))
 
 
-@app.route("/bettingmarketgroup/resolve/selectevent/<eventGroupId>", methods=['get'])
-@requires_node
-def bettingmarketgroup_resolve_selectevent(eventGroupId=None):
-    form = BettingMarketGroupResolveForm()
-    form.initEvents(eventGroupId)
-
-    return render_template_menuinfo("generic.html", **locals())
+# @app.route("/bettingmarketgroup/resolve/selectevent/<eventGroupId>", methods=['get'])
+# @requires_node
+# def bettingmarketgroup_resolve_selectevent(eventGroupId=None):
+#     form = BettingMarketGroupResolveForm()
+#     form.initEvents(eventGroupId)
+# 
+#     return render_template_menuinfo("generic.html", **locals())
 
 
 @app.route("/bettingmarketgroup/resolve/selectgroup/<eventId>", methods=['get', 'post'])
@@ -667,17 +671,17 @@ def bettingmarketgroup_resolve_selectgroup(eventId=None):
 
     if form.validate_on_submit():
         return redirect(url_for('bettingmarketgroup_resolve',
-                        bettingMarketGroupId=form.bettingmarketgroup.data))
+                        selectId=form.bettingmarketgroup.data))
 
     return render_template_menuinfo("generic.html", **locals())
 
 
-@app.route("/bettingmarketgroup/resolve/<bettingMarketGroupId>", methods=['post', 'get'])
+@app.route("/bettingmarketgroup/resolve/<selectId>", methods=['post', 'get'])
 @requires_node
 @unlocked_wallet_required
-def bettingmarketgroup_resolve(bettingMarketGroupId=None):
+def bettingmarketgroup_resolve(selectId=None):
     form = BettingMarketGroupResolveForm()
-
+    bettingMarketGroupId = selectId
     selectedBMG = Node().getBettingMarketGroup(bettingMarketGroupId)
 
     form.initEvents(selectedBMG.event['event_group_id'])
