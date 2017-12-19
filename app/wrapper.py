@@ -96,7 +96,7 @@ class Event(BlockchainIdentifiable):
             return {'pendingOperationId': operationData['operationId'],
                     'id': operationData['event_id'],
                     'name': operationData['new_name'],
-                    'season': operationData['newseason'],
+                    'season': operationData['new_season'],
                     'start_time': operationData['new_startTime'],
                     'event_group_id': operationData['new_event_group_id']}
         else:
