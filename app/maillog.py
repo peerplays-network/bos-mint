@@ -6,11 +6,12 @@ from . import config
 
 log_handler_mail = None
 
+
 def logmodule(module):
     thislog = logging.getLogger(module)
     if log_handler_mail:
         thislog.addHandler(log_handler_mail)
-    thislog.addHandler(log_handler_rotate)
+    # thislog.addHandler(log_handler_rotate)
     thislog.addHandler(log_handler_stdout)
     thislog.setLevel(logging.INFO)
     return thislog
@@ -55,10 +56,12 @@ log_handler_stdout.setLevel(logging.INFO)
 ###############################################################################
 # logfile rotate
 ###############################################################################
+"""
 log_handler_rotate = RotatingFileHandler('%s.log' % config["project_name"],
                                          maxBytes=1024 * 1024 * 100,
                                          backupCount=20)
 log_handler_rotate.setLevel(logging.INFO)
+"""
 
 ###############################################################################
 # Even log this module here
