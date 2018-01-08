@@ -15,8 +15,8 @@ log = logmodule(__name__)
 
 
 @manager.command
-def web():
-    app.run(debug=True)
+def web(port=5001, host="127.0.0.1"):
+    app.run(debug=True, port=int(port), host=host)
 
 
 @manager.command
