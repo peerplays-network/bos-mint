@@ -192,18 +192,30 @@ def overview(typeName=None, identifier=None):
             }
 
     # bettingmarketroule has no parent or childs
-    if typeName == 'bettingmarketgrouprule':
-        redirect(url_for('overview', typeName='bettingmarketgrouprule'))
+    if typeName == 'bettingmarketgrouprule' and identifier:
+        return redirect(url_for('overview', typeName='bettingmarketgrouprule'))
 
-    # build reverse chain starting with the one selected
+    # build reverse chain
     reverseChain = []
     if typeName and identifier:
+        # if both type name and identifier are given, its the most currently
+        # selected. we also want to list all the child elements then
         tmpTypeName = utils.getChildType(typeName)
     elif typeName and not identifier:
-        # overview of desired typeName
-        tmpTypeName = typeName
+        # if only a typename is given, the user wants to have an overview of
+        # all objects of that type.
+        # This method is only viable for sports, since for other elements we
+        # need the parent id for a scalable select.
+        # Nevertheless, the API would support it if the methods are properly
+        # implementing in Node.get<typeName>s(selectedParentId) for
+        # selectedParentId=None
+        if typeName != 'sport':
+            flash('Selecting all is only available for sports due to' +
+                  ' performance. Please specify a parent id.')
+
+        tmpTypeName = 'sport'
     else:
-        # in this case the user only wants the sports
+        # Nothing specified? Show sports
         tmpTypeName = 'sport'
 
     # reverse through all parents starting with the type given by typeName
@@ -226,6 +238,8 @@ def overview(typeName=None, identifier=None):
             reverseChain.append(tmpChainElement)
 
     if tmpTypeName == 'sport':
+        # sport doesnt loop through the former while,
+        # thus set initial element
         sportElement = buildChainElement(None, 'sport')
         reverseChain.append(sportElement)
 
