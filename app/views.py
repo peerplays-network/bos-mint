@@ -193,6 +193,7 @@ def overview(typeName=None, identifier=None):
 
     # bettingmarketroule has no parent or childs
     if typeName == 'bettingmarketgrouprule' and identifier:
+        flash('Betting market group rules don''t have children to display')
         return redirect(url_for('overview', typeName='bettingmarketgrouprule'))
 
     # build reverse chain
@@ -209,11 +210,12 @@ def overview(typeName=None, identifier=None):
         # Nevertheless, the API would support it if the methods are properly
         # implementing in Node.get<typeName>s(selectedParentId) for
         # selectedParentId=None
-        if typeName != 'sport':
-            flash('Selecting all is only available for sports due to' +
-                  ' performance. Please specify a parent id.')
+        if typeName != 'sport' and typeName != 'bettingmarketgrouprule':
+            flash('Selecting all is only available for sports and rules due to' +
+                  ' performance, please specify a parent id.')
+            typeName = 'sport'
 
-        tmpTypeName = 'sport'
+        tmpTypeName = typeName
     else:
         # Nothing specified? Show sports
         tmpTypeName = 'sport'
