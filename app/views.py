@@ -516,7 +516,8 @@ def genericUpdate(formClass, selectId, removeSubmits=False):
         # todo: disable any and all user input
         typeNameAction = 'Details of'
 
-        for fieldName in form._fields.keys():
+        for fieldName in form._fields.copy().keys():
+            # avoid mutating original set while iterating
             field = form._fields[fieldName]
 
             if isinstance(field, SubmitField):
