@@ -5,9 +5,12 @@ with their regular ground work of managing events on the PeerPlays
 blockchain.
 
 ## Development use
-Requirements:
+Clone the develop branch from the repository locally
+	git clone -b remote git@bitbucket.org:peerplaysblockchain/bookied-ui.git
+
+Install 
 	- python 3 or higher
-	- virtualenv module installed and available in terminal
+	- virtualenv module
 
 To run the development server execute
 	run_dev_server.sh
