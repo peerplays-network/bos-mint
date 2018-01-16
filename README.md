@@ -5,15 +5,17 @@ with their regular ground work of managing events on the PeerPlays
 blockchain.
 
 ## Development use
-For documentation of usage please look inside the scripts. Only requirements
-are that python 3 or higher is installed and the virtualenv module is available
-on the command line.
+Requirements:
+	- python 3 or higher
+	- virtualenv module installed and available in terminal
 
 To run the development server execute
 	run_dev_server.sh
 	
 The manual intervention module is then available at
 	http://localhost:5000/overview
+	
+For documentation of usage please look inside the scripts. 
 	
 ### Description of scripts
 
