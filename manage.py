@@ -5,13 +5,8 @@ from flask_script import Manager, Command
 # from flask_migrate import Migrate, MigrateCommand
 from app import db, config
 from app.web import app
-import threading
-from app.maillog import logmodule
 
 manager = Manager(app)
-log = logmodule(__name__)
-# migrate = Migrate(app, db)
-# manager.add_command('db', MigrateCommand)
 
 
 @manager.command
