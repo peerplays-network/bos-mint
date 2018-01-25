@@ -95,7 +95,7 @@ def set_error_handling(flask_app):
             raise e
 
         flask_app.logger.exception(e)
-        flash(str(e), category='error')
+        flash(e.__class__.__name__ + ": " + str(e), category='error')
         return redirect(url_for('overview'))
 
     flask_app.errorhandler(Exception)(handle_exception)

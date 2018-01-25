@@ -94,13 +94,13 @@ class Node(object):
         try:
             return Account(name, peerplays_instance=self.get_node())
         except Exception as ex:
-            raise NodeException(str(ex))
+            raise NodeException(ex.__class__.__name__ + ": " + str(ex))
 
     def validateAccount(self, privateKey):
         try:
             return self.get_node().wallet.getAccountFromPrivateKey(privateKey)
         except Exception as ex:
-            raise NodeException(str(ex))
+            raise NodeException(ex.__class__.__name__ + ": " + str(ex))
 
     def ensureProposal(self):
         # deprecated code, can be removed with next peerplays update
@@ -117,7 +117,7 @@ class Node(object):
                 peerplays_instance=self.get_node()
             )
         except Exception as ex:
-            raise NodeException(str(ex))
+            raise NodeException(ex.__class__.__name__ + ": " + str(ex))
 
     def getAccounts(self, idList):
         accounts = []
@@ -127,7 +127,7 @@ class Node(object):
                                         peerplays_instance=self.get_node()))
             return accounts
         except Exception as ex:
-            raise NodeException(str(ex))
+            raise NodeException(ex.__class__.__name__ + ": " + str(ex))
 
     def selectAccount(self, accountId):
         # if there are any pending operations the user need to finish
@@ -139,14 +139,14 @@ class Node(object):
             self.get_node().config["default_account"] = account['name']
             return account['id'] + ' - ' + account['name']
         except Exception as ex:
-            raise NodeException(str(ex))
+            raise NodeException(ex.__class__.__name__ + ": " + str(ex))
 
     def getAllAccountsOfWallet(self):
         try:
             # so far default is always active
             return self.get_node().wallet.getAccounts()
         except Exception as ex:
-            raise NodeException(str(ex))
+            raise NodeException(ex.__class__.__name__ + ": " + str(ex))
 
     def addAccountToWallet(self, privateKey):
         try:
@@ -163,34 +163,34 @@ class Node(object):
                     self.selectAccount(accounts[0]["account"]["id"])
 
         except Exception as ex:
-            raise NodeException(str(ex))
+            raise NodeException(ex.__class__.__name__ + ": " + str(ex))
 
     def getSelectedAccountName(self):
         try:
             # so far default is always active
             return self.get_node().config["default_account"]
         except Exception as ex:
-            raise NodeException(str(ex))
+            raise NodeException(ex.__class__.__name__ + ": " + str(ex))
 
     def getAllProposals(self, accountName="witness-account"):
         try:
             return Proposals(accountName, peerplays_instance=self.get_node())
         except Exception as ex:
-            raise NodeException(str(ex))
+            raise NodeException(ex.__class__.__name__ + ": " + str(ex))
 
     def getPendingProposal(self):
         try:
             # so far default is pendingProposal
             return Node.pendingProposal
         except Exception as ex:
-            raise NodeException(str(ex))
+            raise NodeException(ex.__class__.__name__ + ": " + str(ex))
 
     def getPendingTransaction(self):
         try:
             # so far default is pendingProposal
             return Node.pendingProposal
         except Exception as ex:
-            raise NodeException(str(ex))
+            raise NodeException(ex.__class__.__name__ + ": " + str(ex))
 
     def getProposerAccountName(self):
         return self.getSelectedAccountName()
@@ -334,84 +334,84 @@ class Node(object):
                 account=self.getSelectedAccountName(),
                 append_to=self.getPendingProposal())
         except Exception as ex:
-            raise NodeException(str(ex))
+            raise NodeException(ex.__class__.__name__ + ": " + str(ex))
 
     @proposedOperation
     def createEventGroup(self, istrings, sportId):
         try:
             return self.get_node().event_group_create(istrings, sportId, self.getSelectedAccountName(), append_to=self.getPendingProposal())
         except Exception as ex:
-            raise NodeException(str(ex))
+            raise NodeException(ex.__class__.__name__ + ": " + str(ex))
 
     @proposedOperation
     def createEvent(self, name, season, startTime, eventGroupId):
         try:
             return self.get_node().event_create(name, season, startTime, eventGroupId, self.getSelectedAccountName(), append_to=self.getPendingProposal())
         except Exception as ex:
-            raise NodeException(str(ex))
+            raise NodeException(ex.__class__.__name__ + ": " + str(ex))
 
     @proposedOperation
     def createBettingMarketGroup(self, description, eventId, bettingMarketRuleId, asset):
         try:
             return self.get_node().betting_market_group_create(description, eventId, bettingMarketRuleId, asset, self.getSelectedAccountName(), append_to=self.getPendingProposal())
         except Exception as ex:
-            raise NodeException(str(ex))
+            raise NodeException(ex.__class__.__name__ + ": " + str(ex))
 
     @proposedOperation
     def createBettingMarket(self, payoutCondition, description, bettingMarketGroupId):
         try:
             return self.get_node().betting_market_create(payoutCondition, description, bettingMarketGroupId, self.getSelectedAccountName(), append_to=self.getPendingProposal())
         except Exception as ex:
-            raise NodeException(str(ex))
+            raise NodeException(ex.__class__.__name__ + ": " + str(ex))
 
     @proposedOperation
     def createBettingMarketGroupRule(self, name, description):
         try:
             return self.get_node().betting_market_rules_create(name, description, self.getSelectedAccountName(), append_to=self.getPendingProposal())
         except Exception as ex:
-            raise NodeException(str(ex))
+            raise NodeException(ex.__class__.__name__ + ": " + str(ex))
 
     @proposedOperation
     def updateSport(self, sportId, istrings):
         try:
             return self.get_node().sport_update(sportId, istrings, self.getSelectedAccountName(), append_to=self.getPendingProposal())
         except Exception as ex:
-            raise NodeException(str(ex))
+            raise NodeException(ex.__class__.__name__ + ": " + str(ex))
 
     @proposedOperation
     def updateEventGroup(self, eventGroupId, istrings, sportId):
         try:
             return self.get_node().event_group_update(eventGroupId, istrings, sportId, self.getSelectedAccountName(), append_to=self.getPendingProposal())
         except Exception as ex:
-            raise NodeException(str(ex))
+            raise NodeException(ex.__class__.__name__ + ": " + str(ex))
 
     @proposedOperation
     def updateEvent(self, eventId, name, season, startTime, eventGroupId):
         try:
             return self.get_node().event_update(eventId, name, season, startTime, eventGroupId, self.getSelectedAccountName(), append_to=self.getPendingProposal())
         except Exception as ex:
-            raise NodeException(str(ex))
+            raise NodeException(ex.__class__.__name__ + ": " + str(ex))
 
     @proposedOperation
     def updateBettingMarketGroup(self, bmgId, description, eventId, rulesId, freeze=False, delayBets=False):
         try:
             return self.get_node().betting_market_group_update(bmgId, description, eventId, rulesId, freeze, delayBets, self.getSelectedAccountName(), append_to=self.getPendingProposal())
         except Exception as ex:
-            raise NodeException(str(ex))
+            raise NodeException(ex.__class__.__name__ + ": " + str(ex))
 
     @proposedOperation
     def updateBettingMarketGroupRule(self, bmgrId, name, description):
         try:
             return self.get_node().betting_market_rules_update(bmgrId, name, description, self.getSelectedAccountName(), append_to=self.getPendingProposal())
         except Exception as ex:
-            raise NodeException(str(ex))
+            raise NodeException(ex.__class__.__name__ + ": " + str(ex))
 
     @proposedOperation
     def updateBettingMarket(self, bmId, payout_condition, descriptions, bmgId):
         try:
             return self.get_node().betting_market_update(bmId, payout_condition, descriptions, bmgId, self.getSelectedAccountName(), append_to=self.getPendingProposal())
         except Exception as ex:
-            raise NodeException(str(ex))
+            raise NodeException(ex.__class__.__name__ + ": " + str(ex))
 
     def discardPendingTransaction(self):
         try:
@@ -419,7 +419,7 @@ class Node(object):
                 self.get_node().clear()
                 Node.pendingProposal = []
         except Exception as ex:
-            raise NodeException(str(ex))
+            raise NodeException(ex.__class__.__name__ + ": " + str(ex))
 
     def broadcastPendingTransaction(self):
         try:
@@ -429,7 +429,7 @@ class Node(object):
                 Node.pendingProposal = []
                 return returnV
         except Exception as ex:
-            raise NodeException(str(ex))
+            raise NodeException(ex.__class__.__name__ + ": " + str(ex))
 
     def acceptProposal(self, proposalId):
         try:
@@ -438,7 +438,7 @@ class Node(object):
                 self.getSelectedAccountName(),
                 self.getSelectedAccountName())
         except Exception as ex:
-            raise NodeException(str(ex))
+            raise NodeException(ex.__class__.__name__ + ": " + str(ex))
 
     def rejectProposal(self, proposalId):
         try:
@@ -447,7 +447,7 @@ class Node(object):
                 self.getSelectedAccountName(),
                 self.getSelectedAccountName())
         except Exception as ex:
-            raise NodeException(str(ex))
+            raise NodeException(ex.__class__.__name__ + ": " + str(ex))
 
     def resolveBettingMarketGroup(self, bettingMarketGroupId, resultList):
         try:
@@ -457,4 +457,4 @@ class Node(object):
                 self.getSelectedAccountName(),
                 append_to=self.getPendingProposal())
         except Exception as ex:
-            raise NodeException(str(ex))
+            raise NodeException(ex.__class__.__name__ + ": " + str(ex))
