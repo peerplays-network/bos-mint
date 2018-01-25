@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
-
 from flask import redirect, flash, url_for, request, render_template
 from functools import wraps
 from datetime import datetime
 from app.node import Node, NodeException
-from app.istring import InternationalizedString
+
 from peerplaysbase.operationids import getOperationNameForId
 from app import wrapper, tostring
 
@@ -235,24 +234,9 @@ def strfdelta(time, fmt):
     return fmt.format(**d)
 
 
-def requires_node(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        try:
-            return f(*args, **kwargs)
-        except NodeException as e:
-            flash(str(e), category='error')
-            # default operation after error?
-#             return redirect(url_for('overview'))
-            # for now still throw exception for debuggin
-            raise e
-    return decorated_function
-
-
 def unlocked_wallet_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        from .node import Node
         if not Node().wallet_exists():
             flash(
                 "No wallet has been created yet. You need to do that and "
@@ -281,7 +265,7 @@ def getMenuInfo():
             'id': account.identifier,
             'name': account.name,
             'toString': tostring.toString(account)}
-    except:
+    except Exception as e:
         accountDict = {'id': '-', 'name': '-', 'toString': '-'}
 
     currentTransaction = Node().getPendingTransaction()

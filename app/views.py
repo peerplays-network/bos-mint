@@ -1,18 +1,36 @@
-from app.forms import TranslatedFieldForm, NewWalletForm, GetAccountForm,\
-    ApprovalForm, BettingMarketGroupResolveForm
-from app.istring import InternationalizedString, LanguageNotFoundException
-from app.node import Node, NodeException, NonScalableRequest,\
-                        BroadcastActiveOperationsExceptions
-from app.utils import render_template_menuinfo, requires_node
-from flask import render_template, redirect, request, session, flash,\
-                    url_for, make_response, abort
+from flask import (
+    redirect,
+    request,
+    session,
+    flash,
+    url_for
+)
 from wtforms import FormField, SubmitField
-
-from . import app, db, forms, config
-from .utils import unlocked_wallet_required
-from app import utils, widgets
 from peerplays.exceptions import WalletExists
-from app.models import LocalProposal, ViewConfiguration
+
+from . import app, forms, utils, widgets
+from .forms import (
+    TranslatedFieldForm,
+    NewWalletForm,
+    GetAccountForm,
+    ApprovalForm,
+    BettingMarketGroupResolveForm
+)
+from .models import (
+    LocalProposal,
+    ViewConfiguration
+)
+from .node import (
+    Node,
+    NodeException,
+    NonScalableRequest,
+    BroadcastActiveOperationsExceptions
+)
+from .utils import (
+    render_template_menuinfo,
+    unlocked_wallet_required
+)
+
 
 ###############################################################################
 # Homepage
@@ -25,14 +43,12 @@ def index():
 
 
 @app.route('/lock', methods=['GET', 'POST'])
-@requires_node
 def lock():
     Node().lock()
     return redirect(url_for('overview'))
 
 
 @app.route('/unlock', methods=['GET', 'POST'])
-@requires_node
 def unlock():
     unlockForm = forms.UnlockForm()
 
@@ -44,7 +60,6 @@ def unlock():
 
 
 @app.route('/account/info')
-@requires_node
 def account_info():
     account = Node().getSelectedAccount()
 
@@ -55,7 +70,6 @@ def account_info():
 
 
 @app.route("/account/select/<accountId>", methods=['GET', 'POST'])
-@requires_node
 def account_select(accountId):
     try:
         accountName = Node().selectAccount(accountId)
@@ -70,7 +84,6 @@ def account_select(accountId):
 
 @app.route("/account/add", methods=['GET', 'POST'])
 @unlocked_wallet_required
-@requires_node
 def account_add():
     form = GetAccountForm()
     formTitle = "Add Account to wallet"
@@ -92,7 +105,6 @@ def account_add():
 
 
 @app.route("/wallet/new", methods=['GET', 'POST'])
-@requires_node
 def newwallet():
     form = NewWalletForm()
     formTitle = "Enter password to create new wallet"
@@ -119,7 +131,6 @@ def newwallet():
 @app.route('/overview')
 @app.route('/overview/<typeName>')
 @app.route('/overview/<typeName>/<identifier>')
-@requires_node
 def overview(typeName=None, identifier=None):
     # selected ids
     selected = {}
@@ -411,7 +422,6 @@ def genericNewForm(formClass, parentId=None):
 
 @app.route("/sport/new", methods=['post', 'get'])
 @unlocked_wallet_required
-@requires_node
 def sport_new():
     return genericNewForm(forms.NewSportForm)
 
@@ -419,42 +429,36 @@ def sport_new():
 @app.route("/eventgroup/new", methods=['post', 'get'])
 @app.route("/eventgroup/new/<parentId>", methods=['post', 'get'])
 @unlocked_wallet_required
-@requires_node
 def eventgroup_new(parentId=None):
     return genericNewForm(forms.NewEventGroupForm, parentId)
 
 
 @app.route("/event/new/<parentId>", methods=['post', 'get'])
 @unlocked_wallet_required
-@requires_node
 def event_new(parentId):
     return genericNewForm(forms.NewEventForm, parentId)
 
 
 @app.route("/bettingmarketgroup/new/<parentId>", methods=['post', 'get'])
 @unlocked_wallet_required
-@requires_node
 def bettingmarketgroup_new(parentId):
     return genericNewForm(forms.NewBettingMarketGroupForm, parentId)
 
 
 @app.route("/bettingmarketgrouprule/new", methods=['post', 'get'])
 @unlocked_wallet_required
-@requires_node
 def bettingmarketgrouprule_new(parentId=None):
     return genericNewForm(forms.NewBettingMarketGroupRuleForm)
 
 
 @app.route("/bettingmarket/new/<parentId>", methods=['post', 'get'])
 @unlocked_wallet_required
-@requires_node
 def bettingmarket_new(parentId):
     return genericNewForm(forms.NewBettingMarketForm, parentId)
 
 
 @app.route("/bet/new", methods=['post', 'get'])
 @unlocked_wallet_required
-@requires_node
 def bet_new():
     return render_template_menuinfo('index.html', **locals())
 
@@ -548,7 +552,6 @@ def genericUpdate(formClass, selectId, removeSubmits=False):
 @app.route("/sport/update", methods=['post', 'get'])
 @app.route("/sport/update/<selectId>", methods=['post', 'get'])
 @unlocked_wallet_required
-@requires_node
 def sport_update(selectId=None):
     return genericUpdate(forms.NewSportForm, selectId)
 
@@ -556,7 +559,6 @@ def sport_update(selectId=None):
 @app.route("/eventgroup/update", methods=['post', 'get'])
 @app.route("/eventgroup/update/<selectId>", methods=['post', 'get'])
 @unlocked_wallet_required
-@requires_node
 def eventgroup_update(selectId=None):
     formClass = forms.NewEventGroupForm
 
@@ -566,7 +568,6 @@ def eventgroup_update(selectId=None):
 @app.route("/event/update", methods=['post', 'get'])
 @app.route("/event/update/<selectId>", methods=['post', 'get'])
 @unlocked_wallet_required
-@requires_node
 def event_update(selectId=None):
     formClass = forms.NewEventForm
     return genericUpdate(formClass, selectId)
@@ -575,7 +576,6 @@ def event_update(selectId=None):
 @app.route("/bettingmarketgroup/update", methods=['post', 'get'])
 @app.route("/bettingmarketgroup/update/<selectId>", methods=['post', 'get'])
 @unlocked_wallet_required
-@requires_node
 def bettingmarketgroup_update(selectId=None):
     formClass = forms.NewBettingMarketGroupForm
     return genericUpdate(formClass, selectId)
@@ -584,7 +584,6 @@ def bettingmarketgroup_update(selectId=None):
 @app.route("/bettingmarket/update", methods=['post', 'get'])
 @app.route("/bettingmarket/update/<selectId>", methods=['post', 'get'])
 @unlocked_wallet_required
-@requires_node
 def bettingmarket_update(selectId=None):
     formClass = forms.NewBettingMarketForm
     return genericUpdate(formClass, selectId)
@@ -593,48 +592,41 @@ def bettingmarket_update(selectId=None):
 @app.route("/bettingmarketgrouprule/update", methods=['post', 'get'])
 @app.route("/bettingmarketgrouprule/update/<selectId>", methods=['post', 'get'])
 @unlocked_wallet_required
-@requires_node
 def bettingmarketgrouprule_update(selectId=None):
     formClass = forms.NewBettingMarketGroupRuleForm
     return genericUpdate(formClass, selectId)
 
 
 @app.route("/sport/details/<selectId>")
-@requires_node
 def sport_details(selectId):
     return genericUpdate(forms.NewSportForm, selectId, True)
 
 
 @app.route("/eventgroup/details/<selectId>")
-@requires_node
 def eventgroup_details(selectId):
     formClass = forms.NewEventGroupForm
     return genericUpdate(formClass, selectId, True)
 
 
 @app.route("/event/details/<selectId>")
-@requires_node
 def event_details(selectId):
     formClass = forms.NewEventForm
     return genericUpdate(formClass, selectId, True)
 
 
 @app.route("/bettingmarketgroup/details/<selectId>")
-@requires_node
 def bettingmarketgroup_details(selectId):
     formClass = forms.NewBettingMarketGroupForm
     return genericUpdate(formClass, selectId, True)
 
 
 @app.route("/bettingmarketgrouprule/details/<selectId>")
-@requires_node
 def bettingmarketgrouprule_details(selectId):
     formClass = forms.NewBettingMarketGroupRuleForm
     return genericUpdate(formClass, selectId, True)
 
 
 @app.route("/bettingmarket/details/<selectId>")
-@requires_node
 def bettingmarket_details(selectId):
     formClass = forms.NewBettingMarketForm
     return genericUpdate(formClass, selectId, True)
@@ -674,7 +666,6 @@ def bettingmarketgroup_freeze(selectId=None):
 
 
 @app.route("/bettingmarketgroup/resolve/selectgroup/<eventId>", methods=['get', 'post'])
-@requires_node
 def bettingmarketgroup_resolve_selectgroup(eventId=None):
     form = BettingMarketGroupResolveForm()
 
@@ -694,7 +685,6 @@ def bettingmarketgroup_resolve_selectgroup(eventId=None):
 
 
 @app.route("/bettingmarketgroup/resolve/<selectId>", methods=['post', 'get'])
-@requires_node
 @unlocked_wallet_required
 def bettingmarketgroup_resolve(selectId=None):
     form = BettingMarketGroupResolveForm()
