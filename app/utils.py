@@ -245,8 +245,6 @@ def requires_node(f):
             # default operation after error?
 #             return redirect(url_for('overview'))
             # for now still throw exception for debuggin
-            if e.cause:
-                raise e.cause
             raise e
     return decorated_function
 

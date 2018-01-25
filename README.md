@@ -8,12 +8,25 @@ blockchain.
 Clone the develop branch from the repository locally
 	git clone -b remote git@bitbucket.org:peerplaysblockchain/bookied-ui.git
 
-Install 
-	- python 3 or higher
-	- virtualenv module
+Install environment
+	
+	$ apt-get install -y python3 python3-pip libmysqlclient-dev libssl-dev npm
+	$ npm install -g bower
 
-To run the development server execute
-	run_dev_server.sh
+Install virtual environemnt user either one of the following 
+
+	$ pip3 install virtualenv # should always works
+	$ apt-get install python-virtualenv # Ubuntu 14.04 
+	$ apt-get install virtualenv  # Ubuntu 16.04 
+	
+Install static files
+	
+	$ cd app
+	$ bower install
+
+Run the development server
+	
+	$ run_dev_server.sh
 	
 The manual intervention module is then available at
 	http://localhost:5000/overview
