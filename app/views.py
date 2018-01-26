@@ -30,6 +30,7 @@ from .utils import (
     render_template_menuinfo,
     unlocked_wallet_required
 )
+from app.utils import wallet_required
 
 
 ###############################################################################
@@ -43,12 +44,14 @@ def index():
 
 
 @app.route('/lock', methods=['GET', 'POST'])
+@wallet_required
 def lock():
     Node().lock()
     return redirect(url_for('overview'))
 
 
 @app.route('/unlock', methods=['GET', 'POST'])
+@wallet_required
 def unlock():
     unlockForm = forms.UnlockForm()
 
@@ -60,6 +63,7 @@ def unlock():
 
 
 @app.route('/account/info')
+@wallet_required
 def account_info():
     account = Node().getSelectedAccount()
 
@@ -70,6 +74,7 @@ def account_info():
 
 
 @app.route("/account/select/<accountId>", methods=['GET', 'POST'])
+@wallet_required
 def account_select(accountId):
     try:
         accountName = Node().selectAccount(accountId)
@@ -92,14 +97,14 @@ def account_add():
         # submit checks if account exists
         try:
             Node().addAccountToWallet(form.privateKey.data)
+            flash("Key and all underlying registered accounts imported!")
         except Exception as e:
             flash(
                 'There was a problem adding the account to the wallet. ({})'.format(
                     str(e)),
                 category='error')
 
-        redirect(utils.processNextArgument(
-            request.args.get('next'), 'overview'))
+        return redirect(url_for('overview'))
 
     return render_template_menuinfo('generic.html', **locals())
 
@@ -118,8 +123,7 @@ def newwallet():
     if form.validate_on_submit():
         try:
             Node().wallet_create(form.password.data)
-            return redirect(utils.processNextArgument(
-                request.args.get('next'), 'index'))
+            return redirect(url_for('account_add'))
         except WalletExists as e:
             flash('There is already an open wallet.', category='error')
         except Exception as e:

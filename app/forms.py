@@ -154,7 +154,7 @@ class GetAccountForm(FlaskForm):
     role     = TextField('Role', validators=[Optional()], default='active', render_kw={'disabled': True})
 
     privateKey     = TextField('Private Key (will be calculated from above information if not given)', validators=[Optional()])
-    submit = SubmitField("Login")
+    submit = SubmitField("Add accounts")
 
     def validate(self):
         if not FlaskForm.validate(self):

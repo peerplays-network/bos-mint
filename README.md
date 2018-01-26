@@ -29,9 +29,12 @@ Run the development server
 	$ run_dev_server.sh
 	
 The manual intervention module is then available at
+	
 	http://localhost:5000/overview
 	
-For documentation of usage please look inside the scripts. 
+For documentation of usage please look inside the scripts. To add the init accounts please use
+	
+	5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3
 	
 ### Description of scripts
 

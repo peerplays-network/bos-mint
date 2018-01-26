@@ -234,7 +234,7 @@ def strfdelta(time, fmt):
     return fmt.format(**d)
 
 
-def unlocked_wallet_required(f):
+def wallet_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if not Node().wallet_exists():
@@ -243,6 +243,14 @@ def unlocked_wallet_required(f):
                 "import your witness active key"
             )
             return redirect(url_for('newwallet', next=request.url))
+        return f(*args, **kwargs)
+    return decorated_function
+
+
+def unlocked_wallet_required(f):
+    @wraps(f)
+    @wallet_required
+    def decorated_function(*args, **kwargs):
         if Node().locked():
             flash(
                 "In order to access this functionality, you need "
@@ -266,7 +274,14 @@ def getMenuInfo():
             'name': account.name,
             'toString': tostring.toString(account)}
     except Exception as e:
-        accountDict = {'id': '-', 'name': '-', 'toString': '-'}
+        try:
+            any_account = len(Node().getAllAccountsOfWallet()) > 0
+        except Exception as e:
+            any_account = False
+        if any_account:
+            accountDict = {'id': '-', 'name': '-', 'toString': 'Please select an account'}
+        else:
+            accountDict = {'id': '-', 'name': '-', 'toString': 'Please add an account'}
 
     currentTransaction = Node().getPendingTransaction()
     if not currentTransaction:
