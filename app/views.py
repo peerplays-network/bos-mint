@@ -132,143 +132,148 @@ def newwallet():
 @app.route('/overview/<typeName>')
 @app.route('/overview/<typeName>/<identifier>')
 def overview(typeName=None, identifier=None):
-    # selected ids
-    selected = {}
+    # every exception will return to this view, thus this cannot break, otherwise endless loop!
+    try:
+        # selected ids
+        selected = {}
 
-    # same structure for all chain elements and list elements
-    def buildListElements(tmpList):
-            for entry in tmpList:
-                if entry['typeName'] == 'event':
-                    entry['extraLink'] = [{
-                        'title': 'Start',
-                        'link': 'event_start',
-                        'icon': 'lightning'
+        # same structure for all chain elements and list elements
+        def buildListElements(tmpList):
+                for entry in tmpList:
+                    if entry['typeName'] == 'event':
+                        entry['extraLink'] = [{
+                            'title': 'Start',
+                            'link': 'event_start',
+                            'icon': 'lightning'
+                        }, {
+                            'title': 'Finish',
+                            'link': 'event_finish',
+                            'icon': 'flag checkered'
+                        }]
+                    elif entry['typeName'] == 'bettingmarket':
+                        entry['extraLink'] = [{
+                            'title': 'Grade',
+                            'link': 'bettingmarket_grade',
+                            'icon': 'book'
+                        }]
+                    elif entry['typeName'] == 'bettingmarketgroup':
+                        entry['extraLink'] = [{
+                            'title': 'Freeze',
+                            'link': 'bettingmarketgroup_freeze',
+                            'icon': 'snowflake'
+                        }, {
+                            'title': 'Unfreeze',
+                            'link': 'bettingmarketgroup_unfreeze',
+                            'icon': 'fire'
+                        }, {
+                            'title': 'Resolve',
+                            'link': 'bettingmarketgroup_resolve',
+                            'icon': 'money'
+                        }]
+                return tmpList
+
+        def buildChainElement(parentId, typeName):
+            tmpList = utils.getComprisedTypesGetter(typeName)(parentId)
+            title = utils.getTitle(typeName)
+
+            if typeName == 'bettingmarketgroup':
+                return {
+                    'list': buildListElements(tmpList),
+                    'title': title,
+                    'typeName': typeName,
+                    'extraLink': [{
+                        'title': 'Create ' + utils.getTitle('bettingmarketgrouprule'),
+                        'link': 'bettingmarketgrouprule_new',
+                        'icon': 'plus'
                     }, {
-                        'title': 'Finish',
-                        'link': 'event_finish',
-                        'icon': 'flag checkered'
-                    }]
-                elif entry['typeName'] == 'bettingmarket':
-                    entry['extraLink'] = [{
-                        'title': 'Grade',
-                        'link': 'bettingmarket_grade',
-                        'icon': 'book'
-                    }]
-                elif entry['typeName'] == 'bettingmarketgroup':
-                    entry['extraLink'] = [{
-                        'title': 'Freeze',
-                        'link': 'bettingmarketgroup_freeze',
-                        'icon': 'snowflake'
+                        'title': 'List ' + utils.getTitle('bettingmarketgrouprule') + 's',
+                        'link': 'overview',
+                        'argument': ('typeName', 'bettingmarketgrouprule'),
+                        'icon': 'unhide'
                     }, {
-                        'title': 'Unfreeze',
-                        'link': 'bettingmarketgroup_unfreeze',
-                        'icon': 'fire'
-                    }, {
-                        'title': 'Resolve',
-                        'link': 'bettingmarketgroup_resolve',
+                        'title': 'Resolve ' + utils.getTitle('bettingmarketgroup') + 's',
+                        'link': 'bettingmarketgroup_resolve_selectgroup',
+                        'argument': ('eventId', parentId),
                         'icon': 'money'
-                    }]
-            return tmpList
-
-    def buildChainElement(parentId, typeName):
-        tmpList = utils.getComprisedTypesGetter(typeName)(parentId)
-        title = utils.getTitle(typeName)
-
-        if typeName == 'bettingmarketgroup':
-            return {
-                'list': buildListElements(tmpList),
-                'title': title,
-                'typeName': typeName,
-                'extraLink': [{
-                    'title': 'Create ' + utils.getTitle('bettingmarketgrouprule'),
-                    'link': 'bettingmarketgrouprule_new',
-                    'icon': 'plus'
-                }, {
-                    'title': 'List ' + utils.getTitle('bettingmarketgrouprule') + 's',
-                    'link': 'overview',
-                    'argument': ('typeName', 'bettingmarketgrouprule'),
-                    'icon': 'unhide'
-                }, {
-                    'title': 'Resolve ' + utils.getTitle('bettingmarketgroup') + 's',
-                    'link': 'bettingmarketgroup_resolve_selectgroup',
-                    'argument': ('eventId', parentId),
-                    'icon': 'money'
+                    }
+                    ]}
+            else:
+                return {
+                    'list': buildListElements(tmpList),
+                    'title': title,
+                    'typeName': typeName
                 }
-                ]}
+
+        # bettingmarketroule has no parent or childs
+        if typeName == 'bettingmarketgrouprule' and identifier:
+            flash('Betting market group rules don''t have children to display')
+            return redirect(url_for('overview', typeName='bettingmarketgrouprule'))
+
+        # build reverse chain
+        reverseChain = []
+        if typeName and identifier:
+            # if both type name and identifier are given, its the most currently
+            # selected. we also want to list all the child elements then
+            tmpTypeName = utils.getChildType(typeName)
+        elif typeName and not identifier:
+            # if only a typename is given, the user wants to have an overview of
+            # all objects of that type.
+            # This method is only viable for sports, since for other elements we
+            # need the parent id for a scalable select.
+            # Nevertheless, the API would support it if the methods are properly
+            # implementing in Node.get<typeName>s(selectedParentId) for
+            # selectedParentId=None
+            if typeName != 'sport' and typeName != 'bettingmarketgrouprule':
+                flash('Selecting all is only available for sports and rules due to' +
+                      ' performance, please specify a parent id.')
+                typeName = 'sport'
+
+            tmpTypeName = typeName
         else:
-            return {
-                'list': buildListElements(tmpList),
-                'title': title,
-                'typeName': typeName
-            }
+            # Nothing specified? Show sports
+            tmpTypeName = 'sport'
 
-    # bettingmarketroule has no parent or childs
-    if typeName == 'bettingmarketgrouprule' and identifier:
-        flash('Betting market group rules don''t have children to display')
-        return redirect(url_for('overview', typeName='bettingmarketgrouprule'))
+        # reverse through all parents starting with the type given by typeName
+        tmpParentIdentifier = identifier
+        while tmpTypeName and not tmpTypeName == 'sport':
+            # build chain element for tmpTypeName
+            tmpChainElement = buildChainElement(tmpParentIdentifier,
+                                                tmpTypeName)
 
-    # build reverse chain
-    reverseChain = []
-    if typeName and identifier:
-        # if both type name and identifier are given, its the most currently
-        # selected. we also want to list all the child elements then
-        tmpTypeName = utils.getChildType(typeName)
-    elif typeName and not identifier:
-        # if only a typename is given, the user wants to have an overview of
-        # all objects of that type.
-        # This method is only viable for sports, since for other elements we
-        # need the parent id for a scalable select.
-        # Nevertheless, the API would support it if the methods are properly
-        # implementing in Node.get<typeName>s(selectedParentId) for
-        # selectedParentId=None
-        if typeName != 'sport' and typeName != 'bettingmarketgrouprule':
-            flash('Selecting all is only available for sports and rules due to' +
-                  ' performance, please specify a parent id.')
-            typeName = 'sport'
+            tmpTypeName = utils.getParentType(tmpTypeName)
+            if tmpTypeName:
+                selected[tmpTypeName] = tmpParentIdentifier
+                tmpParentIdentifier = utils.getComprisedParentTypeGetter(
+                    tmpTypeName)(tmpParentIdentifier)
 
-        tmpTypeName = typeName
-    else:
-        # Nothing specified? Show sports
-        tmpTypeName = 'sport'
+            if isinstance(tmpChainElement, list):
+                for item in tmpChainElement:
+                    reverseChain.append(item)
+            else:
+                reverseChain.append(tmpChainElement)
 
-    # reverse through all parents starting with the type given by typeName
-    tmpParentIdentifier = identifier
-    while tmpTypeName and not tmpTypeName == 'sport':
-        # build chain element for tmpTypeName
-        tmpChainElement = buildChainElement(tmpParentIdentifier,
-                                            tmpTypeName)
+        if tmpTypeName == 'sport':
+            # sport doesnt loop through the former while,
+            # thus set initial element
+            sportElement = buildChainElement(None, 'sport')
+            reverseChain.append(sportElement)
 
-        tmpTypeName = utils.getParentType(tmpTypeName)
-        if tmpTypeName:
-            selected[tmpTypeName] = tmpParentIdentifier
-            tmpParentIdentifier = utils.getComprisedParentTypeGetter(
-                tmpTypeName)(tmpParentIdentifier)
+        reverseChain.reverse()
+        listChain = reverseChain[0]
+        if reverseChain:
+            tmpChainElement = []
+            for chainElement in reverseChain:
+                if tmpChainElement:
+                    tmpChainElement["nextChainElement"] = chainElement
 
-        if isinstance(tmpChainElement, list):
-            for item in tmpChainElement:
-                reverseChain.append(item)
-        else:
-            reverseChain.append(tmpChainElement)
+                tmpChainElement = chainElement
 
-    if tmpTypeName == 'sport':
-        # sport doesnt loop through the former while,
-        # thus set initial element
-        sportElement = buildChainElement(None, 'sport')
-        reverseChain.append(sportElement)
+        del tmpTypeName, tmpParentIdentifier
 
-    reverseChain.reverse()
-    listChain = reverseChain[0]
-    if reverseChain:
-        tmpChainElement = []
-        for chainElement in reverseChain:
-            if tmpChainElement:
-                tmpChainElement["nextChainElement"] = chainElement
-
-            tmpChainElement = chainElement
-
-    del tmpTypeName, tmpParentIdentifier
-
-    return render_template_menuinfo('index.html', **locals())
+        return render_template_menuinfo('index.html', **locals())
+    except Exception as e:
+        flash(str(e))
+        return render_template_menuinfo('index.html')
 
 
 @app.route("/pending/discard", methods=['GET', 'POST'])

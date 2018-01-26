@@ -159,7 +159,7 @@ class BettingMarketGroupRule(BlockchainIdentifiable):
                     'description': operationData['name']}
         elif operationData.get('operationName', None) == 'betting_market_rules_update':
             return {'pendingOperationId': operationData['operationId'],
-                    'id': operationData['sport_id'],
+                    'id': operationData['betting_market_rules_id'],
                     'name': operationData['new_name'],
                     'description': operationData['new_description']}
         else:
