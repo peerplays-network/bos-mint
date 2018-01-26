@@ -1,5 +1,5 @@
-{%- macro parsefield(field) -%}
- {%- if field.type != "CSRFTokenField" and field.type != "HiddenField" -%}
+{%- macro parsefield(field, addLabel=True) -%}
+ {%- if field.type != "CSRFTokenField" -%}
        {%- if 
                  field.type == "StringField" or
                  field.type == "TextField" or
@@ -15,6 +15,10 @@
               {{field.label.text|safe}}
              </label>
              {{field(**kwargs)|safe}}
+       {%- elif field.type == "HiddenField" -%}
+		     {{ field }}<br />
+       {%- elif field.type == "SubmitField" -%}
+		     {{ field(class_="ui right floated button") }}<br />
        {%- elif field.type == "DecimalRangeField" -%}
 
           <label>
@@ -73,17 +77,24 @@
                    </a>
            </div>
        {%- elif field.type == "SelectField" -%}
-           <label>
+           {% if addLabel %}<label>
             {{field.label.text|safe}}
-           </label>
-           <div class="ui fluid search selection dropdown">
-            <input name="{{field.name}}" type="hidden" value="{{field.value}}">
+           </label>{% endif %}
+           <div class="ui {% if field.render_kw['disabled'] %}disabled{% endif %} fluid search selection dropdown">
+            <input name="{{field.name}}" type="hidden" value="{{field.data}}">
             <i class="dropdown icon"></i>
-            <div class="default text">{{field.label.text|safe}}</div>
+            <div class="default text">Select {{field.label.text|safe}}</div>
              <div class="menu">
+              {% if field.choices %}
               {% for option in field.choices %}
-              <div class="item" data-value="{{option[0]}}"><i class="{{option[0]}} flag"></i>{{option[1]}}</div>
+              <div class="item" data-value="{{option[0]}}">
+              	<!-- {%- if field.label.text == 'Language' -%}
+              	<i class="{{option[0]}} flag"></i>
+              	{%- endif -%} -->
+              	{{option[1]}}
+           	  </div>
               {% endfor %}
+              {% endif %}
              </div>
             </div>
        {%- elif field.type == "SelectMultipleField" -%}
@@ -100,12 +111,18 @@
               </label>
             </div>
        {%- elif field.type == "FieldList" -%}
-        <fieldset>
+        {% if field|length > 0 %} 
+            <label>
+             {{field.label.text|safe}}
+            </label><fieldset>
          {%- for entry in field.entries -%}
            {{parsefield(entry)}}
          {%- endfor -%}
-        </fieldset>
+        </fieldset>{% endif %}
        {%- elif field.type == "FormField" -%}
+         <label>
+           {{field.label.text|safe}}
+         </label>
          {%- for entry in field -%}
            {{ parsefield(entry) }}
          {%- endfor -%}
@@ -116,34 +133,31 @@
  {%- endif -%}
 {%- endmacro -%}
 
-{%- macro quickform(form, action="", id="", method="POST") -%}
+{%- macro quickform(form, action="", id="", method="POST", skip="") -%}
 <form
  {%- if action != None %} action="{{action}}"{% endif -%}
  {%- if id %} id="{{id}}"{% endif -%}
  {%- if method %} method="{{method}}"{% endif %}
- class="ui form
-     {% if form.errors %} error {% endif %}
- ">
-  {{ form.csrf_token }}
+ {%- if form.errors %} class="ui form error"{% else %} class="ui form"{% endif %}>
   {{ form.hidden_tag() }}
-  {%- for field in form -%}
-   {%- if field.type != "CSRFTokenField" and field.type != "HiddenField" -%}
+  {%- for field in form %}
+   {%- if field.type != "CSRFTokenField" and field.name != skip %}
     {%- if field.type == "SubmitField" -%}
-        <button class="ui button" type="submit">{{field.label.text|safe}}</button>
+		 {{ field(class_="ui button") }}
     {%- else -%}
-      <div class="field {% if field.errors %} error {% endif %}">
-       {{- parsefield(field) -}}
-      </div>
+		<div class="field{% if field.errors %} error {% endif %}">
+			{{ parsefield(field) }}
+		</div>
       {% if field.errors %}
-       <div class="ui error message">
-        <div class="header">Error</div>
-        {% for error in field.errors %}
-        <p>{{error}}</p>
-        {% endfor %}
-       </div>
+		<div class="ui error message">
+		<div class="header">Error</div>
+		{% for error in field.errors %}
+			<p>{{error}}</p>
+		{% endfor %}
+		</div>
       {% endif %}
     {%- endif -%}
    {%- endif -%}
-  {%- endfor -%}
+  {%- endfor %}
 </form>
 {%- endmacro -%}

@@ -1,0 +1,36 @@
+<div class="item">
+	<i class="help circle outline icon"></i>
+	<div class="content">
+		<div class="header">Proposal {{ operationId }}</div>
+		<div class="description">
+
+			<div class="ui segment">
+						<table class="ui very basic collapsing celled table">
+				<tbody>
+					{% for item in listItems %}
+					<tr>
+						<td>{{ item[0] }}</td>
+						<td>{{ item[1] }}</td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+			<table>
+				<thead>
+					<tr>
+						<th>Proposed operations</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td><div class="ui relaxed divided list">
+						{% for operation in operations %} 
+							{{ operation|safe }}
+						{% endfor %}</div></td>
+					</tr>
+				</tbody>
+			</table>
+			</div>
+		</div>
+	</div>
+</div>

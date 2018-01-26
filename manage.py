@@ -1,22 +1,14 @@
 #!/usr/bin/env python3
-
-import sys
-from flask_script import Manager, Command
-# from flask_migrate import Migrate, MigrateCommand
+from flask_script import Manager
 from app import db, config
 from app.web import app
-import threading
-from app.maillog import logmodule
 
 manager = Manager(app)
-log = logmodule(__name__)
-# migrate = Migrate(app, db)
-# manager.add_command('db', MigrateCommand)
 
 
 @manager.command
-def web():
-    app.run(debug=True)
+def web(port=5000, host="127.0.0.1"):
+    app.run(debug=True, port=int(port), host=host)
 
 
 @manager.command

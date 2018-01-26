@@ -1,0 +1,41 @@
+{% from "_forms.html" import quickform, parsefield %}
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="ui grid">
+	<div class="four wide column">
+		<h2>Pending operations</h2>
+	</div>
+	<div class="six wide column">
+		<form action="{{ url_for('automatic_approval') }}" id="approveProposal" method="POST" onclick="document.getElementById('approveProposal').submit()">
+			<div class="ui toggle checkbox{% if form.approve.data == True %} checked{%endif%}">
+				{{ form.approve }}
+				<label>Automatically approve my own proposals</label>
+			</div>
+		</form>
+	</div>
+</div>
+<br />
+
+{% if containerList|length > 0 %}
+{% set onlyOne = containerList|length == 1 %}
+<div class="ui styled accordion">
+	{% for operationContainer in containerList %}
+  		{{ operationContainer(active=onlyOne)|safe }}
+  	{% endfor %}
+</div>
+
+</form>
+
+
+{% else %}
+
+<div class="ui styled accordion">
+  <div class="title">
+    No operation was created yet
+  </div>
+</div>
+
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,15 @@
+version: '3'
+services:
+ main:
+  image: boss:latest
+  ports:
+   - "8000:8000"
+  environment:
+   - WITNESS_URL=wss://peerplays-dev.blocktrades.info/ws
+   - MAIL_HOST=host:port
+   - MAIL_PORT=25
+   - MAIL_USER=user
+   - MAIL_PASS=password
+   #- MAIL_FROM=bookie@localhost
+   - MAIL_NOTIFY=info@example.com
+   - SQL_DATABASE={{cwd}}/database.sqlite

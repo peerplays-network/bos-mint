@@ -1,0 +1,57 @@
+{% from "_forms.html" import quickform, parsefield %}
+{% extends "layout.html" %}
+
+{% block content %}
+<h2>Open proposals</h2>
+
+{% if containerList|length > 0 %}
+{% set onlyOne = containerList|length == 1 %}
+<div class="ui equal width grid">
+<div class="column">
+<div class="ui grid">
+<div class="six wide column">
+<h3>Need review</h3>
+</div></div>
+<br />
+<div class="ui styled accordion" style="width: 100%;">
+	{% for operationContainer in containerList if not containerReview[operationContainer.id] %}
+  		{{ operationContainer(active=onlyOne,buttonNegative='Ignore')|safe }}
+  	{% endfor %}
+</div>
+</div>
+<div class="column">
+<div class="ui grid">
+<div class="six wide column">
+<h3>Reviewed</h3>
+</div>
+<div class="right floated six wide column">
+<div class="ui grid">
+<div class="six wide column"><div style="background-color: #91d991"> approved </div></div>
+<div class="six wide column"><div style="background-color: #ffafaf">rejected</div></div>
+</div>
+</div>
+</div>
+<br />
+<div class="ui styled accordion">
+	{% for operationContainer in containerList if containerReview[operationContainer.id] %}
+		{% if containerReview[operationContainer.id]['approved'] %}
+			{{ operationContainer(active=onlyOne,background='#91d991',buttonPositive=None)|safe }}
+		{% else %}
+			{{ operationContainer(active=onlyOne,background='#ffafaf',buttonNegative=None)|safe }}
+		{% endif %}
+  	{% endfor %}
+</div>
+</div>
+</div>
+
+{% else %}
+
+<div class="ui styled accordion">
+  <div class="title">
+    No proposals needs voting right now
+  </div>
+</div>
+
+{% endif %}
+
+{% endblock %}

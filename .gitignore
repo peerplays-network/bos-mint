@@ -61,3 +61,6 @@ app/static/css/all.css
 app/static/js/all.js
 
 migrations/
+
+*.db
+*.sqlite

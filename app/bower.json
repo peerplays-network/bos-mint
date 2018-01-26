@@ -17,8 +17,7 @@
   ],
   "dependencies": {
     "semantic-ui": "latest",
-    "bootstrap": "3",
     "font-awesome": "*",
-    "jquery": "^3.1.1"
+    "jquery": "*"
   }
 }

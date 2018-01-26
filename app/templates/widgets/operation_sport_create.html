@@ -1,0 +1,10 @@
+{% from "_macros.html" import render_int_string %}
+<div class="item">
+	<i class="asterisk icon"></i>
+	<div class="content">
+		<div class="header">Sport creation {{ operationId }}</div>
+		<div class="description">
+		Name: {{ render_int_string(data['name']) }}
+		</div>
+	</div>
+</div>

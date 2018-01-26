@@ -1,0 +1,75 @@
+{% if background %}
+<div class="title{% if active %} active{% endif %}" style="background-color: {{ background }}">
+{% else %}
+<div class="title{% if active %} active{% endif %}">
+{% endif %}
+	<i class="dropdown icon"></i>{{ title }}
+</div>
+<div class="content{% if active %} active{% endif %}">
+	{% if active %}
+	<p class="transition visible" style="display: block !important;">
+	{% else %}
+	<p class="transition hidden">
+	{% endif %}
+	
+	<table class="ui very basic collapsing celled table">
+		<tbody>
+			{% for item in listItems %}
+			<tr>
+				<td>{{ item[0] }}</td>
+				<td>
+				{% if item[1] is iterable and item[1] is not string %}
+					<ul class="ui list">
+					{% for tmpItem in item[1] %}
+						<li>{{ tmpItem }}</li>
+					{% endfor %}
+					</ul>
+				{% else %}
+					{{ item[1] }}
+				{% endif %}</td>
+			</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+	<table  style="width: 100%;">
+		<thead>
+			<tr>
+				<th>Operations</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td><div class="ui relaxed divided list">
+				{% for operation in operations %} 
+					{{ operation|safe }}
+				{% endfor %}</div></td>
+			</tr>
+			{% if buttonPositive or buttonNegative %}
+			<tr>
+				<td>
+					<div class="ui right floated buttons">
+						{% if buttonNegative %}
+						<form action="{{ buttonNegativeURL }}" id="buttonNegative" method="POST">
+							<button class="ui labeled negative icon button">
+								<i class="thumbs down icon"></i>{{ buttonNegative }}
+							</button>
+						</form>
+						{% endif %}
+						{% if buttonPositive and buttonNegative %}
+						<div class="or"></div>
+						{% endif %}
+						{% if buttonPositive %}
+						<form action="{{ buttonPositiveURL }}" id="buttonPositive" method="POST">
+						<button class="ui right labeled positive icon button">
+							<i class="thumbs up icon"></i>{{ buttonPositive }}
+						</button>
+						</form>
+						{% endif %}
+					</div>
+				</td> 
+			{% endif %}
+		</tbody>
+	</table>
+
+	</p>
+</div>

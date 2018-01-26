@@ -1,0 +1,12 @@
+{% from "_macros.html" import render_int_string %}
+<div class="item">
+	<i class="asterisk icon"></i>
+	<div class="content">
+		<div class="header">Betting market create {{ operationId }}</div>
+		<div class="description">		
+		Betting market group: {{ data['group_id'] }} <br/>	
+		Description: {{ render_int_string(data['description']) }} <br/>	
+		Payout condition: {{ render_int_string(data['payout_condition']) }}
+	</div>
+	</div>
+</div>

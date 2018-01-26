@@ -1,8 +1,8 @@
 {% from "_forms.html" import quickform %}
 {% extends "layout.html" %}
 {% block content %}
-{% include "_messages.html" %}
 
 {{ quickform(unlockForm) }}
 
+<div>The local wallet is encrypted with your password, and contains any private keys belonging to your accounts.</div>
 {% endblock %}

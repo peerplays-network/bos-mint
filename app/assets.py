@@ -10,7 +10,7 @@ webassets.load_path = [
 ]
 webassets.manifest = 'cache' if not app.debug else False
 webassets.cache = not app.debug
-webassets.debug = True  #app.debug
+webassets.debug = True  # app.debug
 
 js_main = Bundle(
     "js/src/main.js",
