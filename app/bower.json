@@ -16,8 +16,8 @@
     "tests"
   ],
   "dependencies": {
-    "semantic-ui": "latest",
-    "font-awesome": "*",
-    "jquery": "*"
+    "semantic-ui": "2.2.13",
+    "font-awesome": "4.7.0",
+    "jquery": "3.2.1"
   }
 }
