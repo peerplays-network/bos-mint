@@ -29,7 +29,7 @@ js_libs = Bundle(
 )
 
 css_libs = Bundle(
-    "font-awesome/css/font-awesome.min.css",
+    "font-awesome/web-fonts-with-css/css/fontawesome.min.css",
     "semantic-ui/dist/semantic.min.css",
     output="css/libs.css"
 )
