@@ -60,6 +60,8 @@ app/static/webassets-external
 app/static/css/all.css
 app/static/js/all.js
 
+config-development.yml
+
 migrations/
 
 *.db
