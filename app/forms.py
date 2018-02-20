@@ -32,6 +32,8 @@ from peerplays.event import Event
 from peerplays.bettingmarketgroup import BettingMarketGroup
 from peerplays.eventgroup import EventGroup
 from peerplays.bettingmarket import BettingMarket
+from peerplaysbase.objects import EventStatus, BettingMarketGroupStatus,\
+    BettingMarketStatus
 
 
 def selectDictToList(sourceDictionary):
@@ -232,6 +234,9 @@ class NewEventGroupForm(FlaskForm):
 class NewEventForm(FlaskForm):
     eventgroup = SelectField("Event group",
                              validators=[DataRequired()], choices=None)
+    status = SelectField("Status",
+                         validators=[DataRequired()],
+                         choices=[(x, x) for x in EventStatus.options if "COUNT" not in x])
     name = FormField(TranslatedFieldForm, label="Name")
     season = FormField(TranslatedFieldForm, label="Season")
     start = DateTimeField("Start", format='%Y-%m-%d %H:%M:%S',
@@ -276,11 +281,15 @@ class NewEventForm(FlaskForm):
             InternationalizedString.parseToList(self.name),
             InternationalizedString.parseToList(self.season),
             self.start.data,
-            self.eventgroup.data)
+            self.eventgroup.data,
+            self.status.data)
 
 
 class NewBettingMarketGroupForm(FlaskForm):
     event = SelectField("Event", validators=[DataRequired()], choices=None)
+    status = SelectField("Status",
+                         validators=[DataRequired()],
+                         choices=[(x, x) for x in BettingMarketGroupStatus.options if "COUNT" not in x])
     description = FormField(TranslatedFieldForm)
     bettingmarketrule = SelectField(
         "Betting market group rule",
@@ -328,7 +337,8 @@ class NewBettingMarketGroupForm(FlaskForm):
             selectedId,
             InternationalizedString.parseToList(self.description),
             self.event.data,
-            self.bettingmarketrule.data)
+            self.bettingmarketrule.data,
+            self.status.data)
 
 
 class NewBettingMarketForm(FlaskForm):
@@ -338,6 +348,9 @@ class NewBettingMarketForm(FlaskForm):
         choices=None)
     description = FormField(TranslatedFieldForm, label="Description")
     payoutCondition = FormField(TranslatedFieldForm, label="Payout condition")
+    status = SelectField("Status",
+                         validators=[DataRequired()],
+                         choices=[(x, x) for x in BettingMarketStatus.options if "COUNT" not in x])
     submit = SubmitField("Submit")
 
     @classmethod
@@ -370,6 +383,7 @@ class NewBettingMarketForm(FlaskForm):
             self.bettingmarketgroup.data)
 
     def update(self, selectedId):
+        raise NotImplementedError("Add OSE to update!")
         return Node().updateBettingMarket(
             selectedId,
             InternationalizedString.parseToList(self.payoutCondition),

@@ -3,7 +3,8 @@ from flask import (
     request,
     session,
     flash,
-    url_for
+    url_for,
+    abort
 )
 from wtforms import FormField, SubmitField
 from peerplays.exceptions import WalletExists
@@ -31,6 +32,7 @@ from .utils import (
     unlocked_wallet_required
 )
 from app.utils import wallet_required
+from app import config
 
 
 ###############################################################################
@@ -146,13 +148,21 @@ def overview(typeName=None, identifier=None):
                 for entry in tmpList:
                     if entry['typeName'] == 'event':
                         entry['extraLink'] = [{
-                            'title': 'Start',
+                            'title': 'Start/Resume',
                             'link': 'event_start',
                             'icon': 'lightning'
                         }, {
                             'title': 'Finish',
                             'link': 'event_finish',
                             'icon': 'flag checkered'
+                        }, {
+                            'title': 'Freeze',
+                            'link': 'event_freeze',
+                            'icon': 'snowflake'
+                        }, {
+                            'title': 'Cancel',
+                            'link': 'event_cancel',
+                            'icon': 'minus circle'
                         }]
                     elif entry['typeName'] == 'bettingmarket':
                         entry['extraLink'] = [{
@@ -173,6 +183,10 @@ def overview(typeName=None, identifier=None):
                             'title': 'Resolve',
                             'link': 'bettingmarketgroup_resolve',
                             'icon': 'money'
+                        }, {
+                            'title': 'Cancel',
+                            'link': 'bettingmarketgroup_cancel',
+                            'icon': 'minus circle'
                         }]
                 return tmpList
 
@@ -276,8 +290,13 @@ def overview(typeName=None, identifier=None):
 
         return render_template_menuinfo('index.html', **locals())
     except Exception as e:
+        app.logger.exception(e)
         flash(str(e))
-        return render_template_menuinfo('index.html')
+        try:
+            return render_template_menuinfo('index.html')
+        except Exception as e:
+            app.logger.exception(e)
+            abort(500)
 
 
 @app.route("/pending/discard", methods=['GET', 'POST'])
@@ -303,11 +322,13 @@ def pending_operations_broadcast():
 
         if ViewConfiguration.get('automatic_approval', 'enabled', False):
             proposalId = answer['trx']['operation_results'][0][1]
-            flash('All pending operations have been broadcasted and the resulting proposal has been approved.')
+            message = 'All pending operations have been broadcasted and the resulting proposal has been approved.'
             Node().acceptProposal(proposalId)
         else:
-            flash('All pending operations have been broadcasted.')
-
+            message = 'All pending operations have been broadcasted.'
+        if Node().get_node().nobroadcast:
+            message += " But NoBroadcast config is set to true!"
+        flash(message)
         return redirect(url_for('pending_operations'))
     except Exception as e:
         Node().get_node().blocking = False
@@ -478,22 +499,22 @@ def genericUpdate(formClass, selectId, removeSubmits=False):
     selectFunction = utils.getTypeGetter(typeName)
     choicesFunction = utils.getTypesGetter(typeName)
 
-    try:
+#     try:
         # maybe only query the selected object, if one is preselected,
         # saves traffic currently: always query all
-        parentId = None
-        if selectId:
-            parentId = utils.getParentTypeGetter(typeName)(selectId)
+    parentId = None
+    if selectId:
+        parentId = utils.getParentTypeGetter(typeName)(selectId)
 
-        form = forms.buildUpdateForm(typeName,
-                                     choicesFunction(parentId),
-                                     formClass,
-                                     selectId)
-    except NonScalableRequest as e:
-        return redirect(url_for('overview'))
-    except NodeException as e:
-        flash(str(e), category='error')
-        return render_template_menuinfo("update.html", **locals())
+    form = forms.buildUpdateForm(typeName,
+                                 choicesFunction(parentId),
+                                 formClass,
+                                 selectId)
+#     except NonScalableRequest as e:
+#         return redirect(url_for('overview'))
+#     except NodeException as e:
+#         flash(str(e), category='error')
+#         return render_template_menuinfo("update.html", **locals())
 
     typeNameTitle = utils.getTitle(typeName)
 
@@ -505,12 +526,12 @@ def genericUpdate(formClass, selectId, removeSubmits=False):
             return render_template_menuinfo("update.html", **locals())
 
     # update was called with given id, make sure it exists
-    try:
-        if selectId:
-            selectedObject = selectFunction(selectId)
-    except NodeException as e:
-        flash(str(e), category='error')
-        return render_template_menuinfo("update.html", **locals())
+#     try:
+    if selectId:
+        selectedObject = selectFunction(selectId)
+#     except NodeException as e:
+#         flash(str(e), category='error')
+#         return render_template_menuinfo("update.html", **locals())
 
     # user wants to add language?
     if findAndProcessTranslatons(form):
@@ -643,14 +664,34 @@ def bettingmarket_details(selectId):
 
 @app.route("/event/start/<selectId>", methods=['post', 'get'])
 @unlocked_wallet_required
-def event_start(selectId=None):
-    return redirect(url_for('overview'))
+def event_start(selectId):
+    Node().startEvent(selectId)
+    return redirect(utils.processNextArgument(
+                    request.args.get('next'), 'index'))
 
 
 @app.route("/event/finish/<selectId>", methods=['post', 'get'])
 @unlocked_wallet_required
-def event_finish(selectId=None):
-    return redirect(url_for('overview'))
+def event_finish(selectId=None, scores=None):
+    Node().finishEvent(selectId, scores)
+    return redirect(utils.processNextArgument(
+                    request.args.get('next'), 'index'))
+
+
+@app.route("/event/freeze/<selectId>", methods=['post', 'get'])
+@unlocked_wallet_required
+def event_freeze(selectId=None, scores=None):
+    Node().freezeEvent(selectId, scores)
+    return redirect(utils.processNextArgument(
+                    request.args.get('next'), 'index'))
+
+
+@app.route("/event/cancel/<selectId>", methods=['post', 'get'])
+@unlocked_wallet_required
+def event_cancel(selectId=None, scores=None):
+    Node().cancelEvent(selectId, scores)
+    return redirect(utils.processNextArgument(
+                    request.args.get('next'), 'index'))
 
 
 @app.route("/bettingmarket/grade/<selectId>", methods=['post', 'get'])
@@ -662,16 +703,9 @@ def bettingmarket_grade(selectId=None):
 @app.route("/bettingmarketgroup/freeze/<selectId>", methods=['post', 'get'])
 @unlocked_wallet_required
 def bettingmarketgroup_freeze(selectId=None):
-    return redirect(url_for('overview'))
-
-
-# @app.route("/bettingmarketgroup/resolve/selectevent/<eventGroupId>", methods=['get'])
-# @requires_node
-# def bettingmarketgroup_resolve_selectevent(eventGroupId=None):
-#     form = BettingMarketGroupResolveForm()
-#     form.initEvents(eventGroupId)
-# 
-#     return render_template_menuinfo("generic.html", **locals())
+    Node().freezeBettingMarketGroup(selectId)
+    return redirect(utils.processNextArgument(
+                    request.args.get('next'), 'index'))
 
 
 @app.route("/bettingmarketgroup/resolve/selectgroup/<eventId>", methods=['get', 'post'])
@@ -728,4 +762,14 @@ def bettingmarketgroup_resolve(selectId=None):
 @app.route("/bettingmarketgroup/unfreeze/<selectId>", methods=['post', 'get'])
 @unlocked_wallet_required
 def bettingmarketgroup_unfreeze(selectId=None):
-    return redirect(url_for('overview'))
+    Node().unfreezeBettingMarketGroup(selectId)
+    return redirect(utils.processNextArgument(
+                    request.args.get('next'), 'index'))
+
+
+@app.route("/bettingmarketgroup/unfreeze/<selectId>", methods=['post', 'get'])
+@unlocked_wallet_required
+def bettingmarketgroup_cancel(selectId=None):
+    Node().cancelBettingMarketGroup(selectId)
+    return redirect(utils.processNextArgument(
+                    request.args.get('next'), 'index'))

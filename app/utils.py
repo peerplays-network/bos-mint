@@ -262,6 +262,12 @@ def unlocked_wallet_required(f):
 
 
 def render_template_menuinfo(tmpl_name, **kwargs):
+    """
+    If there is a general error in rendering, simply return a 500 error
+
+    :param tmpl_name: name of the template to be rendered
+    :type tmpl_name: str
+    """
     menuInfo = getMenuInfo()
     return render_template(tmpl_name, menuInfo=menuInfo, **kwargs)
 
