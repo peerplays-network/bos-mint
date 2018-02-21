@@ -2,10 +2,10 @@
 from flask import redirect, flash, url_for, request, render_template
 from functools import wraps
 from datetime import datetime
-from app.node import Node, NodeException
-
 from peerplaysbase.operationids import getOperationNameForId
-from app import wrapper, tostring
+
+from .node import Node, NodeException
+from . import wrapper, tostring
 
 # dictionary to configure types (Sport, EventGroup, etc.)
 #  title: human readable title
@@ -50,18 +50,18 @@ TYPE_GET = {
     'bettingmarketgroup': lambda tmpId: Node().getBettingMarketGroup(tmpId),
     'bettingmarketgrouprule': lambda tmpId: Node().getBettingMarketGroupRule(tmpId),
     'bettingmarket': lambda tmpId: Node().getBettingMarket(tmpId),
-    'bet': lambda tmpId: None, # not implemented yet
+    'bet': lambda tmpId: None,  # not implemented yet
 }
 
 # get object for typename, containing id of parent object
 PARENTTYPE_GET = {
-  'sport'             : lambda tmpId: None,
-  'eventgroup'        : lambda tmpId: Node().getEventGroup(tmpId).sport.identifier,
-  'event'             : lambda tmpId: Node().getEvent(tmpId).eventgroup.identifier,
-  'bettingmarketgroup': lambda tmpId: Node().getBettingMarketGroup(tmpId).event.identifier,
-  'bettingmarketgrouprule' : lambda tmpId: None,
-  'bettingmarket'     : lambda tmpId: Node().getBettingMarket(tmpId).bettingmarketgroup.identifier,
-  'bet'               : lambda tmpId: tmpId,
+    'sport': lambda tmpId: None,
+    'eventgroup': lambda tmpId: Node().getEventGroup(tmpId).sport.identifier,
+    'event': lambda tmpId: Node().getEvent(tmpId).eventgroup.identifier,
+    'bettingmarketgroup': lambda tmpId: Node().getBettingMarketGroup(tmpId).event.identifier,
+    'bettingmarketgrouprule': lambda tmpId: None,
+    'bettingmarket': lambda tmpId: Node().getBettingMarket(tmpId).bettingmarketgroup.identifier,
+    'bet': lambda tmpId: tmpId,
 }
 
 # which type does it cascade to
@@ -279,10 +279,10 @@ def getMenuInfo():
             'id': account.identifier,
             'name': account.name,
             'toString': tostring.toString(account)}
-    except Exception as e:
+    except Exception:
         try:
             any_account = len(Node().getAllAccountsOfWallet()) > 0
-        except Exception as e:
+        except Exception:
             any_account = False
         if any_account:
             accountDict = {'id': '-', 'name': '-', 'toString': 'Please select an account'}

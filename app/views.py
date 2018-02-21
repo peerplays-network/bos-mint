@@ -24,15 +24,13 @@ from .models import (
 from .node import (
     Node,
     NodeException,
-    NonScalableRequest,
     BroadcastActiveOperationsExceptions
 )
 from .utils import (
     render_template_menuinfo,
-    unlocked_wallet_required
+    unlocked_wallet_required,
+    wallet_required
 )
-from app.utils import wallet_required
-from app import config
 
 
 ###############################################################################
@@ -490,6 +488,7 @@ def bettingmarket_new(parentId):
 @app.route("/bet/new", methods=['post', 'get'])
 @unlocked_wallet_required
 def bet_new():
+    flash("Bet creation not implemented")
     return render_template_menuinfo('index.html', **locals())
 
 
@@ -710,7 +709,7 @@ def bettingmarketgroup_freeze(selectId=None):
 
 @app.route("/bettingmarketgroup/resolve/selectgroup/<eventId>", methods=['get', 'post'])
 def bettingmarketgroup_resolve_selectgroup(eventId=None):
-    form = BettingMarketGroupResolveForm()
+    form = BettingMarketGroupResolveForm("Betting market group resolution - select a group to resolve")
 
     selectedEvent = Node().getEvent(eventId)
 

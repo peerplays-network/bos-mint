@@ -6,10 +6,8 @@ from wtforms import (
     StringField,
     BooleanField,
     SubmitField,
-    TextAreaField,
     HiddenField,
     SelectField,
-    IntegerField,
     FieldList,
     DateTimeField,
     FormField
@@ -21,19 +19,19 @@ from wtforms.validators import (
     Length,
     Regexp,
     EqualTo,
-    Optional,
-    NumberRange
+    Optional
 )
-from app.istring import InternationalizedString, LanguageNotFoundException
-from app.node import Node
-import datetime
-from app import views, utils, wrapper, tostring
 from peerplays.event import Event
 from peerplays.bettingmarketgroup import BettingMarketGroup
 from peerplays.eventgroup import EventGroup
 from peerplays.bettingmarket import BettingMarket
 from peerplaysbase.objects import EventStatus, BettingMarketGroupStatus,\
     BettingMarketStatus
+
+from .istring import InternationalizedString, LanguageNotFoundException
+from .node import Node
+import datetime
+from . import utils, wrapper, tostring
 
 
 def selectDictToList(sourceDictionary):
@@ -151,11 +149,11 @@ class NewWalletForm(FlaskForm):
 
 
 class GetAccountForm(FlaskForm):
-    name     = TextField('Name', validators=[Optional()])
+    name = TextField('Name', validators=[Optional()])
     password = PasswordField('Password', validators=[Optional()])
-    role     = TextField('Role', validators=[Optional()], default='active', render_kw={'disabled': True})
+    role = TextField('Role', validators=[Optional()], default='active', render_kw={'disabled': True})
 
-    privateKey     = TextField('Private Key (will be calculated from above information if not given)', validators=[Optional()])
+    privateKey = TextField('Private Key (will be calculated from above information if not given)', validators=[Optional()])
     submit = SubmitField("Add accounts")
 
     def validate(self):
@@ -234,10 +232,10 @@ class NewEventGroupForm(FlaskForm):
 class NewEventForm(FlaskForm):
     eventgroup = SelectField("Event group",
                              validators=[DataRequired()], choices=None)
+    name = FormField(TranslatedFieldForm, label="Name")
     status = SelectField("Status",
                          validators=[DataRequired()],
                          choices=[(x, x) for x in EventStatus.options if "COUNT" not in x])
-    name = FormField(TranslatedFieldForm, label="Name")
     season = FormField(TranslatedFieldForm, label="Season")
     start = DateTimeField("Start", format='%Y-%m-%d %H:%M:%S',
                           default=datetime.datetime.now(),
@@ -267,6 +265,7 @@ class NewEventForm(FlaskForm):
         self.eventgroup.data = selectedObject.eventgroup['id']
         self.name.fill(selectedObject['name'])
         self.season.fill(selectedObject['season'])
+        self.status.data = selectedObject['status']
 
     def create(self):
         return Node().createEvent(
@@ -287,15 +286,14 @@ class NewEventForm(FlaskForm):
 
 class NewBettingMarketGroupForm(FlaskForm):
     event = SelectField("Event", validators=[DataRequired()], choices=None)
+    description = FormField(TranslatedFieldForm)
     status = SelectField("Status",
                          validators=[DataRequired()],
                          choices=[(x, x) for x in BettingMarketGroupStatus.options if "COUNT" not in x])
-    description = FormField(TranslatedFieldForm)
     bettingmarketrule = SelectField(
         "Betting market group rule",
         validators=[DataRequired()],
-        choices=selectDictToList(
-            utils.getComprisedTypesGetter('bettingmarketgrouprule')(None)))
+        choices=None)
     asset = TextField(label='Asset', render_kw={'disabled': True})
     submit = SubmitField("Submit")
 
@@ -313,10 +311,14 @@ class NewBettingMarketGroupForm(FlaskForm):
         elif isinstance(selectedObject, wrapper.Event):
             eventGroupId = selectedObject.get('parentId')
 
+        # choices need to be filled at all times
         self.event.choices = selectDictToList(
             utils.getComprisedTypesGetter('event')(eventGroupId))
         if default:
             self.event.data = default['parentId']
+
+        self.bettingmarketrule.choices = selectDictToList(
+            utils.getComprisedTypesGetter('bettingmarketgrouprule')(None))
 
         self.asset.data = 'PPY'
 
@@ -324,6 +326,7 @@ class NewBettingMarketGroupForm(FlaskForm):
         self.event.data = selectedObject['event_id']
         self.bettingmarketrule.data = selectedObject['rules_id']
         self.description.fill(selectedObject['description'])
+        self.status.data = selectedObject['status']
 
     def create(self):
         return Node().createBettingMarketGroup(
@@ -449,9 +452,13 @@ class BettingMarketGroupResolveForm(FlaskForm):
 
     submit = SubmitField("Submit")
 
+    def __init__(self, title="Betting market group resolution"):
+        super(BettingMarketGroupResolveForm, self).__init__()
+        self.mytitle = title
+
     @property
     def title(self):
-        return "Betting market group resolution"
+        return self.mytitle
 
     @property
     def id(self):
@@ -517,7 +524,7 @@ class AmountForm(FlaskForm):
     symbol = TextField(
         label='Asset',
         validators=[DataRequired()],
-        render_kw={'disabled' : True})
+        render_kw={'disabled': True})
 
 
 class AccountForm(FlaskForm):
