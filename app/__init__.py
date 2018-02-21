@@ -15,23 +15,10 @@ def get_config():
     if os.path.isfile("config.yml"):
         config = yaml.load(open("config.yml").read())
     else:
-        config = {
-            "debug": True,
-            "nobroadcast": False,
-            "witness_url": os.environ.get(
-                "WITNESS_URL",
-                "wss://peerplays-dev.blocktrades.info/ws"
-            ),
-            "mail_host": os.environ.get("MAIL_HOST"),
-            "mail_port": os.environ.get("MAIL_PORT", 25),
-            "mail_user": os.environ.get("MAIL_USER"),
-            "mail_pass": os.environ.get("MAIL_PASS"),
-            "mail_from": os.environ.get("MAIL_FROM", "boss@localhost"),
-            "mail_notify": os.environ.get("MAIL_NOTIFY"),
-            "project_name": os.environ.get("PROJECT_NAME", "PeerPlays-Boss"),
-            "secret_key": os.environ.get("SECRET_KEY", "RUR7LywKvncb4eoR"),
-            "sql_database": os.environ.get("SQL_DATABASE", "sqlite:///{cwd}/database.db".format(cwd=basedir))
-        }
+        raise NotImplementedError()  # define defaults here once config.yml structure is fixed
+
+    config["sql_database"] = config["sql_database"].format(cwd=basedir)
+
     return config
 
 

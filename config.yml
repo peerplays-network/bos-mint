@@ -1,0 +1,30 @@
+debug: True
+
+mail_host: host:port
+mail_port: 25 
+mail_user: username
+mail_pass: password
+mail_from: local@localhost
+admins:
+ - mail@xeroc.org
+
+project_name: Bookie Oracle Software Suite
+secret_key: RUR7LywKvncb4eoR
+
+sql_database: "sqlite:///{cwd}/bookied-local.db"
+
+connection:
+    use: TestOSE
+    Main:
+        node:
+            - 
+
+    Test:
+        node:
+            - wss://peerplays-dev.blocktrades.info/ws
+        nobroadcast: True
+        
+    TestOSE:
+        node:
+            - wss://peerplays-dev.blocktrades.info/alpha/ws
+        nobroadcast: False
