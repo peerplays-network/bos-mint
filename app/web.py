@@ -29,17 +29,3 @@ def _jinja2_filter_datetime(date, fmt=None):
         return strfdelta(date, fmt)
     else:
         return strfdelta(date, '{days} days {hours} hours')
-
-
-def url_for_other_page(page):
-    args = request.view_args.copy()
-    args['page'] = page
-    return url_for(request.endpoint, **args)
-
-
-app.jinja_env.globals['url_for_other_page'] = url_for_other_page
-if "peerplays" not in app.jinja_env.globals:
-    try:
-        app.jinja_env.globals['peerplays'] = Node().get_node()
-    except ApiServerDown:
-        pass

@@ -7,6 +7,8 @@ from logging.handlers import TimedRotatingFileHandler
 from werkzeug.exceptions import HTTPException, InternalServerError
 import pprint
 
+from peerplays.instance import set_shared_config
+
 
 def get_config():
     basedir = os.path.abspath(os.path.dirname(__file__))
@@ -76,6 +78,11 @@ def set_app_config(flask_app, config):
     flask_app.config['WTF_CSRF_ENABLED'] = False
 
 
+def set_peerplays_connection(config):
+    use = config["connection"]["use"]
+    set_shared_config(config["connection"][use])
+
+
 def set_error_handling(flask_app):
     def handle_exception(e):
         if isinstance(e, HTTPException):
@@ -103,8 +110,8 @@ app = Flask(__name__)
 set_flask_logger(app, log_handlers)
 set_app_config(app, config)
 set_error_handling(app)
-
 db = SQLAlchemy(app)
+set_peerplays_connection(config)
 
 app.logger.info(pprint.pformat(config))
 

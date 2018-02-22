@@ -104,6 +104,16 @@ TYPENAME_TO_UPDATEOP_MAP = {
     'bettingmarket': 'betting_market_update'
 }
 
+UPDATEOP_TO_TYPENAME_MAP = {
+    'sport_update': 'sport',
+    'event_group_update': 'eventgroup',
+    'event_update': 'event',
+    'event_update_status': 'event',
+    'betting_market_group_update': 'bettingmarketgroup',
+    'betting_market_rules_update': 'bettingmarketgrouprule',
+    'betting_market_update': 'bettingmarket'
+}
+
 
 def toString(toBeFormatted):
     raise Exception
@@ -208,7 +218,7 @@ def getTypesFromPendingProposalGetter(typeName):
 
         for bufferedObject in bufferedObjects:
             if bufferedObject['typeName'] == typeName and\
-                    (not parentId or bufferedObject['parentId'] == parentId):
+                    (not parentId or bufferedObject['parentId'] == parentId or not bufferedObject['parentId']):
                 inBuffer.append(bufferedObject)
 
         return inBuffer
@@ -363,9 +373,7 @@ def getProposalOperations(tx):
                     if newOpName == operationName:
                         typeName = tmpTypeName
 
-                for tmpTypeName, newOpName in TYPENAME_TO_UPDATEOP_MAP.items():
-                    if newOpName == operationName:
-                        typeName = tmpTypeName
+                typeName = UPDATEOP_TO_TYPENAME_MAP.get(operationName, typeName)
 
                 if typeName == 'unknown':
                     raise Exception

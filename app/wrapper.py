@@ -13,7 +13,7 @@ class BlockchainIdentifiable(dict):
         dict.__init__(self, kwargs)
 
         if not kwargs.get('toString'):
-            self.toString = tostring.toString(self.__dict__)
+            self.toString = tostring.toString(self.__dict__, object=self)
             self['toString'] = self.toString
 
 #     def create(self):
@@ -95,26 +95,34 @@ class Event(BlockchainIdentifiable):
         elif operationData.get('operationName', None) == 'event_update':
             return {'pendingOperationId': operationData['operationId'],
                     'id': operationData['event_id'],
-                    'name': operationData['new_name'],
-                    'season': operationData['new_season'],
-                    'start_time': operationData['new_startTime'],
-                    'event_group_id': operationData['new_event_group_id']}
+                    'status': operationData.get('new_status', None),
+                    'name': operationData.get('new_name', None),
+                    'season': operationData.get('new_season', None),
+                    'start_time': operationData.get('new_startTime', None),
+                    'event_group_id': operationData.get('new_event_group_id', None),
+                    'score': operationData.get('score', None)}
+        elif operationData.get('operationName', None) == 'event_update_status':
+            return {'pendingOperationId': operationData['operationId'],
+                    'id': operationData['event_id'],
+                    'status': operationData['status'],
+                    'name': None,
+                    'season': None,
+                    'start_time': None,
+                    'event_group_id': None,
+                    'score': operationData.get('score', None)}
         else:
             from app.node import NodeException
             raise NodeException(
                 'Trying to instantiate a new Event from unknown operation')
 
-    def __init__(self, *args, **kwargs):
-        if kwargs:
-            kwargs['typeName'] = 'event'
-            kwargs['parentId'] = self.kwGet(kwargs, 'event_group_id')
-            BlockchainIdentifiable.__init__(self, **kwargs)
-            self.name = self.kwGet(kwargs, 'name')
-            self.season = self.kwGet(kwargs, 'season')
-            self.start_time = self.kwGet(kwargs, 'start_time')
-            self.event_group_id = self.kwGet(kwargs, 'event_group_id')
-        else:
-            object = args[0]
+    def __init__(self, **kwargs):
+        kwargs['typeName'] = 'event'
+        kwargs['parentId'] = self.kwGet(kwargs, 'event_group_id')
+        BlockchainIdentifiable.__init__(self, **kwargs)
+        self.name = self.kwGet(kwargs, 'name')
+        self.season = self.kwGet(kwargs, 'season')
+        self.start_time = self.kwGet(kwargs, 'start_time')
+        self.event_group_id = self.kwGet(kwargs, 'event_group_id')
 
 
 class BettingMarketGroup(BlockchainIdentifiable):
@@ -126,14 +134,16 @@ class BettingMarketGroup(BlockchainIdentifiable):
             return {'id': operationData['operationId'],
                     'description': operationData['description'],
                     'event_id': operationData['event_id'],
-                    'rules_id': operationData['rules_id']}
+                    'rules_id': operationData['rules_id'],
+                    'status': operationData['status']}
         elif operationData.get('operationName', None) ==\
                 'betting_market_group_update':
             return {'pendingOperationId': operationData['operationId'],
                     'id': operationData['betting_market_group_id'],
-                    'description': operationData['new_description'],
-                    'event_id': operationData['new_event_id'],
-                    'rules_id': operationData['new_rules_id']}
+                    'description': operationData.get('new_description', None),
+                    'event_id': operationData.get('new_event_id', None),
+                    'rules_id': operationData.get('new_rules_id', None),
+                    'status': operationData.get('status', None)}
         else:
             from app.node import NodeException
             raise NodeException(

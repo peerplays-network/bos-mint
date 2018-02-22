@@ -353,6 +353,7 @@ class NewBettingMarketForm(FlaskForm):
     payoutCondition = FormField(TranslatedFieldForm, label="Payout condition")
     status = SelectField("Status",
                          validators=[DataRequired()],
+                         render_kw={'disabled': True},
                          choices=[(x, x) for x in BettingMarketStatus.options if "COUNT" not in x])
     submit = SubmitField("Submit")
 
@@ -378,6 +379,7 @@ class NewBettingMarketForm(FlaskForm):
         self.bettingmarketgroup.data = selectedObject['group_id']
         self.payoutCondition.fill(selectedObject['payout_condition'])
         self.description.fill(selectedObject['description'])
+        self.status.data = selectedObject['status']
 
     def create(self):
         return Node().createBettingMarket(

@@ -7,7 +7,7 @@ def findEnglishOrFirst(listOfIStrings, desiredLanguage='en'):
         desiredLanguage, listOfIStrings[0][1])
 
 
-def toString(toBeFormatted):
+def toString(toBeFormatted, object=None):
 
     if toBeFormatted.get('name') and toBeFormatted.get('id'):
         if isinstance(toBeFormatted.get('name'), list):
@@ -23,11 +23,15 @@ def toString(toBeFormatted):
             name = toBeFormatted.get('description')
 
         displayName = name + ' (' + toBeFormatted.get('id') + ')'
+    elif toBeFormatted.get('id'):
+        displayName = '(' + toBeFormatted.get('id') + ')'
+        if object:
+            displayName = object.__class__.__name__ + " " + displayName
     else:
         raise Exception
 
     if toBeFormatted.get('pendingOperationId'):
-        displayName = '* ' + displayName + '(' +\
+        displayName = displayName + '*(' +\
             toBeFormatted.get('pendingOperationId') + ')'
 
     return displayName

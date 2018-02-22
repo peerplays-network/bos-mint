@@ -679,16 +679,16 @@ def event_finish(selectId=None, scores=None):
 
 @app.route("/event/freeze/<selectId>", methods=['post', 'get'])
 @unlocked_wallet_required
-def event_freeze(selectId=None, scores=None):
-    Node().freezeEvent(selectId, scores)
+def event_freeze(selectId=None):
+    Node().freezeEvent(selectId)
     return redirect(utils.processNextArgument(
                     request.args.get('next'), 'index'))
 
 
 @app.route("/event/cancel/<selectId>", methods=['post', 'get'])
 @unlocked_wallet_required
-def event_cancel(selectId=None, scores=None):
-    Node().cancelEvent(selectId, scores)
+def event_cancel(selectId=None):
+    Node().cancelEvent(selectId)
     return redirect(utils.processNextArgument(
                     request.args.get('next'), 'index'))
 

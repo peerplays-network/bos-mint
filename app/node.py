@@ -1,16 +1,18 @@
+from . import config
+from . import wrapper
+
+from functools import wraps
 from peerplays import PeerPlays
 from peerplays.account import Account
 from peerplays.sport import Sport, Sports
-from . import config
-from functools import wraps
 from peerplays.eventgroup import EventGroups, EventGroup
 from peerplays.event import Events, Event
 from peerplays.bettingmarketgroup import BettingMarketGroup, BettingMarketGroups
 from peerplays.bettingmarket import BettingMarkets, BettingMarket
 from peerplays.rule import Rules, Rule
 from peerplays.proposal import Proposals
-from app import wrapper
-from peerplaysbase.objects import EventStatus, BettingMarketGroupStatus
+
+from peerplays.instance import shared_peerplays_instance
 
 
 class NodeException(Exception):
@@ -60,37 +62,20 @@ def proposedOperation(func):
 
 class Node(object):
     #: The static connection
-    node = None
     pendingProposal = None
 
-    def __init__(self, url=None, num_retries=1, **kwargs):
+    def __init__(self, config=None, num_retries=1, **kwargs):
         """ This class is a singelton and makes sure that only one
             connection to the node is established and shared among
             flask threads.
         """
-        if not url:
-            use = config["connection"]["use"]
-            self.connection_config = config["connection"][use]
-            self.url = config.get("connection", None)
-        else:
-            self.url = url
+        self.config = config
         self.num_retries = num_retries
         self.kwargs = kwargs
         self.kwargs["num_retries"] = num_retries
 
     def get_node(self):
-        if not Node.node:
-            self.connect()
-        return Node.node
-
-    def connect(self):
-        try:
-            Node.node = PeerPlays(
-                **self.connection_config
-            )
-            set_shared_peerplays_instance(Node.node)
-        except Exception:
-            raise ApiServerDown
+        return shared_peerplays_instance()
 
     def getAccount(self, name):
         try:
@@ -418,7 +403,7 @@ class Node(object):
     @proposedOperation
     def startEvent(self, eventId):
         try:
-            return self.get_node().event_update_status(eventId, "in_progress", None, self.getSelectedAccountName(), append_to=self.getPendingProposal())
+            return self.get_node().event_update_status(eventId, "in_progress", [], self.getSelectedAccountName(), append_to=self.getPendingProposal())
         except Exception as ex:
             raise NodeException(ex.__class__.__name__ + ": " + str(ex))
 
@@ -430,16 +415,16 @@ class Node(object):
             raise NodeException(ex.__class__.__name__ + ": " + str(ex))
 
     @proposedOperation
-    def freezeEvent(self, eventId, scores):
+    def freezeEvent(self, eventId):
         try:
-            return self.get_node().event_update_status(eventId, "frozen", scores, self.getSelectedAccountName(), append_to=self.getPendingProposal())
+            return self.get_node().event_update_status(eventId, "frozen", [], self.getSelectedAccountName(), append_to=self.getPendingProposal())
         except Exception as ex:
             raise NodeException(ex.__class__.__name__ + ": " + str(ex))
 
     @proposedOperation
-    def cancelEvent(self, eventId, scores):
+    def cancelEvent(self, eventId):
         try:
-            return self.get_node().event_update_status(eventId, "canceled", scores, self.getSelectedAccountName(), append_to=self.getPendingProposal())
+            return self.get_node().event_update_status(eventId, "canceled", [], self.getSelectedAccountName(), append_to=self.getPendingProposal())
         except Exception as ex:
             raise NodeException(ex.__class__.__name__ + ": " + str(ex))
 

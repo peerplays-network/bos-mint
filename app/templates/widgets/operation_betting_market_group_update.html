@@ -4,10 +4,11 @@
 	<div class="content">
 		<div class="header">Betting market group update {{ operationId }}</div>
 		<div class="description">
-		Event: {{ data['event_id'] }} 
-		Rule: {{ data['rules_id'] }} 	
-		Asset: {{ data['asset_id'] }}	</br>
-		Description: {{ render_int_string(data['description']) }} <br/>
+		{% if data['status'] %}Status: {{ data['status'] }}{% endif %}
+		{% if data['event_id'] %}Event: {{ data['event_id'] }}{% endif %} 
+		{% if data['rules_id'] %}Rule: {{ data['rules_id'] }}{% endif %}  	
+		{% if data['asset_id'] %}Asset: {{ data['asset_id'] }}{% endif %} 	</br>
+		{% if data['description'] %}Description: {{ render_int_string(data['description']) }}{% endif %}<br/>
 		</div>
 	</div>
 </div>
