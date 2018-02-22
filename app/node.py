@@ -88,6 +88,7 @@ class Node(object):
             Node.node = PeerPlays(
                 **self.connection_config
             )
+            set_shared_peerplays_instance(Node.node)
         except Exception:
             raise ApiServerDown
 
