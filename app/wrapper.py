@@ -225,6 +225,7 @@ def mapOperationToObject(typeName, operation):
         'sport': Sport,
         'eventgroup': EventGroup,
         'event': Event,
+        'event_status': Event,
         'bettingmarketgroup': BettingMarketGroup,
         'bettingmarket': BettingMarket,
         'bettingmarketgrouprule': BettingMarketGroupRule

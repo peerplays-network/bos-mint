@@ -151,7 +151,7 @@ def overview(typeName=None, identifier=None):
                             'icon': 'lightning'
                         }, {
                             'title': 'Finish',
-                            'link': 'event_finish',
+                            'link': 'event_status_update',
                             'icon': 'flag checkered'
                         }, {
                             'title': 'Freeze',
@@ -161,12 +161,6 @@ def overview(typeName=None, identifier=None):
                             'title': 'Cancel',
                             'link': 'event_cancel',
                             'icon': 'minus circle'
-                        }]
-                    elif entry['typeName'] == 'bettingmarket':
-                        entry['extraLink'] = [{
-                            'title': 'Grade',
-                            'link': 'bettingmarket_grade',
-                            'icon': 'book'
                         }]
                     elif entry['typeName'] == 'bettingmarketgroup':
                         entry['extraLink'] = [{
@@ -341,7 +335,7 @@ def pending_operations():
     # construct operationsform from active transaction
     transaction = Node().getPendingTransaction()
     if transaction:
-        containerList = [ widgets.prepareTransactionDataForRendering(transaction) ]
+        containerList = [widgets.prepareTransactionDataForRendering(transaction)]
     del transaction
 
     return render_template_menuinfo("pendingOperations.html", **locals())
@@ -399,7 +393,7 @@ def votable_proposals_accept(proposalId):
 def votable_proposals_reject(proposalId):
     try:
         Node().rejectProposal(proposalId)
-    except Exception as e:
+    except Exception:
         pass
 
     LocalProposal.wasReviewed(proposalId)
@@ -498,9 +492,8 @@ def genericUpdate(formClass, selectId, removeSubmits=False):
     selectFunction = utils.getTypeGetter(typeName)
     choicesFunction = utils.getTypesGetter(typeName)
 
-#     try:
-        # maybe only query the selected object, if one is preselected,
-        # saves traffic currently: always query all
+    # maybe only query the selected object, if one is preselected,
+    # saves traffic currently: always query all
     parentId = None
     if selectId:
         parentId = utils.getParentTypeGetter(typeName)(selectId)
@@ -509,11 +502,6 @@ def genericUpdate(formClass, selectId, removeSubmits=False):
                                  choicesFunction(parentId),
                                  formClass,
                                  selectId)
-#     except NonScalableRequest as e:
-#         return redirect(url_for('overview'))
-#     except NodeException as e:
-#         flash(str(e), category='error')
-#         return render_template_menuinfo("update.html", **locals())
 
     typeNameTitle = utils.getTitle(typeName)
 
@@ -525,12 +513,8 @@ def genericUpdate(formClass, selectId, removeSubmits=False):
             return render_template_menuinfo("update.html", **locals())
 
     # update was called with given id, make sure it exists
-#     try:
     if selectId:
         selectedObject = selectFunction(selectId)
-#     except NodeException as e:
-#         flash(str(e), category='error')
-#         return render_template_menuinfo("update.html", **locals())
 
     # user wants to add language?
     if findAndProcessTranslatons(form):
@@ -602,6 +586,14 @@ def event_update(selectId=None):
     return genericUpdate(formClass, selectId)
 
 
+@app.route("/event/finish", methods=['post', 'get'])
+@app.route("/event/finish/<selectId>", methods=['post', 'get'])
+@unlocked_wallet_required
+def event_status_update(selectId=None):
+    formClass = forms.EventStatusForm
+    return genericUpdate(formClass, selectId)
+
+
 @app.route("/bettingmarketgroup/update", methods=['post', 'get'])
 @app.route("/bettingmarketgroup/update/<selectId>", methods=['post', 'get'])
 @unlocked_wallet_required
@@ -669,14 +661,6 @@ def event_start(selectId):
                     request.args.get('next'), 'index'))
 
 
-@app.route("/event/finish/<selectId>", methods=['post', 'get'])
-@unlocked_wallet_required
-def event_finish(selectId=None, scores=None):
-    Node().finishEvent(selectId, scores)
-    return redirect(utils.processNextArgument(
-                    request.args.get('next'), 'index'))
-
-
 @app.route("/event/freeze/<selectId>", methods=['post', 'get'])
 @unlocked_wallet_required
 def event_freeze(selectId=None):
@@ -691,12 +675,6 @@ def event_cancel(selectId=None):
     Node().cancelEvent(selectId)
     return redirect(utils.processNextArgument(
                     request.args.get('next'), 'index'))
-
-
-@app.route("/bettingmarket/grade/<selectId>", methods=['post', 'get'])
-@unlocked_wallet_required
-def bettingmarket_grade(selectId=None):
-    return redirect(url_for('overview'))
 
 
 @app.route("/bettingmarketgroup/freeze/<selectId>", methods=['post', 'get'])
@@ -739,7 +717,7 @@ def bettingmarketgroup_resolve(selectId=None):
     if not form.submit.data:
         form.fillMarkets(bettingMarketGroupId)
 
-        form.event.data = selectedBMG['event_id']
+        form.fillEvent(Node().getEvent(selectedBMG['event_id']))
         form.bettingmarketgroup.data = bettingMarketGroupId
 
         form.event.render_kw = {"disabled": True}

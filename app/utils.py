@@ -13,6 +13,7 @@ TYPENAMES = {
     'sport': {'title': 'Sport'},
     'eventgroup': {'title': 'Event group'},
     'event': {'title': 'Event'},
+    'event_status': {'title': 'Event (only status)'},
     'bettingmarketgroup': {'title': 'Betting market group'},
     'bettingmarket': {'title': 'Betting market'},
     'bet': {'title': 'Bet'},
@@ -28,6 +29,9 @@ TYPE_GET_ALL = {
         wrapper.EventGroup(**x) for x in Node().getEventGroups(tmpSportId)
     ],
     'event': lambda tmpEventGroupId: [
+        wrapper.Event(**x) for x in Node().getEvents(tmpEventGroupId)
+    ],
+    'event_status': lambda tmpEventGroupId: [
         wrapper.Event(**x) for x in Node().getEvents(tmpEventGroupId)
     ],
     'bettingmarketgroup': lambda tmpEventId: [
@@ -47,6 +51,7 @@ TYPE_GET = {
     'sport': lambda tmpId: Node().getSport(tmpId),
     'eventgroup': lambda tmpId: Node().getEventGroup(tmpId),
     'event': lambda tmpId: Node().getEvent(tmpId),
+    'event_status': lambda tmpId: Node().getEvent(tmpId),
     'bettingmarketgroup': lambda tmpId: Node().getBettingMarketGroup(tmpId),
     'bettingmarketgrouprule': lambda tmpId: Node().getBettingMarketGroupRule(tmpId),
     'bettingmarket': lambda tmpId: Node().getBettingMarket(tmpId),
@@ -58,6 +63,7 @@ PARENTTYPE_GET = {
     'sport': lambda tmpId: None,
     'eventgroup': lambda tmpId: Node().getEventGroup(tmpId).sport.identifier,
     'event': lambda tmpId: Node().getEvent(tmpId).eventgroup.identifier,
+    'event_status': lambda tmpId: Node().getEvent(tmpId).eventgroup.identifier,
     'bettingmarketgroup': lambda tmpId: Node().getBettingMarketGroup(tmpId).event.identifier,
     'bettingmarketgrouprule': lambda tmpId: None,
     'bettingmarket': lambda tmpId: Node().getBettingMarket(tmpId).bettingmarketgroup.identifier,
@@ -69,6 +75,7 @@ CHILD_TYPE = {
     'sport': 'eventgroup',
     'eventgroup': 'event',
     'event': 'bettingmarketgroup',
+    'event_status': 'bettingmarketgroup',
     'bettingmarketgroup': 'bettingmarket',
     'bettingmarketgrouprule': None,
     'bettingmarket': 'bet'
@@ -89,6 +96,7 @@ TYPENAME_TO_NEWOP_MAP = {
     'sport': 'sport_create',
     'eventgroup': 'event_group_create',
     'event': 'event_create',
+    'event_status': None,
     'bettingmarketgroup': 'betting_market_group_create',
     'bettingmarketgrouprule': 'betting_market_rules_create',
     'bettingmarket': 'betting_market_create',
@@ -99,6 +107,7 @@ TYPENAME_TO_UPDATEOP_MAP = {
     'sport': 'sport_update',
     'eventgroup': 'event_group_update',
     'event': 'event_update',
+    'event_status': 'event_update_status',
     'bettingmarketgroup': 'betting_market_group_update',
     'bettingmarketgrouprule': 'betting_market_rules_update',
     'bettingmarket': 'betting_market_update'
@@ -108,7 +117,7 @@ UPDATEOP_TO_TYPENAME_MAP = {
     'sport_update': 'sport',
     'event_group_update': 'eventgroup',
     'event_update': 'event',
-    'event_update_status': 'event',
+    'event_update_status': 'event_status',
     'betting_market_group_update': 'bettingmarketgroup',
     'betting_market_rules_update': 'bettingmarketgrouprule',
     'betting_market_update': 'bettingmarket'

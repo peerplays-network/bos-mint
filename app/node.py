@@ -331,7 +331,7 @@ class Node(object):
             raise NodeException(ex.__class__.__name__ + ": " + str(ex))
 
     @proposedOperation
-    def createEvent(self, name, season, startTime, eventGroupId, status=None):
+    def createEvent(self, name, season, startTime, eventGroupId):
         try:
             return self.get_node().event_create(name, season, startTime, eventGroupId, self.getSelectedAccountName(), append_to=self.getPendingProposal())
         except Exception as ex:
@@ -380,6 +380,13 @@ class Node(object):
             raise NodeException(ex.__class__.__name__ + ": " + str(ex))
 
     @proposedOperation
+    def updateEventStatus(self, eventId, status, scores=[]):
+        try:
+            return self.get_node().event_update_status(eventId, status, scores, self.getSelectedAccountName(), append_to=self.getPendingProposal())
+        except Exception as ex:
+            raise NodeException(ex.__class__.__name__ + ": " + str(ex))
+
+    @proposedOperation
     def updateBettingMarketGroup(self, bmgId, description, eventId, rulesId, status):
         try:
             return self.get_node().betting_market_group_update(bmgId, description, eventId, rulesId, status, self.getSelectedAccountName(), append_to=self.getPendingProposal())
@@ -402,31 +409,15 @@ class Node(object):
 
     @proposedOperation
     def startEvent(self, eventId):
-        try:
-            return self.get_node().event_update_status(eventId, "in_progress", [], self.getSelectedAccountName(), append_to=self.getPendingProposal())
-        except Exception as ex:
-            raise NodeException(ex.__class__.__name__ + ": " + str(ex))
-
-    @proposedOperation
-    def finishEvent(self, eventId, scores):
-        try:
-            return self.get_node().event_update_status(eventId, "finished", scores, self.getSelectedAccountName(), append_to=self.getPendingProposal())
-        except Exception as ex:
-            raise NodeException(ex.__class__.__name__ + ": " + str(ex))
+        self.updateEventStatus(eventId, "in_progress")
 
     @proposedOperation
     def freezeEvent(self, eventId):
-        try:
-            return self.get_node().event_update_status(eventId, "frozen", [], self.getSelectedAccountName(), append_to=self.getPendingProposal())
-        except Exception as ex:
-            raise NodeException(ex.__class__.__name__ + ": " + str(ex))
+        self.updateEventStatus("frozen")
 
     @proposedOperation
     def cancelEvent(self, eventId):
-        try:
-            return self.get_node().event_update_status(eventId, "canceled", [], self.getSelectedAccountName(), append_to=self.getPendingProposal())
-        except Exception as ex:
-            raise NodeException(ex.__class__.__name__ + ": " + str(ex))
+        self.updateEventStatus(eventId, "canceled")
 
     @proposedOperation
     def freezeBettingMarketGroup(self, bmgId):
@@ -485,6 +476,7 @@ class Node(object):
         except Exception as ex:
             raise NodeException(ex.__class__.__name__ + ": " + str(ex))
 
+    @proposedOperation
     def resolveBettingMarketGroup(self, bettingMarketGroupId, resultList):
         try:
             return self.get_node().betting_market_resolve(

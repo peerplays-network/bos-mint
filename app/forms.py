@@ -284,6 +284,63 @@ class NewEventForm(FlaskForm):
             self.status.data)
 
 
+class EventStatusForm(FlaskForm):
+    """
+    This is not representing an actual object on the blockchain, since status and score are all part of
+    event. due to the fact that the normal event_update backend call does not support setting a score,
+    only the event_status_update method does, we need a second form here for it.
+    """
+    eventgroup = SelectField("Event group",
+                             validators=[DataRequired()],
+                             choices=None,
+                             render_kw={'disabled': True})
+#     name = FormField(TranslatedFieldForm, label="Name", render_kw={'disabled': True})
+    status = SelectField("Status (will always be set to finished)",
+                         validators=[DataRequired()],
+                         choices=[(x, x) for x in EventStatus.options if "COUNT" not in x],
+                         render_kw={'disabled': True})
+    scores = StringField('Scores (semi-colon seperated list)', validators=[DataRequired()])
+
+    submit = SubmitField("Submit")
+
+    @classmethod
+    def getTypeName(cls):
+        return 'event_status'
+
+    def init(self, selectedObject, default=None):
+        sportId = None
+        if isinstance(selectedObject, EventGroup):
+            sportId = selectedObject['sport_id']
+        elif isinstance(selectedObject, Event):
+            sportId = selectedObject.eventgroup.sport['id']
+        elif isinstance(selectedObject, wrapper.EventGroup):
+            sportId = selectedObject.get('parentId')
+
+        # choices need to be filled at all times
+        self.eventgroup.choices = selectDictToList(
+            utils.getComprisedTypesGetter('eventgroup')(sportId))
+        if default:
+            self.eventgroup.data = default['parentId']
+
+    def fill(self, selectedObject):
+        self.eventgroup.data = selectedObject.eventgroup['id']
+#         self.name.fill(selectedObject['name'])
+        self.status.data = "finished"
+        if selectedObject['scores']:
+            self.scores.data = ";".join(selectedObject['scores'])
+
+    def create(self):
+        return NotImplementedError("Event status creation not supported, subset of event!")
+
+    def update(self, selectedId):
+        commaseplist = self.scores.data.split(";")
+
+        return Node().updateEventStatus(
+            selectedId,
+            self.status.data,
+            commaseplist)
+
+
 class NewBettingMarketGroupForm(FlaskForm):
     event = SelectField("Event", validators=[DataRequired()], choices=None)
     description = FormField(TranslatedFieldForm)
@@ -444,6 +501,12 @@ class BettingMarketResolveForm(FlaskForm):
 class BettingMarketGroupResolveForm(FlaskForm):
     event = SelectField("Event", validators=[DataRequired()], choices=None)
 
+    event_status = StringField('Event status',
+                               render_kw={'disabled': True})
+
+    event_scores = StringField('Event score',
+                               render_kw={'disabled': True})
+
     bettingmarketgroup = SelectField("Betting market group",
                                      validators=[DataRequired()],
                                      choices=None)
@@ -518,8 +581,10 @@ class BettingMarketGroupResolveForm(FlaskForm):
                 market['description'])
             self.bettingmarkets.append_entry(tmpForm)
 
-    def fill(self, selectedObject):
-        pass
+    def fillEvent(self, selectedObject):
+        self.event.data = selectedObject['id']
+        self.event_status.data = selectedObject["status"]
+        self.event_scores.data = ";".join(selectedObject["scores"])
 
 
 class AmountForm(FlaskForm):
