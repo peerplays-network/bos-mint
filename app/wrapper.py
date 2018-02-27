@@ -134,8 +134,7 @@ class BettingMarketGroup(BlockchainIdentifiable):
             return {'id': operationData['operationId'],
                     'description': operationData['description'],
                     'event_id': operationData['event_id'],
-                    'rules_id': operationData['rules_id'],
-                    'status': operationData['status']}
+                    'rules_id': operationData['rules_id']}
         elif operationData.get('operationName', None) ==\
                 'betting_market_group_update':
             return {'pendingOperationId': operationData['operationId'],

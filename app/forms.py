@@ -345,7 +345,6 @@ class NewBettingMarketGroupForm(FlaskForm):
     event = SelectField("Event", validators=[DataRequired()], choices=None)
     description = FormField(TranslatedFieldForm)
     status = SelectField("Status",
-                         validators=[DataRequired()],
                          choices=[(x, x) for x in BettingMarketGroupStatus.options if "COUNT" not in x])
     bettingmarketrule = SelectField(
         "Betting market group rule",
@@ -409,8 +408,6 @@ class NewBettingMarketForm(FlaskForm):
     description = FormField(TranslatedFieldForm, label="Description")
     payoutCondition = FormField(TranslatedFieldForm, label="Payout condition")
     status = SelectField("Status",
-                         validators=[DataRequired()],
-                         render_kw={'disabled': True},
                          choices=[(x, x) for x in BettingMarketStatus.options if "COUNT" not in x])
     submit = SubmitField("Submit")
 
@@ -445,7 +442,6 @@ class NewBettingMarketForm(FlaskForm):
             self.bettingmarketgroup.data)
 
     def update(self, selectedId):
-        raise NotImplementedError("Add OSE to update!")
         return Node().updateBettingMarket(
             selectedId,
             InternationalizedString.parseToList(self.payoutCondition),
