@@ -6,6 +6,7 @@ from peerplaysbase.operationids import getOperationNameForId
 
 from .node import Node, NodeException
 from . import wrapper, tostring
+import strict_rfc3339
 
 # dictionary to configure types (Sport, EventGroup, etc.)
 #  title: human readable title
@@ -398,3 +399,28 @@ def getProposalOperations(tx):
                 convertedOperations.append(bufferedObject)
 
     return convertedOperations
+
+
+def date_to_string(date_object=None):
+    """ rfc3339 conform string represenation of a date
+        can also be given as str YYYY-mm-dd HH:MM:SS """
+    if type(date_object) == int:
+        date_object = datetime.datetime.fromtimestamp(date_object)
+    if type(date_object) == float:
+        date_object = datetime.datetime.fromtimestamp(date_object)
+    if type(date_object) == str:
+        date_object = datetime.datetime.strptime(date_object + "+0000",
+                                                 '%Y-%m-%d %H:%M:%S%z')
+    if not date_object:
+        return strict_rfc3339.now_to_rfc3339_utcoffset()
+    else:
+        return strict_rfc3339.timestamp_to_rfc3339_utcoffset(
+            date_object.timestamp())
+
+
+def string_to_date(date_string):
+    """ assumes rfc3339 conform string and creates date object """
+    if type(date_string) == str:
+        return datetime.datetime.fromtimestamp(
+            strict_rfc3339.rfc3339_to_timestamp(date_string))
+    raise Exception("Only string covnersion supported")
