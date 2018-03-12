@@ -237,7 +237,7 @@ class NewEventForm(FlaskForm):
                          validators=[DataRequired()],
                          choices=[(x, x) for x in EventStatus.options if "COUNT" not in x])
     season = FormField(TranslatedFieldForm, label="Season")
-    start = DateTimeField("Start (Format %Y-%m-%d %H:%M:%S in UTC+0)", format='%Y-%m-%d %H:%M:%S',
+    start = DateTimeField("Start (Format 'year-month-day hour:minute:second' in UTC+0)", format='%Y-%m-%d %H:%M:%S',
                           default=datetime.datetime.utcnow(),
                           validators=[DataRequired()])
     submit = SubmitField("Submit")
