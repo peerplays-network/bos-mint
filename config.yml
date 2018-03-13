@@ -1,3 +1,6 @@
+bos_mint:
+    version: 0.1-2080313-1058
+
 debug: True
 
 mail_host: host:port
