@@ -8,6 +8,6 @@
 		{% if data['event_group_id'] %}Event group: {{ data['event_group_id'] }}{% endif %} <br/>	
 		{% if data['name'] %}Name: {{ render_int_string(data['name']) }}{% endif %} <br/>	
 		{% if data['season'] %}Season: {{ render_int_string(data['season']) }}{% endif %} <br/>	
-		{% if data['start_time'] %}Start time: {{ data['start_time'] }}{% endif %}</div>
+		{% if data['start_time'] %}Start time: {{ data['start_time'] }}Z{% endif %}</div>
 	</div>
 </div>
