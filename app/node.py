@@ -326,84 +326,84 @@ class Node(object):
     @proposedOperation
     def createEventGroup(self, istrings, sportId):
         try:
-            return self.get_node().event_group_create(istrings, sportId, self.getSelectedAccountName(), append_to=self.getPendingProposal())
+            return self.get_node().event_group_create(istrings, sportId, account=self.getSelectedAccountName(), append_to=self.getPendingProposal())
         except Exception as ex:
             raise NodeException(ex.__class__.__name__ + ": " + str(ex))
 
     @proposedOperation
     def createEvent(self, name, season, startTime, eventGroupId):
         try:
-            return self.get_node().event_create(name, season, startTime, eventGroupId, self.getSelectedAccountName(), append_to=self.getPendingProposal())
+            return self.get_node().event_create(name, season, startTime, eventGroupId, account=self.getSelectedAccountName(), append_to=self.getPendingProposal())
         except Exception as ex:
             raise NodeException(ex.__class__.__name__ + ": " + str(ex))
 
     @proposedOperation
     def createBettingMarketGroup(self, description, eventId, bettingMarketRuleId, asset):
         try:
-            return self.get_node().betting_market_group_create(description, eventId, bettingMarketRuleId, asset, self.getSelectedAccountName(), append_to=self.getPendingProposal())
+            return self.get_node().betting_market_group_create(description, eventId, bettingMarketRuleId, asset, account=self.getSelectedAccountName(), append_to=self.getPendingProposal())
         except Exception as ex:
             raise NodeException(ex.__class__.__name__ + ": " + str(ex))
 
     @proposedOperation
     def createBettingMarket(self, payoutCondition, description, bettingMarketGroupId):
         try:
-            return self.get_node().betting_market_create(payoutCondition, description, bettingMarketGroupId, self.getSelectedAccountName(), append_to=self.getPendingProposal())
+            return self.get_node().betting_market_create(payoutCondition, description, bettingMarketGroupId, account=self.getSelectedAccountName(), append_to=self.getPendingProposal())
         except Exception as ex:
             raise NodeException(ex.__class__.__name__ + ": " + str(ex))
 
     @proposedOperation
     def createBettingMarketGroupRule(self, name, description):
         try:
-            return self.get_node().betting_market_rules_create(name, description, self.getSelectedAccountName(), append_to=self.getPendingProposal())
+            return self.get_node().betting_market_rules_create(name, description, account=self.getSelectedAccountName(), append_to=self.getPendingProposal())
         except Exception as ex:
             raise NodeException(ex.__class__.__name__ + ": " + str(ex))
 
     @proposedOperation
     def updateSport(self, sportId, istrings):
         try:
-            return self.get_node().sport_update(sportId, istrings, self.getSelectedAccountName(), append_to=self.getPendingProposal())
+            return self.get_node().sport_update(sportId, istrings, account=self.getSelectedAccountName(), append_to=self.getPendingProposal())
         except Exception as ex:
             raise NodeException(ex.__class__.__name__ + ": " + str(ex))
 
     @proposedOperation
     def updateEventGroup(self, eventGroupId, istrings, sportId):
         try:
-            return self.get_node().event_group_update(eventGroupId, istrings, sportId, self.getSelectedAccountName(), append_to=self.getPendingProposal())
+            return self.get_node().event_group_update(eventGroupId, istrings, sportId, account=self.getSelectedAccountName(), append_to=self.getPendingProposal())
         except Exception as ex:
             raise NodeException(ex.__class__.__name__ + ": " + str(ex))
 
     @proposedOperation
     def updateEvent(self, eventId, name, season, startTime, eventGroupId, status):
         try:
-            return self.get_node().event_update(eventId, name, season, startTime, eventGroupId, status, self.getSelectedAccountName(), append_to=self.getPendingProposal())
+            return self.get_node().event_update(eventId, name, season, startTime, eventGroupId, status, account=self.getSelectedAccountName(), append_to=self.getPendingProposal())
         except Exception as ex:
             raise NodeException(ex.__class__.__name__ + ": " + str(ex))
 
     @proposedOperation
     def updateEventStatus(self, eventId, status, scores=[]):
         try:
-            return self.get_node().event_update_status(eventId, status, scores, self.getSelectedAccountName(), append_to=self.getPendingProposal())
+            return self.get_node().event_update_status(eventId, status, scores, account=self.getSelectedAccountName(), append_to=self.getPendingProposal())
         except Exception as ex:
             raise NodeException(ex.__class__.__name__ + ": " + str(ex))
 
     @proposedOperation
     def updateBettingMarketGroup(self, bmgId, description, eventId, rulesId, status):
         try:
-            return self.get_node().betting_market_group_update(bmgId, description, eventId, rulesId, status, self.getSelectedAccountName(), append_to=self.getPendingProposal())
+            return self.get_node().betting_market_group_update(bmgId, description, eventId, rulesId, status, account=self.getSelectedAccountName(), append_to=self.getPendingProposal())
         except Exception as ex:
             raise NodeException(ex.__class__.__name__ + ": " + str(ex))
 
     @proposedOperation
     def updateBettingMarketGroupRule(self, bmgrId, name, description):
         try:
-            return self.get_node().betting_market_rules_update(bmgrId, name, description, self.getSelectedAccountName(), append_to=self.getPendingProposal())
+            return self.get_node().betting_market_rules_update(bmgrId, name, description, account=self.getSelectedAccountName(), append_to=self.getPendingProposal())
         except Exception as ex:
             raise NodeException(ex.__class__.__name__ + ": " + str(ex))
 
     @proposedOperation
     def updateBettingMarket(self, bmId, payout_condition, descriptions, bmgId):
         try:
-            return self.get_node().betting_market_update(bmId, payout_condition, descriptions, bmgId, self.getSelectedAccountName(), append_to=self.getPendingProposal())
+            return self.get_node().betting_market_update(bmId, payout_condition, descriptions, bmgId, account=self.getSelectedAccountName(), append_to=self.getPendingProposal())
         except Exception as ex:
             raise NodeException(ex.__class__.__name__ + ": " + str(ex))
 
