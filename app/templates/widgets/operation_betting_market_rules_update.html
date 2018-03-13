@@ -5,8 +5,11 @@
 		<div class="header">Betting market rule update {{ operationId }}
 		</div>
 		<div class="description">
-			Name: {{ render_int_string(data['name']) }} <br /> 
-			Description: {{ render_int_string(data['description']) }}
+			<a href="{{ url_for('overview', typeName='bettingmarketgrouprule', identifier=data['betting_market_rules_id']) }}">
+				id={{ data['betting_market_rules_id'] }}
+			</a> <br />
+			{% if data['new_name'] %}Name: {{ render_int_string(data['new_name']) }}{% endif %} <br /> 
+			{% if data['new_description'] %}Description: {{ render_int_string(data['new_description']) }}{% endif %}
 		</div>
 	</div>
 </div>

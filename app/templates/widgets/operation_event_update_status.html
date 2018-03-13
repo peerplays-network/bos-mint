@@ -4,6 +4,9 @@
 	<div class="content">
 		<div class="header">Event update status {{ operationId }}</div>
 		<div class="description">	
+		<a href="{{ url_for('overview', typeName='event', identifier=data['event_id']) }}">
+			id={{ data['event_id'] }}
+		</a> <br />
 		{% if data['status'] %}Status: {{ data['status'] }}{% endif %} <br/>
 		{% if data['scores'] %}Score: {{ data['scores'] }}{% endif %}</div>
 	</div>

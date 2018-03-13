@@ -4,8 +4,11 @@
 	<div class="content">
 		<div class="header">Event group update {{ operationId }}</div>
 		<div class="description">
-		Sport: {{ data['sport_id'] }}  <br/>
-		Name: {{ render_int_string(data['name']) }}
+		<a href="{{ url_for('overview', typeName='eventgroup', identifier=data['event_group_id']) }}">
+			id={{ data['event_group_id'] }}
+		</a> <br />
+		{% if data['new_sport_id'] %}Sport: {{ data['new_sport_id'] }}{% endif %}  <br/>
+		{% if data['new_name'] %}Name: {{ render_int_string(data['new_name']) }}{% endif %}
 		</div>
 	</div>
 </div>

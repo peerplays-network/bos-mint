@@ -4,9 +4,12 @@
 	<div class="content">
 		<div class="header">Betting market update {{ operationId }}</div>
 		<div class="description">		
-		Betting market group: {{ data['group_id'] }} <br/>	
-		Description: {{ render_int_string(data['description']) }} <br/>	
-		Payout condition: {{ render_int_string(data['payout_condition']) }}
+		<a href="{{ url_for('overview', typeName='bettingmarket', identifier=data['betting_market_id']) }}">
+			id={{ data['betting_market_id'] }}
+		</a> <br />
+		{% if data['new_group_id'] %}Betting market group: {{ data['new_group_id'] }}{% endif %} <br/>	
+		{% if data['new_description'] %}Description: {{ render_int_string(data['new_description']) }}{% endif %} <br/>	
+		{% if data['new_payout_condition'] %}Payout condition: {{ render_int_string(data['new_payout_condition']) }}{% endif %}
 	</div>
 	</div>
 </div>
