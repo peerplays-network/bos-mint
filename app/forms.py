@@ -275,13 +275,21 @@ class NewEventForm(FlaskForm):
             self.eventgroup.data)
 
     def update(self, selectedId):
+        # only send state if changed
+        old_status = Node().getEvent(selectedId)['status']
+
+        if not old_status == self.status.data:
+            new_state = self.status.data
+        else:
+            new_state = None
+
         return Node().updateEvent(
             selectedId,
             InternationalizedString.parseToList(self.name),
             InternationalizedString.parseToList(self.season),
             self.start.data,
             self.eventgroup.data,
-            self.status.data)
+            new_state)
 
 
 class EventStatusForm(FlaskForm):
@@ -392,12 +400,20 @@ class NewBettingMarketGroupForm(FlaskForm):
             self.asset.data)
 
     def update(self, selectedId):
+        # only send state if changed
+        old_status = Node().getBettingMarketGroup(selectedId)['status']
+
+        if not old_status == self.status.data:
+            new_state = self.status.data
+        else:
+            new_state = None
+
         return Node().updateBettingMarketGroup(
             selectedId,
             InternationalizedString.parseToList(self.description),
             self.event.data,
             self.bettingmarketrule.data,
-            self.status.data)
+            new_state)
 
 
 class NewBettingMarketForm(FlaskForm):
@@ -442,6 +458,12 @@ class NewBettingMarketForm(FlaskForm):
             self.bettingmarketgroup.data)
 
     def update(self, selectedId):
+        # only send state if changed
+        old_status = Node().getBettingMarket(selectedId)['status']
+
+        if not old_status == self.status.data:
+            raise NotImplementedError()
+
         return Node().updateBettingMarket(
             selectedId,
             InternationalizedString.parseToList(self.payoutCondition),

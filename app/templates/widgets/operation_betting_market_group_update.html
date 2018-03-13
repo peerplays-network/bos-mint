@@ -4,11 +4,14 @@
 	<div class="content">
 		<div class="header">Betting market group update {{ operationId }}</div>
 		<div class="description">
-		{% if data['status'] %}Status: {{ data['status'] }}{% endif %}
-		{% if data['event_id'] %}Event: {{ data['event_id'] }}{% endif %} 
-		{% if data['rules_id'] %}Rule: {{ data['rules_id'] }}{% endif %}  	
-		{% if data['asset_id'] %}Asset: {{ data['asset_id'] }}{% endif %} 	</br>
-		{% if data['description'] %}Description: {{ render_int_string(data['description']) }}{% endif %}<br/>
+		<a href="{{ url_for('overview', typeName='bettingmarketgroup', identifier=data['betting_market_group_id']) }}">
+			id={{ data['betting_market_group_id'] }}
+		</a> <br />
+		{% if data['new_status'] %}Status: {{ data['new_status'] }}{% endif %}
+		{% if data['new_event_id'] %}Event: {{ data['new_event_id'] }}{% endif %} 
+		{% if data['new_rules_id'] %}Rule: {{ data['new_rules_id'] }}{% endif %}  	
+		{% if data['new_asset_id'] %}Asset: {{ data['new_asset_id'] }}{% endif %} 	<br />
+		{% if data['new_description'] %}Description: {{ render_int_string(data['new_description']) }}{% endif %}<br />
 		</div>
 	</div>
 </div>
