@@ -697,6 +697,10 @@ def bettingmarketgroup_resolve_selectgroup(eventId=None):
     form.initGroups(selectedEvent)
 #     form.bettingmarketgroup.render_kw = {'onclick': "document.getElementById('bettingMarketGroupResolveForm').submit()"}
 
+    if not form.submit.data:
+        form.fillEvent(selectedEvent)
+        form.event.render_kw = {"disabled": True}
+
     if form.validate_on_submit():
         return redirect(url_for('bettingmarketgroup_resolve',
                         selectId=form.bettingmarketgroup.data))
@@ -718,9 +722,9 @@ def bettingmarketgroup_resolve(selectId=None):
         form.fillMarkets(bettingMarketGroupId)
 
         form.fillEvent(Node().getEvent(selectedBMG['event_id']))
-        form.bettingmarketgroup.data = bettingMarketGroupId
-
         form.event.render_kw = {"disabled": True}
+
+        form.bettingmarketgroup.data = bettingMarketGroupId
         form.bettingmarketgroup.render_kw = {"disabled": True}
 
         # todo: this is weird, i dont understand why data is filled
@@ -732,6 +736,10 @@ def bettingmarketgroup_resolve(selectId=None):
         for market in form.bettingmarkets:
             resultList.append([market.identifier.data, market.resolution.data])
         Node().resolveBettingMarketGroup(bettingMarketGroupId, resultList)
+        flash("An update proposal to resolve Betting market group " + str(bettingMarketGroupId) +
+              " was created.")
+        return redirect(utils.processNextArgument(
+                        request.args.get('next'), 'index'))
 
     return render_template_menuinfo("generic.html", **locals())
 

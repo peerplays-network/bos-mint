@@ -407,17 +407,14 @@ class Node(object):
         except Exception as ex:
             raise NodeException(ex.__class__.__name__ + ": " + str(ex))
 
-    @proposedOperation
     def startEvent(self, eventId):
-        self.updateEventStatus(eventId, "in_progress")
+        return self.updateEventStatus(eventId, "in_progress")
 
-    @proposedOperation
     def freezeEvent(self, eventId):
-        self.updateEventStatus("frozen")
+        return self.updateEventStatus("frozen")
 
-    @proposedOperation
     def cancelEvent(self, eventId):
-        self.updateEventStatus(eventId, "canceled")
+        return self.updateEventStatus(eventId, "canceled")
 
     @proposedOperation
     def freezeBettingMarketGroup(self, bmgId):

@@ -143,6 +143,14 @@ class BettingMarketGroup(BlockchainIdentifiable):
                     'event_id': operationData.get('new_event_id', None),
                     'rules_id': operationData.get('new_rules_id', None),
                     'status': operationData.get('status', None)}
+        elif operationData.get('operationName', None) ==\
+                'betting_market_group_resolve':
+            return {'pendingOperationId': operationData['operationId'],
+                    'id': operationData['betting_market_group_id'],
+                    'description': None,
+                    'event_id': None,
+                    'rules_id': None,
+                    'status': None}
         else:
             from app.node import NodeException
             raise NodeException(

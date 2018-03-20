@@ -1,0 +1,13 @@
+{% from "_macros.html" import render_int_string %}
+<div class="item">
+	<i class="asterisk icon"></i>
+	<div class="content">
+		<div class="header">Betting market group creation {{ operationId }}</div>
+		<div class="description">
+		<a href="{{ url_for('overview', typeName='bettingmarketgroup', identifier=data['betting_market_group_id']) }}">
+			id={{ data['betting_market_group_id'] }}
+		</a> <br />
+		{% if data['resolutions'] %}Resolutions: {{ data['resolutions'] }}{% endif %}
+		</div>
+	</div>
+</div>

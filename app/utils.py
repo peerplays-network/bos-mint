@@ -121,7 +121,8 @@ UPDATEOP_TO_TYPENAME_MAP = {
     'event_update_status': 'event_status',
     'betting_market_group_update': 'bettingmarketgroup',
     'betting_market_rules_update': 'bettingmarketgrouprule',
-    'betting_market_update': 'bettingmarket'
+    'betting_market_update': 'bettingmarket',
+    'betting_market_group_resolve': 'bettingmarketgroup'
 }
 
 
