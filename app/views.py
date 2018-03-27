@@ -31,6 +31,7 @@ from .utils import (
     unlocked_wallet_required,
     wallet_required
 )
+import os
 
 
 ###############################################################################
@@ -515,6 +516,10 @@ def genericUpdate(formClass, selectId, removeSubmits=False):
     # update was called with given id, make sure it exists
     if selectId:
         selectedObject = selectFunction(selectId)
+
+    # help file present?
+    if os.path.isfile("app/static/img/help/" + typeName + ".png"):
+        help_file = "../../static/img/help/" + typeName + ".png"
 
     # user wants to add language?
     if findAndProcessTranslatons(form):
