@@ -1,6 +1,3 @@
-bos_mint:
-    version: 0.1-2080320-1617
-
 debug: True
 
 mail_host: host:port
@@ -26,8 +23,10 @@ connection:
         node:
             - wss://peerplays-dev.blocktrades.info/ws
         nobroadcast: True
+        num_retries: 1
         
     TestOSE:
         node:
             - wss://peerplays-dev.blocktrades.info/alpha/ws
         nobroadcast: False
+        num_retries: 1

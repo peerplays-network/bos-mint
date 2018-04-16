@@ -284,7 +284,10 @@ def overview(typeName=None, identifier=None):
         return render_template_menuinfo('index.html', **locals())
     except Exception as e:
         app.logger.exception(e)
-        flash(str(e))
+        if 'NumRetriesReached' in str(e):
+            flash("Blockchain connection might be lost: " + str(e))
+        else:
+            flash(str(e))
         try:
             return render_template_menuinfo('index.html')
         except Exception as e:

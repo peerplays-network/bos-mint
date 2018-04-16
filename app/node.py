@@ -64,15 +64,11 @@ class Node(object):
     #: The static connection
     pendingProposal = None
 
-    def __init__(self, config=None, num_retries=1, **kwargs):
+    def __init__(self):
         """ This class is a singelton and makes sure that only one
             connection to the node is established and shared among
             flask threads.
         """
-        self.config = config
-        self.num_retries = num_retries
-        self.kwargs = kwargs
-        self.kwargs["num_retries"] = num_retries
 
     def get_node(self):
         return shared_peerplays_instance()
@@ -197,6 +193,9 @@ class Node(object):
     def locked(self):
         return self.get_node().wallet.locked()
 
+    def _get_exception_message(self, ex):
+        return ex.__class__.__name__ + ": " + str(ex)
+
     def getSport(self, name):
         try:
             # select sport
@@ -205,14 +204,14 @@ class Node(object):
             return wrapper.Sport(**dict(sport))
         except Exception as ex:
             raise NodeException(
-                "Sport (id={}) could not be loaded: {}".format(name, str(ex)))
+                "Sport (id={}) could not be loaded: {}".format(name, self._get_exception_message(ex)))
 
     def getEventGroup(self, sportId):
         try:
             return EventGroup(sportId, peerplays_instance=self.get_node())
         except Exception as ex:
             raise NodeException(
-                "EventGroups could not be loaded: {}".format(str(ex)))
+                "EventGroups could not be loaded: {}".format(self._get_exception_message(ex)))
 
     def getSportAsList(self, name):
         try:
@@ -220,14 +219,14 @@ class Node(object):
             return [(sport["id"], sport["name"][0][1])]
         except Exception as ex:
             raise NodeException(
-                "EventGroups could not be loaded: {}".format(str(ex)))
+                "EventGroups could not be loaded: {}".format(self._get_exception_message(ex)))
 
     def getEvent(self, eventId):
         try:
             return Event(eventId, peerplays_instance=self.get_node())
         except Exception as ex:
             raise NodeException(
-                "Event could not be loaded: {}".format(str(ex)))
+                "Event could not be loaded: {}".format(self._get_exception_message(ex)))
 
     def getBettingMarketGroup(self, bmgId):
         try:
@@ -235,34 +234,34 @@ class Node(object):
                                       peerplays_instance=self.get_node())
         except Exception as ex:
             raise NodeException(
-                "BettingMarketGroup could not be loaded: {}".format(str(ex)))
+                "BettingMarketGroup could not be loaded: {}".format(self._get_exception_message(ex)))
 
     def getBettingMarket(self, bmId):
         try:
             return BettingMarket(bmId, peerplays_instance=self.get_node())
         except Exception as ex:
             raise NodeException(
-                "BettingMarkets could not be loaded: {}".format(str(ex)))
+                "BettingMarkets could not be loaded: {}".format(self._get_exception_message(ex)))
 
     def getBettingMarketGroupRule(self, bmgrId):
         try:
             return Rule(bmgrId, peerplays_instance=self.get_node())
         except Exception as ex:
             raise NodeException(
-                "BettingMarkets could not be loaded: {}".format(str(ex)))
+                "BettingMarkets could not be loaded: {}".format(self._get_exception_message(ex)))
 
     def getSports(self):
         try:
             return Sports(peerplays_instance=self.get_node()).sports
         except Exception as ex:
-            raise NodeException("Sports could not be loaded: {}".format(str(ex)))
+            raise NodeException("Sports could not be loaded: {}".format(self._get_exception_message(ex)))
 
     def getSportsAsList(self):
         try:
             sports = Sports(peerplays_instance=self.get_node()).sports
             return [(x["id"], x["name"][0][1]) for x in sports]
         except Exception as ex:
-            raise NodeException("Sports could not be loaded: {}".format(str(ex)))
+            raise NodeException("Sports could not be loaded: {}".format(self._get_exception_message(ex)))
 
     def getEventGroups(self, sportId):
         if not sportId:
@@ -272,7 +271,7 @@ class Node(object):
                                peerplays_instance=self.get_node()).eventgroups
         except Exception as ex:
             raise NodeException(
-                "EventGroups could not be loaded: {}".format(str(ex)))
+                "EventGroups could not be loaded: {}".format(self._get_exception_message(ex)))
 
     def getEvents(self, eventGroupId):
         if not eventGroupId:
@@ -282,14 +281,14 @@ class Node(object):
                           peerplays_instance=self.get_node()).events
         except Exception as ex:
             raise NodeException(
-                "Events could not be loaded: {}".format(str(ex)))
+                "Events could not be loaded: {}".format(self._get_exception_message(ex)))
 
     def getBettingMarketGroupRules(self):
         try:
             return Rules(peerplays_instance=self.get_node()).rules
         except Exception as ex:
             raise NodeException(
-                "BettingMarketGroupRules could not be loaded:{}".format(str(ex)))
+                "BettingMarketGroupRules could not be loaded:{}".format(self._get_exception_message(ex)))
 
     def getBettingMarketGroups(self, eventId):
         if not eventId:
@@ -300,7 +299,7 @@ class Node(object):
                 peerplays_instance=self.get_node()).bettingmarketgroups
         except Exception as ex:
             raise NodeException(
-                "BettingMarketGroup could not be loaded: {}".format(str(ex)))
+                "BettingMarketGroup could not be loaded: {}".format(self._get_exception_message(ex)))
 
     def getBettingMarkets(self, bettingMarketGroupId):
         if not bettingMarketGroupId:
@@ -311,7 +310,7 @@ class Node(object):
                 peerplays_instance=self.get_node()).bettingmarkets
         except Exception as ex:
             raise NodeException(
-                "BettingMarkets could not be loaded: {}".format(str(ex)))
+                "BettingMarkets could not be loaded: {}".format(self._get_exception_message(ex)))
 
     @proposedOperation
     def createSport(self, istrings):

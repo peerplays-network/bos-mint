@@ -5,7 +5,7 @@ from datetime import datetime
 from peerplaysbase.operationids import getOperationNameForId
 
 from .node import Node, NodeException
-from . import wrapper, tostring
+from . import wrapper, tostring, __VERSION__
 import strict_rfc3339
 
 # dictionary to configure types (Sport, EventGroup, etc.)
@@ -284,7 +284,8 @@ def unlocked_wallet_required(f):
 
 def render_template_menuinfo(tmpl_name, **kwargs):
     """
-    If there is a general error in rendering, simply return a 500 error
+    If there is a general error in rendering, simply return a 500 error.
+    Must be robust to connection lost.
 
     :param tmpl_name: name of the template to be rendered
     :type tmpl_name: str
@@ -300,7 +301,7 @@ def getMenuInfo():
             'id': account.identifier,
             'name': account.name,
             'toString': tostring.toString(account)}
-    except Exception:
+    except NodeException:
         try:
             any_account = len(Node().getAllAccountsOfWallet()) > 0
         except Exception:
@@ -310,36 +311,51 @@ def getMenuInfo():
         else:
             accountDict = {'id': '-', 'name': '-', 'toString': 'Please add an account'}
 
-    currentTransaction = Node().getPendingTransaction()
-    if not currentTransaction:
-        operations = []
-    else:
-        operations = Node().getPendingTransaction().ops
+    numberOfOpenTransactions = 0
+    try:
+        currentTransaction = Node().getPendingTransaction()
+        if currentTransaction:
+            numberOfOpenTransactions = len(Node().getPendingTransaction().ops)
+    except NodeException:
+        pass
 
-    votableProposals = Node().getAllProposals()
+    numberOfVotableProposals = 0
+    try:
+        numberOfVotableProposals = len(Node().getAllProposals())
+    except NodeException:
+        pass
+
+    walletLocked = True
+    try:
+        walletLocked = Node().locked()
+    except Exception:
+        pass
 
     menuInfo = {
         'account': accountDict,
-        'numberOfOpenTransactions': len(operations),
-        'numberOfVotableProposals': len(votableProposals),
-        'walletLocked': Node().locked()
+        'numberOfOpenTransactions': numberOfOpenTransactions,
+        'numberOfVotableProposals': numberOfVotableProposals,
+        'walletLocked': walletLocked,
+        'version': __VERSION__
     }
 
     allAccounts = []
-    for account in Node().getAllAccountsOfWallet():
-        if account['name']:
-            allAccounts.append({
-                'id': account['account'].identifier,
-                'name': account['account'].name,
-                'publicKey': account['pubkey'],
-                'toString': account['account'].identifier + ' - ' + account['account'].name})
-        else:
-            allAccounts.append({
-                'id': 'None',
-                'name': 'This shouldnt happen',
-                'publicKey': 'None',
-                'toString': 'None - Error shouldnt happen' + account['pubkey']})
-
+    try:
+        for account in Node().getAllAccountsOfWallet():
+            if account['name']:
+                allAccounts.append({
+                    'id': account['account'].identifier,
+                    'name': account['account'].name,
+                    'publicKey': account['pubkey'],
+                    'toString': account['account'].identifier + ' - ' + account['account'].name})
+            else:
+                allAccounts.append({
+                    'id': 'None',
+                    'name': 'This shouldnt happen',
+                    'publicKey': 'None',
+                    'toString': 'None - Error shouldnt happen' + account['pubkey']})
+    except NodeException:
+        pass
     menuInfo['allAccounts'] = allAccounts
 
     return menuInfo

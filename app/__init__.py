@@ -10,6 +10,9 @@ import pprint
 from peerplays.instance import set_shared_config
 
 
+__VERSION__ = "0.1-2080416-1521"
+
+
 def get_config():
     basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -80,7 +83,13 @@ def set_app_config(flask_app, config):
 
 def set_peerplays_connection(config):
     use = config["connection"]["use"]
-    set_shared_config(config["connection"][use])
+    connection_config = config["connection"][use]
+
+    # avoid connectivity loops
+    if connection_config.get("num_retries", None) is None:
+        connection_config["num_retries"] = 3
+
+    set_shared_config(connection_config)
 
 
 def set_error_handling(flask_app):
