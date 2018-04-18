@@ -14,7 +14,7 @@ secret_key: RUR7LywKvncb4eoR
 sql_database: "sqlite:///{cwd}/bookied-local.db"
 
 connection:
-    use: TestOSE
+    use: TestCharlie
     Main:
         node:
             - 
@@ -30,3 +30,64 @@ connection:
             - wss://peerplays-dev.blocktrades.info/alpha/ws
         nobroadcast: False
         num_retries: 1
+        
+    TestCharlie:
+        node:
+            - ws://ec2-35-183-21-190.ca-central-1.compute.amazonaws.com:8090
+            - ws://ec2-35-183-30-229.ca-central-1.compute.amazonaws.com:8090
+        nobroadcast: False
+        num_retries: 1
+
+allowed_transitions:
+    EventStatus:
+        upcoming:
+            - in_progress
+            - finished
+            - frozen
+            - canceled
+        in_progress:
+            - finished
+            - frozen
+        finished:
+            - settled
+            - canceled
+        frozen:
+            - upcoming
+            - in_progress
+            - canceled
+    BettingMarketGroupStatus:
+        upcoming:
+            - closed
+            - canceled
+            - in_play
+            - frozen
+        in_play:
+            - frozen
+            - closed
+            - canceled
+        closed:
+            - graded
+            - canceled
+        graded:
+            - re_grading
+            - settled
+            - canceled
+        re_grading:
+            - graded
+    BettingMarketStatus:
+        unresolved:
+            - win
+            - not_win
+            - canceled
+            - frozen
+        frozen:
+            - unresolved
+            - win
+            - not_win
+            - canceled
+        win:
+            - not_win
+            - canceled
+        not_win:
+            - canceled
+            - win
