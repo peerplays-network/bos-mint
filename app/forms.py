@@ -235,7 +235,7 @@ class NewEventForm(FlaskForm):
     name = FormField(TranslatedFieldForm, label="Name")
     status = SelectField("Status",
                          validators=[DataRequired()],
-                         choices=[(x, x) for x in EventStatus.options if "COUNT" not in x])
+                         choices=None)
     season = FormField(TranslatedFieldForm, label="Season")
     start = DateTimeField("Start (Format 'year-month-day hour:minute:secondZ' UTC)", format='%Y-%m-%d %H:%M:%SZ',
                           default=datetime.datetime.utcnow(),
@@ -258,6 +258,7 @@ class NewEventForm(FlaskForm):
         # choices need to be filled at all times
         self.eventgroup.choices = selectDictToList(
             utils.getComprisedTypesGetter('eventgroup')(sportId))
+
         if default:
             self.eventgroup.data = default['parentId']
 
@@ -265,6 +266,10 @@ class NewEventForm(FlaskForm):
         self.eventgroup.data = selectedObject.eventgroup['id']
         self.name.fill(selectedObject['name'])
         self.season.fill(selectedObject['season'])
+
+        # fill status choices on selection
+        self.status.choices = utils.filterOnlyAllowed(EventStatus, selectedObject['status'])
+        self.status.label.text = self.status.label.text + " (" + selectedObject['status'] + ")"
         self.status.data = selectedObject['status']
 
     def create(self):
@@ -305,7 +310,7 @@ class EventStatusForm(FlaskForm):
 #     name = FormField(TranslatedFieldForm, label="Name", render_kw={'disabled': True})
     status = SelectField("Status (will always be set to finished)",
                          validators=[DataRequired()],
-                         choices=[(x, x) for x in EventStatus.options if "COUNT" not in x],
+                         choices=None,
                          render_kw={'disabled': True})
     scores = StringField('Scores (semi-colon seperated list)', validators=[DataRequired()])
 
@@ -353,7 +358,7 @@ class NewBettingMarketGroupForm(FlaskForm):
     event = SelectField("Event", validators=[DataRequired()], choices=None)
     description = FormField(TranslatedFieldForm)
     status = SelectField("Status",
-                         choices=[(x, x) for x in BettingMarketGroupStatus.options if "COUNT" not in x])
+                         choices=None)
     bettingmarketrule = SelectField(
         "Betting market group rule",
         validators=[DataRequired()],
@@ -390,6 +395,10 @@ class NewBettingMarketGroupForm(FlaskForm):
         self.event.data = selectedObject['event_id']
         self.bettingmarketrule.data = selectedObject['rules_id']
         self.description.fill(selectedObject['description'])
+
+        # fill status choices on selection
+        self.status.choices = utils.filterOnlyAllowed(BettingMarketGroupStatus, selectedObject['status'])
+        self.status.label.text = self.status.label.text + " (" + selectedObject['status'] + ")"
         self.status.data = selectedObject['status']
 
     def create(self):
@@ -424,7 +433,7 @@ class NewBettingMarketForm(FlaskForm):
     description = FormField(TranslatedFieldForm, label="Description")
     payoutCondition = FormField(TranslatedFieldForm, label="Payout condition")
     status = SelectField("Status",
-                         choices=[(x, x) for x in BettingMarketStatus.options if "COUNT" not in x])
+                         choices=None)
     submit = SubmitField("Submit")
 
     @classmethod
@@ -449,6 +458,10 @@ class NewBettingMarketForm(FlaskForm):
         self.bettingmarketgroup.data = selectedObject['group_id']
         self.payoutCondition.fill(selectedObject['payout_condition'])
         self.description.fill(selectedObject['description'])
+
+        # fill status choices on selection
+        self.status.choices = utils.filterOnlyAllowed(BettingMarketStatus, selectedObject['status'])
+        self.status.label.text = self.status.label.text + " (" + selectedObject['status'] + ")"
         self.status.data = selectedObject['status']
 
     def create(self):

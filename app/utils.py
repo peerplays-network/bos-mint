@@ -7,6 +7,7 @@ from peerplaysbase.operationids import getOperationNameForId
 from .node import Node, NodeException
 from . import wrapper, tostring, __VERSION__
 import strict_rfc3339
+from app import config
 
 # dictionary to configure types (Sport, EventGroup, etc.)
 #  title: human readable title
@@ -124,6 +125,12 @@ UPDATEOP_TO_TYPENAME_MAP = {
     'betting_market_update': 'bettingmarket',
     'betting_market_group_resolve': 'bettingmarketgroup'
 }
+
+
+def filterOnlyAllowed(enumClazz, currentStatus):
+    allowed = config.get("allowed_transitions", {}).get(enumClazz.__name__, {})
+
+    return [(x, x) for x in enumClazz.options if "COUNT" not in x and (x in allowed.get(currentStatus, []) or x == currentStatus)]
 
 
 def toString(toBeFormatted):
