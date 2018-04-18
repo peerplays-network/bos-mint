@@ -31,13 +31,6 @@ setup(
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
     ],
-    entry_points={
-        """
-        'console_scripts': [
-            'bos-mint = bookied.cli:main'
-        ],
-        """
-    },
     install_requires=[
         open("requirements.txt").readlines()
     ],
