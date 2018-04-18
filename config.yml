@@ -48,12 +48,14 @@ allowed_transitions:
         in_progress:
             - finished
             - frozen
+            - canceled
         finished:
             - settled
             - canceled
         frozen:
             - upcoming
             - in_progress
+            - frozen
             - canceled
     BettingMarketGroupStatus:
         upcoming:
@@ -74,6 +76,7 @@ allowed_transitions:
             - canceled
         re_grading:
             - graded
+            - canceled
     BettingMarketStatus:
         unresolved:
             - win
