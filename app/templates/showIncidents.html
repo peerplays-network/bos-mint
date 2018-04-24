@@ -1,0 +1,109 @@
+{% from "_forms.html" import quickform, parsefield %}
+{% extends "layout.html" %}
+
+{% block content %}
+<h2>Received incidents</h2>
+
+{% if events|length > 0 %}
+
+<div class="ui equal width grid">
+<div class="column">
+<div class="ui grid">
+<div class="six wide column">
+</div></div>
+<br />
+<div class="ui styled accordion" style="width: 100%;">
+	{% for event in events %}
+  		
+  		<div class="title{% if active %} active{% endif %}">
+<i class="dropdown icon"></i>{{ event['id_string'] }}:
+	{% if event['create'] and event['create']['incidents'] %}
+		{{ event['create']['incidents']|length }}
+	{% else %}
+		0
+    {% endif %}
+    -
+   	{% if event['in_progress'] and event['in_progress']['incidents'] %}
+		{{ event['in_progress']['incidents']|length }}
+	{% else %}
+		0
+    {% endif %}
+    -
+   	{% if event['finish'] and event['finish']['incidents'] %}
+		{{ event['finish']['incidents']|length }}
+	{% else %}
+		0
+    {% endif %}
+    -
+   	{% if event['result'] and event['result']['incidents'] %}
+		{{ event['result']['incidents']|length }}
+	{% else %}
+		0
+    {% endif %}
+</div>
+<div class="content">
+	<p class="transition visible" style="display: block !important;">
+	<table class="ui very basic collapsing celled table">
+		<tbody>
+			<thead>
+				<td>Create</td>
+				<td>In progress</td>
+				<td>Finish</td>
+				<td>Result</td>
+			</thead>
+			<tr>
+				<td>
+					<ul class="ui list">
+						{% if event['create'] and event['create']['incidents'] %}
+							{% for incident in event['create']['incidents'] %}
+								<li>{{ incident['provider_info']['pushed'] }}: {{ incident['provider_info']['name'] }}, {{ incident['arguments'] }}</li>	
+							{% endfor %}
+						{% endif %}
+					</ul>
+				</td>
+				<td>
+					<ul class="ui list">
+						{% if event['in_progress'] and event['in_progress']['incidents'] %}
+							{% for incident in event['in_progress']['incidents'] %}
+								<li>{{ incident['provider_info']['pushed'] }}: {{ incident['provider_info']['name'] }}, {{ incident['arguments'] }}</li>	
+							{% endfor %}
+						{% endif %}
+					</ul>
+				</td>
+				<td>
+					<ul class="ui list">
+						{% if event['finish'] and event['finish']['incidents'] %}
+							{% for incident in event['finish']['incidents'] %}
+								<li>{{ incident['provider_info']['pushed'] }}: {{ incident['provider_info']['name'] }}, {{ incident['arguments'] }}</li>	
+							{% endfor %}
+						{% endif %}
+					</ul>
+				</td>
+				<td>
+					<ul class="ui list">
+						{% if event['result'] and event['result']['incidents'] %}
+							{% for incident in event['result']['incidents'] %}
+								<li>{{ incident['provider_info']['pushed'] }}: {{ incident['provider_info']['name'] }}, {{ incident['arguments'] }}</li>	
+							{% endfor %}
+						{% endif %}
+					</ul>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+	</p>
+</div>
+  	{% endfor %}
+</div>
+</div>
+</div>
+
+{% else %}
+
+No incidents came in yet.
+
+{% endif %}
+
+{% endblock %}
+
+

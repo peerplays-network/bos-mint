@@ -32,6 +32,7 @@ from .utils import (
     wallet_required
 )
 import os
+from bos_incidents import factory
 
 
 ###############################################################################
@@ -131,6 +132,13 @@ def newwallet():
             flash(e.__repr__(), category='error')
 
     return render_template_menuinfo('generic.html', **locals())
+
+
+@app.route('/incidents')
+def show_incidents(typeName=None, identifier=None):
+    events = factory.get_incident_storage().get_events()
+
+    return render_template_menuinfo('showIncidents.html', **locals())
 
 
 @app.route('/overview')

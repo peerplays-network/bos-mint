@@ -10,7 +10,7 @@ import pprint
 from peerplays.instance import set_shared_config
 
 
-__VERSION__ = "0.1-2080418-1540"
+__VERSION__ = "0.1-2080424-1625"
 
 
 def get_config():

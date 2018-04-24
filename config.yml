@@ -8,7 +8,8 @@ mail_from: local@localhost
 admins:
  - mail@xeroc.org
 
-project_name: Bookie Oracle Software Suite
+project_name: MINT
+project_sub_name: BOS Manual Intervention Module
 secret_key: RUR7LywKvncb4eoR
 
 sql_database: "sqlite:///{cwd}/bookied-local.db"
@@ -33,8 +34,7 @@ connection:
         
     TestCharlie:
         node:
-            - ws://ec2-35-183-21-190.ca-central-1.compute.amazonaws.com:8090
-            - ws://ec2-35-183-30-229.ca-central-1.compute.amazonaws.com:8090
+            - ws://ec2-35-183-1-21.ca-central-1.compute.amazonaws.com:8090
         nobroadcast: False
         num_retries: 1
 
