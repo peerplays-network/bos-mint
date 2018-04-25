@@ -40,6 +40,8 @@ connection:
 
 allowed_transitions:
     EventStatus:
+        create:
+            - upcoming
         upcoming:
             - in_progress
             - finished
@@ -58,6 +60,8 @@ allowed_transitions:
             - frozen
             - canceled
     BettingMarketGroupStatus:
+        create:
+            - upcoming
         upcoming:
             - closed
             - canceled
@@ -78,6 +82,8 @@ allowed_transitions:
             - graded
             - canceled
     BettingMarketStatus:
+        create:
+            - unresolved
         unresolved:
             - win
             - not_win

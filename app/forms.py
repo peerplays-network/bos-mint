@@ -259,6 +259,8 @@ class NewEventForm(FlaskForm):
         self.eventgroup.choices = selectDictToList(
             utils.getComprisedTypesGetter('eventgroup')(sportId))
 
+        self.status.choices = utils.filterOnlyAllowed(EventStatus, "create")
+
         if default:
             self.eventgroup.data = default['parentId']
 
@@ -383,6 +385,9 @@ class NewBettingMarketGroupForm(FlaskForm):
         # choices need to be filled at all times
         self.event.choices = selectDictToList(
             utils.getComprisedTypesGetter('event')(eventGroupId))
+
+        self.status.choices = utils.filterOnlyAllowed(BettingMarketGroupStatus, "create")
+
         if default:
             self.event.data = default['parentId']
 
@@ -451,6 +456,9 @@ class NewBettingMarketForm(FlaskForm):
 
         self.bettingmarketgroup.choices = selectDictToList(
             utils.getComprisedTypesGetter('bettingmarketgroup')(eventId))
+
+        self.status.choices = utils.filterOnlyAllowed(BettingMarketStatus, "create")
+
         if default:
             self.bettingmarketgroup.data = default['parentId']
 
