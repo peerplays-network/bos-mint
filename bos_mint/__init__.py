@@ -1,16 +1,18 @@
-import yaml
 import os
+import yaml
+import pprint
+import logging
+import pkg_resources
+
 from flask import Flask, jsonify, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
-import logging
 from logging.handlers import TimedRotatingFileHandler
 from werkzeug.exceptions import HTTPException, InternalServerError
-import pprint
-
 from peerplays.instance import set_shared_config
 
 
-__VERSION__ = "0.1-2080424-1625"
+__VERSION__ = "{p.project_name} {p.version}".format(
+    p=pkg_resources.require("bos-mint")[0])
 
 default_config = """
 debug: True
