@@ -1,4 +1,4 @@
-from app import tostring
+from . import tostring
 
 
 class BlockchainIdentifiable(dict):

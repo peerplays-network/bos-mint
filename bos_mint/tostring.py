@@ -1,5 +1,5 @@
 # Global to string method for centralized visualization
-from app.istring import InternationalizedString
+from .istring import InternationalizedString
 
 
 def findEnglishOrFirst(listOfIStrings, desiredLanguage='en'):

@@ -122,7 +122,7 @@ set_error_handling(app)
 db = SQLAlchemy(app)
 set_peerplays_connection(config)
 
-app.logger.info(pprint.pformat(config))
+app.logger.debug(pprint.pformat(config))
 
 
 @app.before_first_request

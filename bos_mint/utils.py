@@ -7,7 +7,7 @@ from peerplaysbase.operationids import getOperationNameForId
 from .node import Node, NodeException
 from . import wrapper, tostring, __VERSION__
 import strict_rfc3339
-from app import config
+from . import config
 
 # dictionary to configure types (Sport, EventGroup, etc.)
 #  title: human readable title

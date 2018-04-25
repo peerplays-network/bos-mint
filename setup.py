@@ -22,7 +22,7 @@ setup(
     url='http://pbsa.info',
     keywords=['peerplays', 'bos'],
     packages=[
-
+        "bos_mint"
     ],
     classifiers=[
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
@@ -31,6 +31,11 @@ setup(
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
     ],
+    entry_points={
+        'console_scripts': [
+            'bos-mint = bos_mint.cli:main',
+        ],
+    },
     install_requires=[
         open("requirements.txt").readlines()
     ],
