@@ -1,8 +1,8 @@
 from flask import url_for
 from peerplaysbase import operationids
 import os.path
-from app.node import Node
-from app import tostring
+from .node import Node
+from . import tostring
 
 
 class RenderTemplateWidget(object):

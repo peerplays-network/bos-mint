@@ -1,28 +1,100 @@
-import yaml
 import os
+import yaml
+import pprint
+import logging
+import pkg_resources
+
 from flask import Flask, jsonify, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
-import logging
 from logging.handlers import TimedRotatingFileHandler
 from werkzeug.exceptions import HTTPException, InternalServerError
-import pprint
-
 from peerplays.instance import set_shared_config
 
 
-__VERSION__ = "0.1-2080424-1625"
+__VERSION__ = "{p.project_name} {p.version}".format(
+    p=pkg_resources.require("bos-mint")[0])
+
+default_config = """
+debug: True
+mail_host: host:port
+mail_port: 25
+mail_user: username
+mail_pass: password
+mail_from: local@localhost
+admins: []
+project_name: MINT
+project_sub_name: BOS Manual Intervention Module
+secret_key: RUR7LywKvncb4eoR
+sql_database: "sqlite:///{cwd}/bookied-local.db"
+allowed_transitions:
+    EventStatus:
+        upcoming:
+            - in_progress
+            - finished
+            - frozen
+            - canceled
+        in_progress:
+            - finished
+            - frozen
+            - canceled
+        finished:
+            - settled
+            - canceled
+        frozen:
+            - upcoming
+            - in_progress
+            - frozen
+            - canceled
+    BettingMarketGroupStatus:
+        upcoming:
+            - closed
+            - canceled
+            - in_play
+            - frozen
+        in_play:
+            - frozen
+            - closed
+            - canceled
+        closed:
+            - graded
+            - canceled
+        graded:
+            - re_grading
+            - settled
+            - canceled
+        re_grading:
+            - graded
+            - canceled
+    BettingMarketStatus:
+        unresolved:
+            - win
+            - not_win
+            - canceled
+            - frozen
+        frozen:
+            - unresolved
+            - win
+            - not_win
+            - canceled
+        win:
+            - not_win
+            - canceled
+        not_win:
+            - canceled
+            - win
+"""
 
 
 def get_config():
-    basedir = os.path.abspath(os.path.dirname(__file__))
-
+    # basedir = os.path.abspath(os.path.dirname(__file__))
     # Instanciate config
+    config = yaml.load(default_config)
     if os.path.isfile("config.yml"):
-        config = yaml.load(open("config.yml").read())
-    else:
-        raise NotImplementedError()  # define defaults here once config.yml structure is fixed
+        config.update(yaml.load(open("config.yml").read()))
 
-    config["sql_database"] = config["sql_database"].format(cwd=basedir)
+    assert "connection" in config, "A configuration is missing. Please create config.yml!"
+
+    config["sql_database"] = config["sql_database"].format(cwd=os.getcwd())
 
     return config
 
@@ -122,7 +194,7 @@ set_error_handling(app)
 db = SQLAlchemy(app)
 set_peerplays_connection(config)
 
-app.logger.info(pprint.pformat(config))
+app.logger.debug(pprint.pformat(config))
 
 
 @app.before_first_request
