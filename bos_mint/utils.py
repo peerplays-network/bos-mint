@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import pkg_resources
 from flask import redirect, flash, url_for, request, render_template
 from functools import wraps
 from datetime import datetime
@@ -343,7 +344,11 @@ def getMenuInfo():
         'numberOfOpenTransactions': numberOfOpenTransactions,
         'numberOfVotableProposals': numberOfVotableProposals,
         'walletLocked': walletLocked,
-        'version': __VERSION__
+        'version': __VERSION__,
+        'versions': {
+            name: pkg_resources.require(name)[0].version
+            for name in ["bos-mint", "peerplays", "bookiesports"]
+        }
     }
 
     allAccounts = []
