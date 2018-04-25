@@ -15,6 +15,7 @@ blockchain.
    :caption: Contents:
 
    installation
+   development
    app
 
 Indices and tables
