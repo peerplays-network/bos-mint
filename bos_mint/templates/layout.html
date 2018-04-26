@@ -90,7 +90,11 @@
  <footer>
  <div class="ui vertical footer segment">
   <div class="ui container">
- <span style="font-size: 10px; float: right">Version {{ menuInfo["version"] }}</span>
+   <span style="font-size: 10px; float: right">
+    {%- for k, v in menuInfo["versions"].items() -%}
+    <p>{{k}}: <strong>{{v}}</strong></p>
+    {%- endfor -%}
+  </span>
  </div>
  </div>
  </footer>
