@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from flask_script import Manager
-from app import db, config
-from app.web import app
+from bos_mint import db, config
+from bos_mint.web import app
 
 manager = Manager(app)
 
