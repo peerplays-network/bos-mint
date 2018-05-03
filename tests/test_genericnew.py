@@ -1,4 +1,4 @@
-from app import app
+from bos_mint import app
 from flask import Flask
 from flask.ext.testing import LiveServerTestCase 
 import urllib

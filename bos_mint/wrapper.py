@@ -45,7 +45,7 @@ class Sport(BlockchainIdentifiable):
                     'id': operationData['sport_id'],
                     'name': operationData['new_name']}
         else:
-            from app.node import NodeException
+            from .node import NodeException
             raise NodeException(
                 'Trying to instantiate a new sport from unknown operation')
 
@@ -70,7 +70,7 @@ class EventGroup(BlockchainIdentifiable):
                     'name': operationData['new_name'],
                     'sport_id': operationData['new_sport_id']}
         else:
-            from app.node import NodeException
+            from .node import NodeException
             raise NodeException(
                 'Trying to instantiate a new EventGroup from unknown operation')
 
@@ -111,7 +111,7 @@ class Event(BlockchainIdentifiable):
                     'event_group_id': None,
                     'score': operationData.get('score', None)}
         else:
-            from app.node import NodeException
+            from .node import NodeException
             raise NodeException(
                 'Trying to instantiate a new Event from unknown operation')
 
@@ -152,7 +152,7 @@ class BettingMarketGroup(BlockchainIdentifiable):
                     'rules_id': None,
                     'status': None}
         else:
-            from app.node import NodeException
+            from .node import NodeException
             raise NodeException(
                 'Trying to instantiate a new BettingMarketGroup from unknown operation')
 
@@ -180,7 +180,7 @@ class BettingMarketGroupRule(BlockchainIdentifiable):
                     'name': operationData['new_name'],
                     'description': operationData['new_description']}
         else:
-            from app.node import NodeException
+            from .node import NodeException
             raise NodeException('Trying to instantiate a new BettingMarketGroupRule from unknown operation')
 
     def __init__(self, **kwargs):
@@ -207,7 +207,7 @@ class BettingMarket(BlockchainIdentifiable):
                     'description': operationData['new_description'],
                     'group_id': operationData['new_group_id']}
         else:
-            from app.node import NodeException
+            from .node import NodeException
             raise NodeException('Trying to instantiate a new sport from unknown operation')
 
     def __init__(self, **kwargs):

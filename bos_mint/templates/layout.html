@@ -30,7 +30,12 @@
      <img class="logo" src="{{ url_for('static', filename='img/logo.png') }}" />
     </a> 
     <div class="item"></div>
-    <div class="item"><h4 class="ui header">{{config["PROJECT"].project_name}}</h4></div>
+    <div class="item">
+		<h3 class="ui header">
+    	{{config["PROJECT"].project_name}}
+    	<div class="sub header">{{config["PROJECT"].project_sub_name}}</div>
+    	</h3>
+    </div>
 	<a title="Lists all votable proposals" class="item" href="{{ url_for('votable_proposals') }}"><i class="thumbs up icon"></i><i class="thumbs down icon"></i> {{ menuInfo["numberOfVotableProposals"] }}</a>    
     <!-- Header Menu -->
 	<div class="right menu">

@@ -39,7 +39,7 @@ class ApiServerDown(NodeException):
 def proposedOperation(func):
     @wraps(func)
     def wrapper(self, *arg, **kw):
-        from app import utils
+        from . import utils
 
         self.ensureProposal()
         res = func(self, *arg, **kw)

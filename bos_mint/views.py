@@ -532,11 +532,11 @@ def genericUpdate(formClass, selectId, removeSubmits=False):
     if os.path.isfile("app/static/img/help/" + typeName + ".png"):
         help_file = "../../static/img/help/" + typeName + ".png"
 
+    form.init(selectedObject)
+
     # user wants to add language?
     if findAndProcessTranslatons(form):
         return render_template_menuinfo("update.html", **locals())
-
-    form.init(selectedObject)
 
     # first request? populate selected object
     if not form.submit.data:

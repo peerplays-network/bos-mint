@@ -6,7 +6,7 @@ Created on 13.10.2017
 from multiprocessing.pool import Pool
 import unittest
 
-from app.node import Node
+from bos_mint.node import Node
 from peerplays.peerplays import PeerPlays
 
 

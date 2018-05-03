@@ -2,8 +2,13 @@
 
 from setuptools import setup
 import sys
+import os
 
-__VERSION__ = '0.0.6'
+
+__VERSION__ = "unknown"
+with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'VERSION')) as version_file:
+    __VERSION__ = version_file.read().strip()
+
 
 assert sys.version_info[0] == 3, "We require Python > 3"
 
@@ -11,7 +16,7 @@ setup(
     name='bos-mint',
     version=__VERSION__,
     description=(
-        'Manual intervention module for PeerPlays'
+        'BOS Manual intervention module for PeerPlays'
     ),
     long_description=open('README.md').read(),
     download_url='https://github.com/pbsa/bos-mint/tarball/' + __VERSION__,
