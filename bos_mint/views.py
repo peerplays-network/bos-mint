@@ -152,44 +152,45 @@ def overview(typeName=None, identifier=None):
 
         # same structure for all chain elements and list elements
         def buildListElements(tmpList):
-                for entry in tmpList:
-                    if entry['typeName'] == 'event':
-                        entry['extraLink'] = [{
-                            'title': 'Start/Resume',
-                            'link': 'event_start',
-                            'icon': 'lightning'
-                        }, {
-                            'title': 'Finish',
-                            'link': 'event_status_update',
-                            'icon': 'flag checkered'
-                        }, {
-                            'title': 'Freeze',
-                            'link': 'event_freeze',
-                            'icon': 'snowflake'
-                        }, {
-                            'title': 'Cancel',
-                            'link': 'event_cancel',
-                            'icon': 'minus circle'
-                        }]
-                    elif entry['typeName'] == 'bettingmarketgroup':
-                        entry['extraLink'] = [{
-                            'title': 'Freeze',
-                            'link': 'bettingmarketgroup_freeze',
-                            'icon': 'snowflake'
-                        }, {
-                            'title': 'Unfreeze',
-                            'link': 'bettingmarketgroup_unfreeze',
-                            'icon': 'fire'
-                        }, {
-                            'title': 'Resolve',
-                            'link': 'bettingmarketgroup_resolve',
-                            'icon': 'money'
-                        }, {
-                            'title': 'Cancel',
-                            'link': 'bettingmarketgroup_cancel',
-                            'icon': 'minus circle'
-                        }]
-                return tmpList
+            tmpList = sorted(tmpList, key=lambda k: k['toString']) 
+            for entry in tmpList:
+                if entry['typeName'] == 'event':
+                    entry['extraLink'] = [{
+                        'title': 'Start/Resume',
+                        'link': 'event_start',
+                        'icon': 'lightning'
+                    }, {
+                        'title': 'Finish',
+                        'link': 'event_status_update',
+                        'icon': 'flag checkered'
+                    }, {
+                        'title': 'Freeze',
+                        'link': 'event_freeze',
+                        'icon': 'snowflake'
+                    }, {
+                        'title': 'Cancel',
+                        'link': 'event_cancel',
+                        'icon': 'minus circle'
+                    }]
+                elif entry['typeName'] == 'bettingmarketgroup':
+                    entry['extraLink'] = [{
+                        'title': 'Freeze',
+                        'link': 'bettingmarketgroup_freeze',
+                        'icon': 'snowflake'
+                    }, {
+                        'title': 'Unfreeze',
+                        'link': 'bettingmarketgroup_unfreeze',
+                        'icon': 'fire'
+                    }, {
+                        'title': 'Resolve',
+                        'link': 'bettingmarketgroup_resolve',
+                        'icon': 'money'
+                    }, {
+                        'title': 'Cancel',
+                        'link': 'bettingmarketgroup_cancel',
+                        'icon': 'minus circle'
+                    }]
+            return tmpList
 
         def buildChainElement(parentId, typeName):
             tmpList = utils.getComprisedTypesGetter(typeName)(parentId)

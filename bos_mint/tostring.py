@@ -9,7 +9,14 @@ def findEnglishOrFirst(listOfIStrings, desiredLanguage='en'):
 
 def toString(toBeFormatted, object=None):
 
-    if toBeFormatted.get('name') and toBeFormatted.get('id'):
+    if type(object).__name__ == "Event":
+        if isinstance(toBeFormatted.get('name'), list):
+            name = findEnglishOrFirst(toBeFormatted.get('name'))
+        else:
+            name = toBeFormatted.get('name')
+
+        displayName = toBeFormatted["start_time"] + "Z" + ":\n" + name + ' (' + toBeFormatted.get('id') + ')'
+    elif toBeFormatted.get('name') and toBeFormatted.get('id'):
         if isinstance(toBeFormatted.get('name'), list):
             name = findEnglishOrFirst(toBeFormatted.get('name'))
         else:

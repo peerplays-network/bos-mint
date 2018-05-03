@@ -96,8 +96,9 @@
  <div class="ui vertical footer segment">
   <div class="ui container">
    <span style="font-size: 10px; float: right">
+    bos-mint: <strong>{{menuInfo["version"]}}</strong><br />
     {%- for k, v in menuInfo["versions"].items() -%}
-    <p>{{k}}: <strong>{{v}}</strong></p>
+    {{k}}: <strong>{{v}}</strong><br />
     {%- endfor -%}
   </span>
  </div>
