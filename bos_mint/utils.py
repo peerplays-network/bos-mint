@@ -339,16 +339,20 @@ def getMenuInfo():
     except Exception:
         pass
 
+    versions = {}
+    for name in ["bos-auto", "bos-incidents", "peerplays", "bookiesports"]:
+        try:
+            versions[name] = pkg_resources.require(name)[0].version
+        except pkg_resources.DistributionNotFound:
+            versions[name] = "not installed"
+
     menuInfo = {
         'account': accountDict,
         'numberOfOpenTransactions': numberOfOpenTransactions,
         'numberOfVotableProposals': numberOfVotableProposals,
         'walletLocked': walletLocked,
         'version': __VERSION__,
-        'versions': {
-            name: pkg_resources.require(name)[0].version
-            for name in ["peerplays", "bookiesports", "bos-incidents"]
-        }
+        'versions': versions
     }
 
     allAccounts = []

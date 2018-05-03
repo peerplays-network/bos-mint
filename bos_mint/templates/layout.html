@@ -65,6 +65,12 @@
 		 {% endif %}
   	</div>
    </div>
+   <span style="font-size: 10px; float: right; line-height: 12px; margin-right: 10px">
+    bos-mint: <strong>{{menuInfo["version"]}}</strong><br />
+    {%- for k, v in menuInfo["versions"].items() -%}
+    {{k}}: <strong>{{v}}</strong><br />
+    {%- endfor -%}
+	</span>
   </div>
   
   <!-- Notification Area -->
@@ -92,7 +98,7 @@
   <script type="text/javascript" src="{{ ASSET_URL }}"></script>
   {%- endassets %}
  </body>
- <footer>
+<!--  <footer>
  <div class="ui vertical footer segment">
   <div class="ui container">
    <span style="font-size: 10px; float: right">
@@ -103,5 +109,5 @@
   </span>
  </div>
  </div>
- </footer>
+ </footer> -->
 </html>
