@@ -11,8 +11,12 @@ from werkzeug.exceptions import HTTPException, InternalServerError
 from peerplays.instance import set_shared_config
 
 
-__VERSION__ = "{p.project_name} {p.version}".format(
-    p=pkg_resources.require("bos-mint")[0])
+def get_version():
+    with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", 'VERSION')) as version_file:
+        return version_file.read().strip()
+
+
+__VERSION__ = get_version()
 
 default_config = """
 debug: True

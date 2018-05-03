@@ -247,19 +247,20 @@ class NewEventForm(FlaskForm):
         return 'event'
 
     def init(self, selectedObject, default=None):
+        self.status.choices = utils.filterOnlyAllowed(EventStatus, "create")
+
         sportId = None
         if isinstance(selectedObject, EventGroup):
             sportId = selectedObject['sport_id']
         elif isinstance(selectedObject, Event):
             sportId = selectedObject.eventgroup.sport['id']
+            self.status.choices = utils.filterOnlyAllowed(EventStatus, selectedObject['status'])
         elif isinstance(selectedObject, wrapper.EventGroup):
             sportId = selectedObject.get('parentId')
 
         # choices need to be filled at all times
         self.eventgroup.choices = selectDictToList(
             utils.getComprisedTypesGetter('eventgroup')(sportId))
-
-        self.status.choices = utils.filterOnlyAllowed(EventStatus, "create")
 
         if default:
             self.eventgroup.data = default['parentId']
@@ -273,6 +274,8 @@ class NewEventForm(FlaskForm):
         self.status.choices = utils.filterOnlyAllowed(EventStatus, selectedObject['status'])
         self.status.label.text = self.status.label.text + " (" + selectedObject['status'] + ")"
         self.status.data = selectedObject['status']
+        
+        self.start.data = utils.string_to_date(selectedObject['start_time'] + "Z")
 
     def create(self):
         return Node().createEvent(
@@ -373,20 +376,21 @@ class NewBettingMarketGroupForm(FlaskForm):
         return 'bettingmarketgroup'
 
     def init(self, selectedObject, default=None):
+        self.status.choices = utils.filterOnlyAllowed(BettingMarketGroupStatus, "create")
+
         # choices need to be filled at all times
         eventGroupId = None
         if isinstance(selectedObject, Event):
             eventGroupId = selectedObject['event_group_id']
         elif isinstance(selectedObject, BettingMarketGroup):
             eventGroupId = selectedObject.event['event_group_id']
+            self.status.choices = utils.filterOnlyAllowed(BettingMarketGroupStatus, selectedObject['status'])
         elif isinstance(selectedObject, wrapper.Event):
             eventGroupId = selectedObject.get('parentId')
 
         # choices need to be filled at all times
         self.event.choices = selectDictToList(
             utils.getComprisedTypesGetter('event')(eventGroupId))
-
-        self.status.choices = utils.filterOnlyAllowed(BettingMarketGroupStatus, "create")
 
         if default:
             self.event.data = default['parentId']
@@ -446,18 +450,19 @@ class NewBettingMarketForm(FlaskForm):
         return 'bettingmarket'
 
     def init(self, selectedObject, default=None):
+        self.status.choices = utils.filterOnlyAllowed(BettingMarketStatus, "create")
+        
         eventId = None
         if isinstance(selectedObject, BettingMarketGroup):
             eventId = selectedObject['event_id']
         elif isinstance(selectedObject, BettingMarket):
             eventId = selectedObject.bettingmarketgroup['event_id']
+            self.status.choices = utils.filterOnlyAllowed(BettingMarketStatus, selectedObject['status'])
         elif isinstance(selectedObject, wrapper.BettingMarketGroup):
             eventId = selectedObject.get('parentId')
 
         self.bettingmarketgroup.choices = selectDictToList(
             utils.getComprisedTypesGetter('bettingmarketgroup')(eventId))
-
-        self.status.choices = utils.filterOnlyAllowed(BettingMarketStatus, "create")
 
         if default:
             self.bettingmarketgroup.data = default['parentId']

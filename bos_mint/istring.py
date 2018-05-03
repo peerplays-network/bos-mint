@@ -217,7 +217,7 @@ class InternationalizedString(object):
             raise LanguageNotFoundException
 
     def getForm(self):
-        from app.forms import InternationalizedStringForm
+        from bos_mint.forms import InternationalizedStringForm
         lng = InternationalizedStringForm()
         lng.country = self.country
         lng.text = self.text
@@ -236,7 +236,7 @@ class InternationalizedString(object):
 
     @classmethod
     def parseToList(cls, fieldListOfInternationalizedString):
-        from app.forms import TranslatedFieldForm
+        from bos_mint.forms import TranslatedFieldForm
         from wtforms import FormField
 
         istrings = list()
