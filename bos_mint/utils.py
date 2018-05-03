@@ -347,7 +347,7 @@ def getMenuInfo():
         'version': __VERSION__,
         'versions': {
             name: pkg_resources.require(name)[0].version
-            for name in ["bos-mint", "peerplays", "bookiesports"]
+            for name in ["peerplays", "bookiesports", "bos-incidents"]
         }
     }
 

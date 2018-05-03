@@ -15,13 +15,32 @@ secret_key: RanDomSecrEtKeyStringusedInternallY
 sql_database: "sqlite:///{cwd}/bookied-local.db"
 
 connection:
-    use: Main
+    use: TestCharlie
     Main:
         node:
-         - wss://node.example.com
+            - 
+    Test:
+        node:
+            - wss://peerplays-dev.blocktrades.info/ws
+        nobroadcast: True
+        num_retries: 1
+        
+    TestOSE:
+        node:
+            - wss://peerplays-dev.blocktrades.info/alpha/ws
+        nobroadcast: False
+        num_retries: 1
+        
+    TestCharlie:
+        node:
+            - ws://ec2-35-183-1-21.ca-central-1.compute.amazonaws.com:8090
+        nobroadcast: False
+        num_retries: 1
 
 allowed_transitions:
     EventStatus:
+        create:
+            - upcoming
         upcoming:
             - in_progress
             - finished
@@ -40,6 +59,8 @@ allowed_transitions:
             - frozen
             - canceled
     BettingMarketGroupStatus:
+        create:
+            - upcoming
         upcoming:
             - closed
             - canceled
@@ -60,6 +81,8 @@ allowed_transitions:
             - graded
             - canceled
     BettingMarketStatus:
+        create:
+            - unresolved
         unresolved:
             - win
             - not_win

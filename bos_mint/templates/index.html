@@ -5,18 +5,18 @@
 <h1 class="ui header">Bookie Overview</h1><br/>
 {% if listChain %}
 <div class="ui grid">
-<div></div><!-- empty for design -->
 {{ popListChainMenuStyle( listChain ) }}
 </div>
 {% endif %}  
 {% endblock %}
 
 {%- macro popListChainMenuStyle( listChain, parentChain=None ) -%}
-<div class="ui secondary vertical pointing menu">
+<div class="three wide column"> 
+<div class="ui fluid secondary vertical pointing wide menu">
  {% if listChain['title'] %} <h4 class="ui header">{{ listChain['title'] }}</h4> {% endif %}
  {% for entry in listChain['list'] %}
  <div class="{% if selected[entry['typeName']] and selected[entry['typeName']] == entry['id'] %}active {% endif %}item"> 
-  <a style="color: black"
+  <a style="color: black;"
      href="{{ url_for('overview', typeName=entry['typeName'], identifier=entry['id'] ) }}">
  	  	{{ entry['toString'] }}
   </a>
@@ -61,6 +61,7 @@
   {% endfor %}
   {% endif %}
   
+</div>
 </div>
 {% if listChain['nextChainElement'] %}
 {{ popListChainMenuStyle( listChain['nextChainElement'], listChain ) }}
