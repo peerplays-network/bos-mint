@@ -412,7 +412,7 @@ class NewBettingMarketGroupForm(FlaskForm):
         self.status.label.text = self.status.label.text + " (" + selectedObject['status'] + ")"
         self.status.data = selectedObject['status']
 
-        self.asset.data = selectedObject("asset")
+        self.asset.data = Node().getAsset(selectedObject["asset_id"])["symbol"]
 
     def create(self):
         return Node().createBettingMarketGroup(

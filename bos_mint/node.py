@@ -2,7 +2,7 @@ from . import config
 from . import wrapper
 
 from functools import wraps
-from peerplays import PeerPlays
+from peerplays import PeerPlays, asset
 from peerplays.account import Account
 from peerplays.sport import Sport, Sports
 from peerplays.eventgroup import EventGroups, EventGroup
@@ -13,6 +13,7 @@ from peerplays.rule import Rules, Rule
 from peerplays.proposal import Proposals
 
 from peerplays.instance import shared_peerplays_instance
+from peerplays.asset import Asset
 
 
 class NodeException(Exception):
@@ -195,6 +196,13 @@ class Node(object):
 
     def _get_exception_message(self, ex):
         return ex.__class__.__name__ + ": " + str(ex)
+
+    def getAsset(self, name_or_id):
+        try:
+            return Asset(name_or_id, peerplays_instance=self.get_node())
+        except Exception as ex:
+            raise NodeException(
+                "Asset (id={}) could not be loaded: {}".format(name_or_id, self._get_exception_message(ex)))
 
     def getSport(self, name):
         try:
