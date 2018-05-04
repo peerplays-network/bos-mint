@@ -30,8 +30,15 @@ project_name: MINT
 project_sub_name: BOS Manual Intervention Module
 secret_key: RUR7LywKvncb4eoR
 sql_database: "sqlite:///{cwd}/bookied-local.db"
+allowed_assets:
+    - BTF
+    - BTC
+    - PPY
+    - BTCTEST
 allowed_transitions:
     EventStatus:
+        create:
+            - upcoming
         upcoming:
             - in_progress
             - finished
@@ -50,6 +57,8 @@ allowed_transitions:
             - frozen
             - canceled
     BettingMarketGroupStatus:
+        create:
+            - upcoming
         upcoming:
             - closed
             - canceled
@@ -70,6 +79,8 @@ allowed_transitions:
             - graded
             - canceled
     BettingMarketStatus:
+        create:
+            - unresolved
         unresolved:
             - win
             - not_win

@@ -37,6 +37,12 @@ connection:
         nobroadcast: False
         num_retries: 1
 
+allowed_assets:
+    - BTF
+    - BTC
+    - PPY
+    - BTCTEST
+
 allowed_transitions:
     EventStatus:
         create:

@@ -31,7 +31,7 @@ from peerplaysbase.objects import EventStatus, BettingMarketGroupStatus,\
 from .istring import InternationalizedString, LanguageNotFoundException
 from .node import Node
 import datetime
-from . import utils, wrapper, tostring
+from . import utils, wrapper, tostring, config
 
 
 def selectDictToList(sourceDictionary):
@@ -274,7 +274,7 @@ class NewEventForm(FlaskForm):
         self.status.choices = utils.filterOnlyAllowed(EventStatus, selectedObject['status'])
         self.status.label.text = self.status.label.text + " (" + selectedObject['status'] + ")"
         self.status.data = selectedObject['status']
-        
+
         self.start.data = utils.string_to_date(selectedObject['start_time'] + "Z")
 
     def create(self):
@@ -368,7 +368,9 @@ class NewBettingMarketGroupForm(FlaskForm):
         "Betting market group rule",
         validators=[DataRequired()],
         choices=None)
-    asset = TextField(label='Asset', render_kw={'disabled': True})
+    asset = SelectField("Asset",
+                        validators=[DataRequired()],
+                        choices=[(x, x) for x in config.get("allowed_assets")])
     submit = SubmitField("Submit")
 
     @classmethod
@@ -398,7 +400,7 @@ class NewBettingMarketGroupForm(FlaskForm):
         self.bettingmarketrule.choices = selectDictToList(
             utils.getComprisedTypesGetter('bettingmarketgrouprule')(None))
 
-        self.asset.data = 'PPY'
+        self.asset.data = config.get("allowed_assets")[0]
 
     def fill(self, selectedObject):
         self.event.data = selectedObject['event_id']
@@ -409,6 +411,8 @@ class NewBettingMarketGroupForm(FlaskForm):
         self.status.choices = utils.filterOnlyAllowed(BettingMarketGroupStatus, selectedObject['status'])
         self.status.label.text = self.status.label.text + " (" + selectedObject['status'] + ")"
         self.status.data = selectedObject['status']
+
+        self.asset.data = selectedObject("asset")
 
     def create(self):
         return Node().createBettingMarketGroup(
@@ -451,7 +455,7 @@ class NewBettingMarketForm(FlaskForm):
 
     def init(self, selectedObject, default=None):
         self.status.choices = utils.filterOnlyAllowed(BettingMarketStatus, "create")
-        
+
         eventId = None
         if isinstance(selectedObject, BettingMarketGroup):
             eventId = selectedObject['event_id']
