@@ -9,6 +9,7 @@ from .node import Node, NodeException
 from . import wrapper, tostring, __VERSION__
 import strict_rfc3339
 from . import config
+import logging
 
 # dictionary to configure types (Sport, EventGroup, etc.)
 #  title: human readable title
@@ -303,6 +304,7 @@ def render_template_menuinfo(tmpl_name, **kwargs):
 
 
 def getMenuInfo():
+    logging.getLogger(__name__).debug("getMenuInfo init")
     try:
         account = Node().getSelectedAccount()
         accountDict = {
@@ -373,6 +375,8 @@ def getMenuInfo():
     except NodeException:
         pass
     menuInfo['allAccounts'] = allAccounts
+
+    logging.getLogger(__name__).debug("getMenuInfo done")
 
     return menuInfo
 

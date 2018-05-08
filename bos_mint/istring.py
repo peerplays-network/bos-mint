@@ -7,6 +7,8 @@ class LanguageNotFoundException(BaseException):
 
 class InternationalizedString(object):
     LANGUAGES = [
+        ("display_name", "Display Name"),
+        ("sen", "Short English"),
         ("ab", "Abkhazian"),
         ("aa", "Afar"),
         ("af", "Afrikaans"),

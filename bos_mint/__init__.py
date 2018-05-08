@@ -129,11 +129,11 @@ def set_global_logger():
     trfh.setFormatter(logging.Formatter(log_format))
 
     sh = logging.StreamHandler()
-    sh.setLevel(logging.INFO)
+    sh.setLevel(logging.DEBUG)
     sh.setFormatter(logging.Formatter(log_format))
 
     # set global logger (e.g. for werkzeug)
-    logging.basicConfig(level=logging.INFO,
+    logging.basicConfig(level=logging.DEBUG,
                         format=log_format,
                         handlers=[trfh, sh])
 
