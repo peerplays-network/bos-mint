@@ -9,29 +9,15 @@ admins:
  - mail@example.com
 
 project_name: MINT
-project_sub_name: BOS Manual Intervention Module
+project_sub_name: The BOS Manual Intervention Module
 secret_key: RanDomSecrEtKeyStringusedInternallY
 
 sql_database: "sqlite:///{cwd}/bookied-local.db"
 
 connection:
-    use: TestCharlie
-    Main:
-        node:
-            - 
-    Test:
-        node:
-            - wss://peerplays-dev.blocktrades.info/ws
-        nobroadcast: True
-        num_retries: 1
+    use: charlie
         
-    TestOSE:
-        node:
-            - wss://peerplays-dev.blocktrades.info/alpha/ws
-        nobroadcast: False
-        num_retries: 1
-        
-    TestCharlie:
+    charlie:
         node:
             - ws://ec2-35-183-1-21.ca-central-1.compute.amazonaws.com:8090
         nobroadcast: False

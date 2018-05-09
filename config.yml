@@ -15,23 +15,8 @@ secret_key: RUR7LywKvncb4eoR
 sql_database: "sqlite:///{cwd}/bookied-local.db"
 
 connection:
-    use: TestCharlie
-    Main:
-        node:
-            - 
-    Test:
-        node:
-            - wss://peerplays-dev.blocktrades.info/ws
-        nobroadcast: True
-        num_retries: 1
-        
-    TestOSE:
-        node:
-            - wss://peerplays-dev.blocktrades.info/alpha/ws
-        nobroadcast: False
-        num_retries: 1
-        
-    TestCharlie:
+    use: charlie
+    charlie:
         node:
             - ws://ec2-35-183-1-21.ca-central-1.compute.amazonaws.com:8090
         nobroadcast: False

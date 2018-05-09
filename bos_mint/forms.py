@@ -400,7 +400,8 @@ class NewBettingMarketGroupForm(FlaskForm):
         self.bettingmarketrule.choices = selectDictToList(
             utils.getComprisedTypesGetter('bettingmarketgrouprule')(None))
 
-        self.asset.data = config.get("allowed_assets")[0]
+        if self.asset.data == "None":
+            self.asset.data = config.get("allowed_assets")[0]
 
     def fill(self, selectedObject):
         self.event.data = selectedObject['event_id']
