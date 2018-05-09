@@ -4,7 +4,8 @@ from flask import (
     session,
     flash,
     url_for,
-    abort
+    abort,
+    jsonify
 )
 from wtforms import FormField, SubmitField
 from peerplays.exceptions import WalletExists
@@ -135,10 +136,34 @@ def newwallet():
 
 
 @app.route('/incidents')
-def show_incidents(typeName=None, identifier=None):
+def show_incidents():
     events = factory.get_incident_storage().get_events()
 
+    # resort for provider view
+    for event in events:
+        for call in ["create", "in_progress", "finish", "result"]:
+            try:
+                incident_provider_dict = {}
+                for incident in event[call]["incidents"]:
+                    provider = incident["provider_info"]["name"]
+                    try:
+                        incident_list = incident_provider_dict[provider]
+                    except KeyError:
+                        incident_provider_dict[provider] = []
+                        incident_list = incident_provider_dict[provider]
+                    incident_provider_dict[provider].append(incident)
+                event[call]["incidents_per_provider"] = incident_provider_dict
+            except KeyError:
+                pass
+
     return render_template_menuinfo('showIncidents.html', **locals())
+
+
+@app.route('/incidents/<incident_id>/<call>')
+def show_incidents_per_id(incident_id=None, call=None):
+    incidents = factory.get_incident_storage().get_incidents_by_id(incident_id, call)
+
+    return jsonify(list(incidents))
 
 
 @app.route('/overview')
