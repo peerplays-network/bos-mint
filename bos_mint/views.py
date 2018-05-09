@@ -291,11 +291,12 @@ def overview(typeName=None, identifier=None):
                 tmpParentIdentifier = utils.getComprisedParentTypeGetter(
                     tmpTypeName)(tmpParentIdentifier)
 
-            if isinstance(tmpChainElement, list):
-                for item in tmpChainElement:
-                    reverseChain.append(item)
-            else:
-                reverseChain.append(tmpChainElement)
+            if not tmpChainElement["typeName"] == "bet":
+                if isinstance(tmpChainElement, list):
+                    for item in tmpChainElement:
+                        reverseChain.append(item)
+                else:
+                    reverseChain.append(tmpChainElement)
 
         if tmpTypeName == 'sport':
             # sport doesnt loop through the former while,
