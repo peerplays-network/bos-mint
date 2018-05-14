@@ -432,6 +432,7 @@ class Node(object):
 
     @proposedOperation
     def unfreezeBettingMarketGroup(self, bmgId):
+        raise Exception("Unfreezing is no longer supported, please update and select the desired status manually.")
         try:
             return self.get_node().betting_market_group_update(bmgId, status="in_play", account=self.getSelectedAccountName(), append_to=self.getPendingProposal())
         except Exception as ex:

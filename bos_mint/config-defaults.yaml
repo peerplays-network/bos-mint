@@ -1,27 +1,25 @@
-debug: True
-
-mail_host: host
-mail_port: 25 
-mail_user: username
-mail_pass: password
-mail_from: local@localhost
-admins:
- - mail@example.com
+debug: False
 
 project_name: MINT
 project_sub_name: The BOS Manual Intervention Module
-secret_key: RanDomSecrEtKeyStringusedInternallY
+secret_key: # enter any random string 
 
 sql_database: "sqlite:///{cwd}/bookied-local.db"
 
 connection:
-    use: charlie
-        
-    charlie:
+    use: # enter your desired chain
+
+    baxter:
         node:
-            - ws://ec2-35-183-1-21.ca-central-1.compute.amazonaws.com:8090
+            - wss://pta.blockveritas.co:8089
         nobroadcast: False
         num_retries: 1
+
+allowed_assets:
+    - BTF
+    - BTC
+    - PPY
+    - BTCTEST
 
 allowed_transitions:
     EventStatus:

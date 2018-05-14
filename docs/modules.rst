@@ -4,4 +4,4 @@ bos-mint
 .. toctree::
    :maxdepth: 6
 
-   app
+   bos_mint

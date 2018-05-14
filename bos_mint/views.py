@@ -203,10 +203,6 @@ def overview(typeName=None, identifier=None):
                         'link': 'bettingmarketgroup_freeze',
                         'icon': 'snowflake'
                     }, {
-                        'title': 'Unfreeze',
-                        'link': 'bettingmarketgroup_unfreeze',
-                        'icon': 'fire'
-                    }, {
                         'title': 'Resolve',
                         'link': 'bettingmarketgroup_resolve',
                         'icon': 'money'

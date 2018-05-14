@@ -9,6 +9,9 @@ from flask_sqlalchemy import SQLAlchemy
 from logging.handlers import TimedRotatingFileHandler
 from werkzeug.exceptions import HTTPException, InternalServerError
 from peerplays.instance import set_shared_config
+import collections
+from copy import deepcopy
+import io
 
 
 def get_version():
@@ -18,96 +21,174 @@ def get_version():
 
 __VERSION__ = get_version()
 
-default_config = """
-debug: True
-mail_host: host:port
-mail_port: 25
-mail_user: username
-mail_pass: password
-mail_from: local@localhost
-admins: []
-project_name: MINT
-project_sub_name: BOS Manual Intervention Module
-secret_key: RUR7LywKvncb4eoR
-sql_database: "sqlite:///{cwd}/bookied-local.db"
-allowed_assets:
-    - BTF
-    - BTC
-    - PPY
-    - BTCTEST
-allowed_transitions:
-    EventStatus:
-        create:
-            - upcoming
-        upcoming:
-            - in_progress
-            - finished
-            - frozen
-            - canceled
-        in_progress:
-            - finished
-            - frozen
-            - canceled
-        finished:
-            - settled
-            - canceled
-        frozen:
-            - upcoming
-            - in_progress
-            - frozen
-            - canceled
-    BettingMarketGroupStatus:
-        create:
-            - upcoming
-        upcoming:
-            - closed
-            - canceled
-            - in_play
-            - frozen
-        in_play:
-            - frozen
-            - closed
-            - canceled
-        closed:
-            - graded
-            - canceled
-        graded:
-            - re_grading
-            - settled
-            - canceled
-        re_grading:
-            - graded
-            - canceled
-    BettingMarketStatus:
-        create:
-            - unresolved
-        unresolved:
-            - win
-            - not_win
-            - canceled
-            - frozen
-        frozen:
-            - unresolved
-            - win
-            - not_win
-            - canceled
-        win:
-            - not_win
-            - canceled
-        not_win:
-            - canceled
-            - win
-"""
+
+class Config():
+    """ This class allows us to load the configuration from a YAML encoded
+        configuration file.
+    """
+
+    ERRORS = {
+        "secret_key": "Please create a configuration file config-bos-mint.yml in your working directory with a secret_key entry, see config-example.yaml",
+        "connection.use": "Please create a configuration file config-bos-mint.yml in your working directory with a connection.use entry, see config-example.yaml"
+    }
+
+    data = None
+    source = None
+
+    @staticmethod
+    def load(config_files=[], relative_location=False):
+        """ Load config from a file
+
+            :param str file_name: (defaults to ['config.yaml']) File name and
+                path to load config from
+        """
+
+        if not Config.data:
+            Config.data = {}
+
+        if not config_files:
+            # load all config files as default
+            config_files.append("config-defaults.yaml")
+        if type(config_files) == str:
+            config_files = [config_files]
+
+            for config_file in config_files:
+                if relative_location:
+                    file_path = config_file
+                else:
+                    file_path = os.path.join(
+                        os.path.dirname(os.path.realpath(__file__)),
+                        config_file
+                    )
+                stream = io.open(file_path, 'r', encoding='utf-8')
+                with stream:
+                    Config.data = Config._nested_update(Config.data, yaml.load(stream))
+
+            if not Config.source:
+                Config.source = ""
+            Config.source = Config.source + ";" + ";".join(config_files)
+
+    @staticmethod
+    def get_config(config_name=None):
+        """ Static method that returns the configuration as dictionary.
+            Usage:
+
+            .. code-block:: python
+
+                Config.get_config()
+        """
+        if not config_name:
+            if not Config.data:
+                raise Exception("Either preload the configuration or specify config_name!")
+        else:
+            if not Config.data:
+                Config.data = {}
+            Config.load(config_name)
+        return deepcopy(Config.data)
+
+    @staticmethod
+    def get(*args, **kwargs):
+        """
+        This config getter method allows sophisticated and encapsulated access to the config file, while
+        being able to define defaults in-code where necessary.
+
+        :param args: key to retrieve from config, nested in order. if the last is not a string it is assumed to be the default, but giving default keyword is then forbidden
+        :type tuple of strings, last can be object
+        :param message: message to be displayed when not found, defaults to entry in ERRORS dict with the
+                                key defined by the desired config keys in args (key1.key2.key2). For example
+                                Config.get("foo", "bar") will attempt to retrieve config["foo"]["bar"], and if
+                                not found raise an exception with ERRORS["foo.bar"] message
+        :type message: string
+        :param default: default value if not found in config
+        :type default: object
+        """
+        default_given = "default" in kwargs
+        default = kwargs.pop("default", None)
+        message = kwargs.pop("message", None)
+        # check if last in args is default value
+        if type(args[len(args) - 1]) != str:
+            if default_given:
+                raise KeyError("There can only be one default set. Either use default=value or add non-string values as last positioned argument!")
+            default = args[len(args) - 1]
+            args = args[0:len(args) - 1]
+
+        try:
+            nested = Config.data
+            for key in args:
+                if type(key) == str:
+                    nested = nested[key]
+                else:
+                    raise KeyError("The given key " + str(key) + " is not valid.")
+            if nested is None:
+                raise KeyError()
+        except KeyError:
+            lookup_key = '.'.join(str(i) for i in args)
+            if not message:
+                if Config.ERRORS.get(lookup_key):
+                    message = Config.ERRORS[lookup_key]
+                else:
+                    message = "Configuration key {0} not found in {1}!"
+                message = message.format(lookup_key, Config.source)
+            if default_given:
+                logging.getLogger(__name__).debug(message + " Using given default value.")
+                return default
+            else:
+                raise KeyError(message)
+
+        return nested
+
+    @staticmethod
+    def reset():
+        """ Static method to reset the configuration storage
+        """
+        Config.data = None
+        Config.source = None
+
+    @staticmethod
+    def _nested_update(d, u):
+        for k, v in u.items():
+            if isinstance(v, collections.Mapping):
+                d[k] = Config._nested_update(d.get(k, {}), v)
+            else:
+                if d:
+                    d[k] = v
+                else:
+                    d = {}
+                    d[k] = v
+        return d
+
+
+if not Config.data:
+    Config.load("config-defaults.yaml")
+    notify = False
+    try:
+        # overwrites defaults
+        Config.load("config-bos-mint.yaml", True)
+        notify = True
+    except FileNotFoundError:
+        pass
+
+    if notify:
+        logging.getLogger(__name__).info("Custom config has been loaded " + Config.source)
 
 
 def get_config():
-    # basedir = os.path.abspath(os.path.dirname(__file__))
-    # Instanciate config
-    config = yaml.load(default_config)
-    if os.path.isfile("config.yml"):
-        config.update(yaml.load(open("config.yml").read()))
+    Config.load("config-defaults.yaml")
+    notify = False
+    try:
+        # overwrites defaults
+        Config.load("config-bos-mint.yaml", True)
+        notify = True
+    except FileNotFoundError:
+        pass
 
-    assert "connection" in config, "A configuration is missing. Please create config.yml!"
+    if notify:
+        logging.getLogger(__name__).info("bos-mint: Custom config has been loaded " + Config.source)
+
+    Config.get("connection", "use")
+    Config.get("secret_key")
+
+    config = Config.data
 
     config["sql_database"] = config["sql_database"].format(cwd=os.getcwd())
 
@@ -125,17 +206,24 @@ def set_global_logger():
         1
     )
     trfh.suffix = "%Y-%m-%d"
-    trfh.setLevel(logging.INFO)
     trfh.setFormatter(logging.Formatter(log_format))
 
     sh = logging.StreamHandler()
-    sh.setLevel(logging.DEBUG)
     sh.setFormatter(logging.Formatter(log_format))
 
     # set global logger (e.g. for werkzeug)
-    logging.basicConfig(level=logging.DEBUG,
-                        format=log_format,
-                        handlers=[trfh, sh])
+    if Config.get("debug"):
+        trfh.setLevel(logging.DEBUG)
+        sh.setLevel(logging.DEBUG)
+        logging.basicConfig(level=logging.DEBUG,
+                            format=log_format,
+                            handlers=[trfh, sh])
+    else:
+        trfh.setLevel(logging.INFO)
+        sh.setLevel(logging.INFO)
+        logging.basicConfig(level=logging.INFO,
+                            format=log_format,
+                            handlers=[trfh, sh])
 
     return [trfh, sh]
 
@@ -208,6 +296,7 @@ set_app_config(app, config)
 set_error_handling(app)
 db = SQLAlchemy(app)
 set_peerplays_connection(config)
+
 
 app.logger.debug(pprint.pformat(config))
 

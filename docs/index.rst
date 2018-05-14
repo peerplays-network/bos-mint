@@ -15,8 +15,7 @@ blockchain.
    :caption: Contents:
 
    installation
-   development
-   app
+   bos_mint
 
 Indices and tables
 ==================
