@@ -1,0 +1,6 @@
+# see bos_mint/config-defaults.yaml for explanation and all possible override values
+
+secret_key: RanDomSecrEtKeyStringusedInternallY
+
+connection:  
+    use: baxter

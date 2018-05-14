@@ -71,7 +71,7 @@ class OperationWidget(RenderTemplateWidget):
 
             for tmpOp in operation['proposed_ops']:
                 self.addOperation(tmpOp['op'][0], tmpOp['op'][1])
-        elif os.path.isfile('app' + os.sep + 'templates' + os.sep + file):
+        elif os.path.isfile('bos_mint' + os.sep + 'templates' + os.sep + file):
             self.template = file
         else:
             self.template = 'widgets/operation_unknown.html'
