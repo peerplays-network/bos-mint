@@ -34,6 +34,7 @@ from .utils import (
 )
 import os
 from bos_incidents import factory
+from bos_incidents.exceptions import EventNotFoundException
 
 
 ###############################################################################
@@ -180,9 +181,13 @@ def show_incidents(from_date=None, to_date=None, matching=None, use="dataproxy")
 
 
 @app.route('/incidents/details/<incident_id>/<call>')
-def show_incidents_per_id(incident_id=None, call=None):
-    store = factory.get_incident_storage()
-    event = store.get_event_by_id(incident_id, resolve=True)
+@app.route('/incidents/details/<incident_id>/<call>/<use>')
+def show_incidents_per_id(incident_id=None, call=None, use="dataproxy"):
+    store = factory.get_incident_storage(use=use)
+    try:
+        event = store.get_event_by_id(incident_id, resolve=True)
+    except EventNotFoundException:
+        return jsonify("Event not found")
 
     # fetch them seperately, we want raw data
     incidents = store.get_incidents_by_id(incident_id, call)

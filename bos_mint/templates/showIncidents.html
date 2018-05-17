@@ -74,25 +74,25 @@ Showing all events scheduled between {{ from_date }} and {{ to_date }}
 		<tbody>
 			<thead>
 				<td>
-					<a href="{{ url_for('show_incidents_per_id', incident_id=event['id_string'], call='create') }}">
+					<a href="{{ url_for('show_incidents_per_id', incident_id=event['id_string'], call='create', use=use) }}">
 						Create<br />
 						DT#1
 					</a>
 				</td>
 				<td>
-					<a href="{{ url_for('show_incidents_per_id', incident_id=event['id_string'], call='in_progress') }}">
+					<a href="{{ url_for('show_incidents_per_id', incident_id=event['id_string'], call='in_progress', use=use) }}">
 						In progress<br />
 						DT#3
 					</a>
 				</td>
 				<td>
-					<a href="{{ url_for('show_incidents_per_id', incident_id=event['id_string'], call='finish') }}">
+					<a href="{{ url_for('show_incidents_per_id', incident_id=event['id_string'], call='finish', use=use) }}">
 						Finish<br />
 						DT#4
 					</a>
 				</td>
 				<td>
-					<a href="{{ url_for('show_incidents_per_id', incident_id=event['id_string'], call='result') }}">
+					<a href="{{ url_for('show_incidents_per_id', incident_id=event['id_string'], call='result', use=use) }}">
 						Result<br />
 						DT#5
 					</a>
