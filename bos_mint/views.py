@@ -179,7 +179,7 @@ def show_incidents(from_date=None, to_date=None, matching=None, use="dataproxy")
     return render_template_menuinfo('showIncidents.html', **locals())
 
 
-@app.route('/incidents/<incident_id>/<call>')
+@app.route('/incidents/details/<incident_id>/<call>')
 def show_incidents_per_id(incident_id=None, call=None):
     incidents = factory.get_incident_storage().get_incidents_by_id(incident_id, call)
 
