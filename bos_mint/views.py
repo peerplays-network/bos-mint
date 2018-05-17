@@ -136,11 +136,27 @@ def newwallet():
 
 
 @app.route('/incidents')
-def show_incidents():
-    events = factory.get_incident_storage().get_events()
+@app.route('/incidents/<matching>')
+@app.route('/incidents/<matching>/<use>')
+def show_incidents(from_date=None, to_date=None, matching=None, use="dataproxy"):
+    if from_date is None:
+        from_date = utils.string_to_date(utils.date_to_string(-14))
+    if to_date is None:
+        to_date = utils.string_to_date(utils.date_to_string(42))
 
+    store = factory.get_incident_storage(use=use)
+
+    unresolved_events = store.get_events(resolve=False)
+
+    events = []
     # resort for provider view
-    for event in events:
+    for event in unresolved_events:
+        event_scheduled = utils.string_to_date(event["id_string"][0:20])
+        if event_scheduled <= to_date and event_scheduled >= from_date and\
+                (matching is None or matching.lower() in event["id_string"].lower()):
+            store.resolve_event(event)
+        else:
+            continue
         for call in ["create", "in_progress", "finish", "result"]:
             try:
                 incident_provider_dict = {}
@@ -155,6 +171,10 @@ def show_incidents():
                 event[call]["incidents_per_provider"] = incident_provider_dict
             except KeyError:
                 pass
+        events.append(event)
+
+    from_date = utils.date_to_string(from_date)
+    to_date = utils.date_to_string(to_date)
 
     return render_template_menuinfo('showIncidents.html', **locals())
 
