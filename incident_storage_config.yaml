@@ -1,0 +1,27 @@
+bos_incidents:
+    database:
+        use: dataproxy
+        auto:
+            seeds:
+                - localhost:27017  # 94.130.229.63:27017
+            databases: 
+                incident-storage:
+                    collections:
+                        incident:
+                            name: incident
+                        event:
+                            name: event
+                        status:
+                            name: status
+        dataproxy:
+            seeds:
+                - localhost:27017  # 94.130.229.63:27017
+            databases: 
+                incident-storage:
+                    collections:
+                        incident:
+                            name: dataproxyincident
+                        event:
+                            name: dataproxyevent
+                        status:
+                            name: dataproxystatus

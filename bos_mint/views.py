@@ -181,9 +181,18 @@ def show_incidents(from_date=None, to_date=None, matching=None, use="dataproxy")
 
 @app.route('/incidents/details/<incident_id>/<call>')
 def show_incidents_per_id(incident_id=None, call=None):
-    incidents = factory.get_incident_storage().get_incidents_by_id(incident_id, call)
+    store = factory.get_incident_storage()
+    event = store.get_event_by_id(incident_id, resolve=True)
 
-    return jsonify(list(incidents))
+    # fetch them seperately, we want raw data
+    incidents = store.get_incidents_by_id(incident_id, call)
+
+    return jsonify(
+        {
+            "status": event.get(call, {"status": "empty"})["status"],
+            "incidents": list(incidents)
+        }
+    )
 
 
 @app.route('/overview')
