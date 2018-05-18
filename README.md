@@ -12,7 +12,9 @@ The Manual Intervention Module (MINT) is one of two services that are required f
 ## Documentation
 For directions on how to install and run `bos-mint` please visit our [documentation page](http://bos-mint.readthedocs.io/en/master/installation.html).
 
-## Execution
+## Development use
+Checkout the repository and run
+
 ```bash
 $ ./run_dev_server.sh    # Run MINT
 ```

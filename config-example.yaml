@@ -2,5 +2,8 @@
 
 secret_key: RanDomSecrEtKeyStringusedInternallY
 
+allowed_assets:
+    - BTF
+
 connection:  
     use: baxter
