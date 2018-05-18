@@ -1,9 +1,13 @@
 # see bos_mint/config-defaults.yaml for explanation and all possible override values
 
-secret_key: RanDomSecrEtKeyStringusedInternallY
+secret_key: # enter some random string
 
 allowed_assets:
     - BTF
 
 connection:  
     use: baxter
+
+    baxter:
+        node:
+            - # enter your node

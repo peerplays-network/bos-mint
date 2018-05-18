@@ -54,10 +54,11 @@ Modify configuration
 We now need to configure bos-auto.
 
 ::
-
+   
+   # basic mint configuration file
    wget https://raw.githubusercontent.com/PBSA/bos-mint/master/config-example.yaml
    mv config-example.yaml config-bos-mint.yaml
-   # modify config-bos-mint.yaml (add your own secret key)
+   # modify config-bos-mint.yaml (add your own peerplays node and secret key)
 
 Defauilt config only requires as listed below:
 
@@ -71,10 +72,19 @@ Possible override values are described below:
 
 Running bos-mint
 #########
+To run MINT in debug mode use
 
 .. code-block:: sh
 
-    bos-mint start
+    bos-mint start  --port 8001 --host 0.0.0.0
+    
+The output that you see should contain
+
+    2018-05-18 11:56:04,754 INFO      :  * Running on http://localhost:5000/ (Press CTRL+C to quit)
 
 After starting MINT you will be asked to enter your witness key that will be stored encrypted in the 
 local peerplays wallet.
+
+The above setup is basic. Going forward, a witness may want to deploy
+UWSGI with parallel workers for the endpoint, create a local socket and
+hide it behind an SSL supported nginx.

@@ -36,7 +36,8 @@
     	<div class="sub header">{{config["PROJECT"].project_sub_name}}</div>
     	</h3>
     </div>
-	<a title="Lists all votable proposals" class="item" href="{{ url_for('votable_proposals') }}"><i class="thumbs up icon"></i><i class="thumbs down icon"></i> {{ menuInfo["numberOfVotableProposals"] }}</a>    
+	<a title="Lists all votable proposals" class="item" href="{{ url_for('votable_proposals') }}"><i class="thumbs up icon"></i><i class="thumbs down icon"></i> {{ menuInfo["numberOfVotableProposals"] }}</a>
+	<a title="Show incoming dataproxy incidents" class="item" href="{{ url_for('show_incidents') }}"><i class="angle double right icon"></i> Incidents</a>    
     <!-- Header Menu -->
 	<div class="right menu">
 		 {% if menuInfo %}
