@@ -5,4 +5,4 @@ recursive-include bos_mint/bower_components *
 include *.txt
 include config-example.yaml
 include bos_mint/config-defaults.yaml
-include VERSION
+include bos_mint/VERSION
