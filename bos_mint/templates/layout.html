@@ -37,9 +37,10 @@
     	</h3>
     </div>
 	<a title="Lists all votable proposals" class="item" href="{{ url_for('votable_proposals') }}"><i class="thumbs up icon"></i><i class="thumbs down icon"></i> {{ menuInfo["numberOfVotableProposals"] }}</a>
-	<a title="Show incoming dataproxy incidents" class="item" href="{{ url_for('show_incidents') }}"><i class="angle double right icon"></i> Incidents</a>    
-    <!-- Header Menu -->
+	<a title="Show incoming dataproxy incidents" class="item" href="{{ url_for('show_incidents') }}"><i class="angle double right icon"></i> Incidents</a>
+	<!-- Header Menu -->
 	<div class="right menu">
+		 <div title="Connected chain" class="item">{{menuInfo["chain"]["name"]}}</div>
 		 {% if menuInfo %}
 		 	<div class="ui dropdown right item"><!-- <table><tr><td>Account</td></tr><tr><td> -->{{menuInfo['account']['toString']}}<!-- </td></tr></table> --> 
 			 	<i class="dropdown icon"></i>
@@ -66,7 +67,7 @@
 		 {% endif %}
   	</div>
    </div>
-   <span style="font-size: 10px; float: right; line-height: 12px; margin-right: 10px">
+   <span style="font-size: 10px; float: right; line-height: 14px; margin-right: 10px">
     bos-mint: <strong>{{menuInfo["version"]}}</strong><br />
     {%- for k, v in menuInfo["versions"].items() -%}
     {{k}}: <strong>{{v}}</strong><br />
@@ -99,16 +100,13 @@
   <script type="text/javascript" src="{{ ASSET_URL }}"></script>
   {%- endassets %}
  </body>
-<!--  <footer>
+<footer>
  <div class="ui vertical footer segment">
   <div class="ui container">
    <span style="font-size: 10px; float: right">
-    bos-mint: <strong>{{menuInfo["version"]}}</strong><br />
-    {%- for k, v in menuInfo["versions"].items() -%}
-    {{k}}: <strong>{{v}}</strong><br />
-    {%- endfor -%}
+    {{menuInfo["chain"]["name"]}}:{{menuInfo["chain"]["id"]}}
   </span>
  </div>
  </div>
- </footer> -->
+</footer>
 </html>
