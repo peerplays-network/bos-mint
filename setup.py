@@ -6,7 +6,7 @@ import os
 
 
 __VERSION__ = "unknown"
-with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'VERSION')) as version_file:
+with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'bos_mint', 'VERSION')) as version_file:
     __VERSION__ = version_file.read().strip()
 
 
