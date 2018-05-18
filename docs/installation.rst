@@ -18,8 +18,10 @@ Install databases (as root/sudo)
 MINT uses a local sqllite database which requires mysql setup. Assuming
 a Ubuntu 16.04. machine, please install
 
-sudo apt-get install mysql-server
-sudo apt-get install libmysqlclient-dev
+::
+
+    sudo apt-get install mysql-server
+    sudo apt-get install libmysqlclient-dev
 
 Install bos-mint
 ##########################
@@ -57,6 +59,11 @@ We now need to configure bos-auto.
    mv config-example.yaml config-bos-mint.yaml
    # modify config-bos-mint.yaml (add your own secret key)
 
+Defauilt config only requires as listed below:
+
+.. include:: ../config-example.yaml
+   :literal:
+   
 Possible override values are described below:
 
 .. include:: ../bos_mint/config-defaults.yaml
