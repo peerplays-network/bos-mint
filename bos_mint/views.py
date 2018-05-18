@@ -139,7 +139,7 @@ def newwallet():
 @app.route('/incidents')
 @app.route('/incidents/<matching>')
 @app.route('/incidents/<matching>/<use>')
-def show_incidents(from_date=None, to_date=None, matching=None, use="dataproxy"):
+def show_incidents(from_date=None, to_date=None, matching=None, use="mongodb"):
     if from_date is None:
         from_date = utils.string_to_date(utils.date_to_string(-14))
     if to_date is None:

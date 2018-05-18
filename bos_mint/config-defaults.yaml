@@ -11,7 +11,7 @@ connection:
 
     baxter:
         node:
-            - wss://pta.blockveritas.co:8089
+            - # enter your node
         nobroadcast: False
         num_retries: 1
 
