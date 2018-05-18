@@ -177,6 +177,12 @@ def show_incidents(from_date=None, to_date=None, matching=None, use="mongodb"):
     from_date = utils.date_to_string(from_date)
     to_date = utils.date_to_string(to_date)
 
+    if use == "mongodb":
+        use = "bos-auto"
+
+    if use == "auto":
+        use = "bos-auto"
+
     return render_template_menuinfo('showIncidents.html', **locals())
 
 
