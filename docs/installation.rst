@@ -80,7 +80,7 @@ To run MINT in debug mode use
     
 The output that you see should contain
 
-    2018-05-18 11:56:04,754 INFO      :  * Running on http://localhost:5000/ (Press CTRL+C to quit)
+    2018-05-18 11:56:04,754 INFO      :  * Running on http://0.0.0.0:8001/ (Press CTRL+C to quit)
 
 After starting MINT you will be asked to enter your witness key that will be stored encrypted in the 
 local peerplays wallet.
