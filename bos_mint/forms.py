@@ -326,11 +326,14 @@ class EventStatusForm(FlaskForm):
         return 'event_status'
 
     def init(self, selectedObject, default=None):
+        self.status.choices = utils.filterOnlyAllowed(EventStatus, "create")
+
         sportId = None
         if isinstance(selectedObject, EventGroup):
             sportId = selectedObject['sport_id']
         elif isinstance(selectedObject, Event):
             sportId = selectedObject.eventgroup.sport['id']
+            self.status.choices = utils.filterOnlyAllowed(EventStatus, selectedObject['status'])
         elif isinstance(selectedObject, wrapper.EventGroup):
             sportId = selectedObject.get('parentId')
 
