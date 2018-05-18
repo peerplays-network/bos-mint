@@ -2,7 +2,7 @@
 import pkg_resources
 from flask import redirect, flash, url_for, request, render_template
 from functools import wraps
-from datetime import datetime
+from datetime import datetime, timedelta
 from peerplaysbase.operationids import getOperationNameForId
 
 from .node import Node, NodeException
@@ -442,7 +442,10 @@ def date_to_string(date_object=None):
     """ rfc3339 conform string represenation of a date
         can also be given as str YYYY-mm-dd HH:MM:SS """
     if type(date_object) == int:
-        date_object = datetime.utcfromtimestamp(date_object)
+        if date_object < 365:
+            date_object = datetime.utcnow() + timedelta(days=date_object)
+        else:
+            date_object = datetime.utcfromtimestamp(date_object)
     if type(date_object) == float:
         date_object = datetime.utcfromtimestamp(date_object)
     if type(date_object) == str:
@@ -461,6 +464,9 @@ def date_to_string(date_object=None):
 def string_to_date(date_string):
     """ assumes rfc3339 conform string and creates date object """
     if type(date_string) == str:
+        if len(date_string) == 8:
+            date_string = date_string[0:4] + "-" + date_string[4:6] + "-" + date_string[6:8] + "T00:00:00Z"
         return datetime.utcfromtimestamp(
             strict_rfc3339.rfc3339_to_timestamp(date_string))
     raise Exception("Only string covnersion supported")
+

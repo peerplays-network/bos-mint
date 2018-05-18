@@ -15,7 +15,9 @@ def toString(toBeFormatted, object=None):
         else:
             name = toBeFormatted.get('name')
 
-        displayName = toBeFormatted["start_time"] + "Z" + ":\n" + name + ' (' + toBeFormatted.get('id') + ')'
+        displayName = str(toBeFormatted["start_time"]) + "Z" + ":\n" + name
+        if toBeFormatted.get("id", None) is not None:
+            displayName = displayName + ' (' + toBeFormatted['id'] + ')'
     elif toBeFormatted.get('name') and toBeFormatted.get('id'):
         if isinstance(toBeFormatted.get('name'), list):
             name = findEnglishOrFirst(toBeFormatted.get('name'))
