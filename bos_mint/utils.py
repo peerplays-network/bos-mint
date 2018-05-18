@@ -10,6 +10,7 @@ from . import wrapper, tostring, __VERSION__
 import strict_rfc3339
 from . import config
 import logging
+from bos_mint import Config
 
 # dictionary to configure types (Sport, EventGroup, etc.)
 #  title: human readable title
@@ -342,7 +343,7 @@ def getMenuInfo():
         pass
 
     versions = {}
-    for name in ["bos-auto", "bos-incidents", "peerplays", "bookiesports"]:
+    for name in ["bos-incidents", "peerplays", "bookiesports"]:  # "bos-auto", 
         try:
             versions[name] = pkg_resources.require(name)[0].version
         except pkg_resources.DistributionNotFound:
@@ -375,6 +376,11 @@ def getMenuInfo():
     except NodeException:
         pass
     menuInfo['allAccounts'] = allAccounts
+
+    menuInfo['chain'] = {
+        "name": Config.get("connection", "use"),
+        "id": Node().get_node().rpc.chain_params["chain_id"]
+    }
 
     logging.getLogger(__name__).debug("getMenuInfo done")
 
