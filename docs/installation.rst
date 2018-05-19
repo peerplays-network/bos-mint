@@ -76,15 +76,30 @@ To run MINT in debug mode use
 
 .. code-block:: sh
 
-    bos-mint start  --port 8001 --host 0.0.0.0
+    bos-mint start  --port 8001 --host localhost
     
 The output that you see should contain
 
-    2018-05-18 11:56:04,754 INFO      :  * Running on http://0.0.0.0:8001/ (Press CTRL+C to quit)
+::
 
-After starting MINT you will be asked to enter your witness key that will be stored encrypted in the 
-local peerplays wallet.
+    2018-05-18 11:56:04,754 INFO      :  * Running on http://localhost:8001/ (Press CTRL+C to quit)
 
-The above setup is basic. Going forward, a witness may want to deploy
-UWSGI with parallel workers for the endpoint, create a local socket and
-hide it behind an SSL supported nginx.
+The above setup is basic and for development use. Going forward, a witness may want to deploy
+UWSGI with parallel workers for the endpoint.
+
+MINT is purposely run on localhost to restrict outside access. Securing a python flask application from malicious break in attempts is tedious and would be an ongoing effort. Recommendation is to access it via a SSH tunnel or through VPN.
+
+Example for SSH tunnel: Assume BOS MINT is running on a remote server accessible via 1.2.3.4 and you have login credentials via SSH (password or pivate key access). On the local machine that you will be using to access MINT via a web browser open the tunnel
+
+::
+
+    ssh -f -N -L 8080:127.0.0.1:8001 yourusername@1.2.3.4
+
+-f - send process to background
+-N - do not send commands (if you need open ssh connections only for tunneling)
+-L - port mapping (8080 port on your machine, 127.0.0.1:8001 - proxy to where MINT runs)
+
+Now you can open mint in your browser using http://localhost:8080 address.
+
+After starting MINT use your favorite desktop browser to access it and you will be asked to enter your witness key that will be stored encrypted in the 
+local peerplays wallet. Please note that MINT is not optimized for mobile use yet.
