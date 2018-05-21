@@ -20,8 +20,8 @@ a Ubuntu 16.04. machine, please install
 
 ::
 
-    sudo apt-get install mysql-server
-    sudo apt-get install libmysqlclient-dev
+    apt-get install mysql-server
+    apt-get install libmysqlclient-dev
 
 Install bos-mint
 ##########################
