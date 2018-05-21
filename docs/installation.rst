@@ -15,7 +15,7 @@ Note that virtualenv is a best practice for python, but installation can also be
 Install databases (as root/sudo)
 ##########################
 
-MINT uses a local sqllite database which requires mysql setup. Assuming
+MINT uses a local sqllite database which requires mysql setup (running a mysql server instance is not required). Assuming
 a Ubuntu 16.04. machine, please install
 
 ::
