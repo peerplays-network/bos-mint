@@ -80,7 +80,11 @@ class OperationWidget(RenderTemplateWidget):
         if not self.template_args.get('operations'):
             self.template_args['operations'] = []
 
-        ow = OperationWidget(operationId=operationId, data=data)
+        ow = OperationWidget(
+            operationId=operationId,
+            operationName=operationids.getOperationNameForId(operationId),
+            data=data
+        )
         self.template_args['operations'].append(ow)
 
 

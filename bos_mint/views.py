@@ -475,30 +475,26 @@ def automatic_approval():
 
 @app.route("/proposals", methods=['post', 'get'])
 def votable_proposals():
-    try:
-        proposals = Node().getAllProposals()
-        if proposals:
-            accountId = Node().getSelectedAccount()['id']
+    proposals = Node().getAllProposals()
+    if proposals:
+        accountId = Node().getSelectedAccount()['id']
 
-            containerList = widgets.prepareProposalsDataForRendering(proposals)
-            containerReview = {}
-            reviewedProposals = LocalProposal.getAllAsList()
+        containerList = widgets.prepareProposalsDataForRendering(proposals)
+        containerReview = {}
+        reviewedProposals = LocalProposal.getAllAsList()
 
-            for proposal in proposals:
-                if proposal['id'] in reviewedProposals:
-                    # if the proposal is stored in the localproposals database it already has been reviewed, but maybe
-                    # rejected
-                    containerReview[proposal['id']] = {'reviewed': True, 'approved': accountId in proposal.get('available_active_approvals')}
-                elif accountId in proposal.get('available_active_approvals'):
-                    # already approved ones also go into the reviewed column, even without a localproposal entry
-                    containerReview[proposal['id']] = {'reviewed': True, 'approved': True}
+        for proposal in proposals:
+            if proposal['id'] in reviewedProposals:
+                # if the proposal is stored in the localproposals database it already has been reviewed, but maybe
+                # rejected
+                containerReview[proposal['id']] = {'reviewed': True, 'approved': accountId in proposal.get('available_active_approvals')}
+            elif accountId in proposal.get('available_active_approvals'):
+                # already approved ones also go into the reviewed column, even without a localproposal entry
+                containerReview[proposal['id']] = {'reviewed': True, 'approved': True}
 
-        del proposals
+    del proposals
 
-        return render_template_menuinfo("votableProposals.html", **locals())
-    except NodeException as e:
-        flash(str(e), category='error')
-        return redirect(url_for("overview"))
+    return render_template_menuinfo("votableProposals.html", **locals())
 
 
 @app.route("/proposals/accept/<proposalId>", methods=['post', 'get'])
