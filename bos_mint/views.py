@@ -5,18 +5,20 @@ from flask import (
     flash,
     url_for,
     abort,
-    jsonify
+    jsonify,
+    send_from_directory
 )
 from wtforms import FormField, SubmitField
 from peerplays.exceptions import WalletExists
 
-from . import app, forms, utils, widgets
+from . import app, forms, utils, widgets, Config
 from .forms import (
     TranslatedFieldForm,
     NewWalletForm,
     GetAccountForm,
     ApprovalForm,
-    BettingMarketGroupResolveForm
+    BettingMarketGroupResolveForm,
+    SynchronizationForm
 )
 from .models import (
     LocalProposal,
@@ -36,10 +38,18 @@ import os
 from bos_incidents import factory
 from bos_incidents.exceptions import EventNotFoundException
 
+from bookiesports import BookieSports
+
 
 ###############################################################################
 # Homepage
 ###############################################################################
+
+
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(os.path.join(app.root_path, 'static'),
+                               'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 
 @app.route('/')
@@ -75,6 +85,43 @@ def account_info():
     form.fill(account)
 
     return render_template_menuinfo("account.html", **locals())
+
+
+@app.route('/bookiesports/sync', methods=['GET', 'POST'])
+@unlocked_wallet_required
+def bookiesports_sync():
+    form = SynchronizationForm()
+
+    if form.validate_on_submit():
+        flash("Blockchain has been synchronized with bookiesports and a new proposal has been created, ready to be broadcasted")
+        Node().sync(Config.get("connection", "use"))
+        return redirect(url_for("pending_operations"))
+    else:
+        form.chain_id.data = Config.get("connection", "use") + ":" + Node().get_node().rpc.chain_params["chain_id"]
+        form.bookiesports_name.data = Config.get("connection", "use")
+        try:
+            bookieSports = BookieSports(
+                chain=form.bookiesports_name.data
+            )
+            form.bookiesports_name.data = form.bookiesports_name.data + ":" + bookieSports.index.get("chain_id", None)
+
+            if bookieSports.index.get("chain_id", None) is not None and\
+                (bookieSports.index["chain_id"] == "*" or
+                 bookieSports.index["chain_id"] == form.chain_id.data):
+                if Node().isInSync(Config.get("connection", "use")):
+                    form.status.data = "In sync!"
+                else:
+                    form.status.data = "NOT in sync! Needs syncing!"
+            else:
+                flash("Your bookiesports name and chain id do not match. Please make sure that the alias you use for the key connection.use within config-bos-mint.yaml matches the corresponding chain", category="error")
+                form.status.data = "Your bookiesports name and chain id do not match."
+                delattr(form, "submit")
+
+        except AssertionError:
+            flash("BookieSports uses the aliases " + str(BookieSports.list_chains()) + ", please use the same aliases in the key connection.use within config-bos-mint.yaml", category="error")
+            delattr(form, "submit")
+
+    return render_template_menuinfo('generic.html', **locals())
 
 
 @app.route("/account/select/<accountId>", methods=['GET', 'POST'])

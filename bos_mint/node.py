@@ -1,8 +1,6 @@
-from . import config
 from . import wrapper
 
 from functools import wraps
-from peerplays import PeerPlays, asset
 from peerplays.account import Account
 from peerplays.sport import Sport, Sports
 from peerplays.eventgroup import EventGroups, EventGroup
@@ -14,6 +12,7 @@ from peerplays.proposal import Proposals
 
 from peerplays.instance import shared_peerplays_instance
 from peerplays.asset import Asset
+from bookied_sync.lookup import Lookup
 
 
 class NodeException(Exception):
@@ -49,10 +48,13 @@ def proposedOperation(func):
         # the operation in the transaction must be a
         # proposal
         if utils.isProposal(res):
-            # extract relative identifier
-            operations = utils.getProposalOperations(res)
-            # last is last added
-            return operations[len(operations) - 1]
+            if type(res) == dict:
+                # extract relative identifier
+                operations = utils.getProposalOperations(res)
+                # last is last added
+                return operations[len(operations) - 1]
+            else:
+                return None
         else:
             # should never happen
             raise NodeException("Received transaction is not a proposal")
@@ -73,6 +75,21 @@ class Node(object):
 
     def get_node(self):
         return shared_peerplays_instance()
+
+    @proposedOperation
+    def sync(self, chain_name):
+        w = Lookup(peerplays_instance=self.get_node(),
+                   network=chain_name,
+                   proposing_account=self.getProposerAccountName(),
+                   approving_account=self.getProposerAccountName())
+        Lookup.proposal_buffer = Node.pendingProposal
+        w.sync_bookiesports()
+        return Node.pendingProposal
+
+    def isInSync(self, chain_name):
+        Lookup.data = dict()
+        w = Lookup(peerplays_instance=self.get_node(), network=chain_name)
+        return w.is_bookiesports_in_sync()
 
     def getAccount(self, name):
         try:
