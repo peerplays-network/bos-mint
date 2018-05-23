@@ -407,7 +407,10 @@ def processNextArgument(nextArg, default):
 
 
 def isProposal(res):
-    return res['operations'][0][0] == 22
+    if type(res).__name__ == "ProposalBuilder":
+        return True
+    else:
+        return res['operations'][0][0] == 22
 
 
 def getProposalOperations(tx):

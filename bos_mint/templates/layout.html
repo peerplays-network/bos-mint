@@ -41,11 +41,9 @@
 	<a title="Show incoming dataproxy incidents" class="item" href="{{ url_for('show_incidents') }}"><i class="angle double right icon"></i> Incidents</a>
 	<!-- Header Menu -->
 	<div class="right menu">
-		 <div title="Connected chain" class="item">{{menuInfo["chain"]["name"]}}</div>
-		 {% if menuInfo %}
-		 	<div class="ui dropdown right item"><!-- <table><tr><td>Account</td></tr><tr><td> -->{{menuInfo['account']['toString']}}<!-- </td></tr></table> --> 
-			 	<i class="dropdown icon"></i>
-			 	<div class="menu">
+	 	<div class="ui dropdown right item"><!-- <table><tr><td>Account</td></tr><tr><td> -->{{menuInfo['account']['toString']}}<!-- </td></tr></table> --> 
+		 	<i class="dropdown icon"></i>
+		 	<div class="menu">
 	   			<!-- <a class="item" href="{{ url_for('pending_operations') }}">Pending Operations</a>
 	   			<div class="ui divider"></div> -->
 			    <a class="item" href="{{ url_for('account_info') }}">Account information</a>
@@ -57,15 +55,17 @@
 		    			<a class="item" href="{{ url_for('account_add') }}"><i class="small plus icon"></i>Add new</a>
 		   			</div>
 				 </div>
-	  			</div>
-			 </div>
-			 <a title="Lists all operations to be proposed" class="item" href="{{ url_for('pending_operations') }}"><i class="large in cart icon"></i> {{ menuInfo["numberOfOpenTransactions"] }}</a>
-			 {% if menuInfo["walletLocked"] %}
-			 	<a title="Local wallet is locked. Click to unlock" class="item" href="{{ url_for('unlock') }}"><i class="lock icon"></i></a>
-			 {% else %}
-			 	<a title="Local wallet is unlocked. Click to lock" class="item" href="{{ url_for('lock') }}"><i class="unlock icon"></i></a>
-			 {% endif %}			 
+				 <div class="ui divider"></div>
+  				 <a class="item" href="{{ url_for('bookiesports_sync') }}">Synchronize bookiesports</a>
+  			</div>
+		 </div>
+		 <a title="Lists all operations to be proposed" class="item" href="{{ url_for('pending_operations') }}"><i class="large in cart icon"></i> {{ menuInfo["numberOfOpenTransactions"] }}</a>
+		 {% if menuInfo["walletLocked"] %}
+		 	<a title="Local wallet is locked. Click to unlock" class="item" href="{{ url_for('unlock') }}"><i class="lock icon"></i></a>
+		 {% else %}
+		 	<a title="Local wallet is unlocked. Click to lock" class="item" href="{{ url_for('lock') }}"><i class="unlock icon"></i></a>
 		 {% endif %}
+		 <div title="Connected chain" class="item">{{menuInfo["chain"]["name"]}}</div>			 
   	</div>
    </div>
    <span style="font-size: 10px; float: right; line-height: 14px; margin-right: 10px">

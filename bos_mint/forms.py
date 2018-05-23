@@ -537,6 +537,13 @@ class ApprovalForm(FlaskForm):
     approve = BooleanField()
 
 
+class SynchronizationForm(FlaskForm):
+    chain_id = StringField('Connected to chain', render_kw={'readonly': True})
+    bookiesports_name = StringField('Bookiesports chain', render_kw={'readonly': True})
+    status = StringField('Synchronization status', render_kw={'readonly': True})
+    submit = SubmitField("Synchronize now")
+
+
 class BettingMarketResolveForm(FlaskForm):
     identifier = HiddenField('Identifier')
     description = StringField('Description',

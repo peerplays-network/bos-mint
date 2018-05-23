@@ -1,6 +1,7 @@
 peerplays
 bookiesports
-bos_incidents
+bos-incidents
+bos-sync
 
 Flask
 Flask-Assets
