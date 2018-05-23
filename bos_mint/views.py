@@ -107,7 +107,7 @@ def bookiesports_sync():
 
             if bookieSports.index.get("chain_id", None) is not None and\
                 (bookieSports.index["chain_id"] == "*" or
-                 bookieSports.index["chain_id"] == form.chain_id.data):
+                 bookieSports.index["chain_id"] == Node().get_node().rpc.chain_params["chain_id"]):
                 if Node().isInSync(Config.get("connection", "use")):
                     form.status.data = "In sync!"
                 else:

@@ -45,7 +45,11 @@ class OperationsContainerWidget(RenderTemplateWidget):
         return self.template_args['id']
 
     def addOperation(self, operationId, data):
-        ow = OperationWidget(operationId=operationId, data=data)
+        ow = OperationWidget(
+            operationId=operationId,
+            operationName=operationids.getOperationNameForId(operationId),
+            data=data
+        )
         self.template_args['operations'].append(ow)
 
 
@@ -72,6 +76,8 @@ class OperationWidget(RenderTemplateWidget):
             for tmpOp in operation['proposed_ops']:
                 self.addOperation(tmpOp['op'][0], tmpOp['op'][1])
         elif os.path.isfile('bos_mint' + os.sep + 'templates' + os.sep + file):
+            self.template = file
+        elif os.path.isfile('templates' + os.sep + file):
             self.template = file
         else:
             self.template = 'widgets/operation_unknown.html'
