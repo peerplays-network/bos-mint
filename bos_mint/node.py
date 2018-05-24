@@ -473,7 +473,10 @@ class Node(object):
     def broadcastPendingTransaction(self):
         try:
             if Node.pendingProposal:
-                returnV = self.get_node().broadcast()
+                if type(Node.pendingProposal).__name__ == "ProposalBuilder":
+                    returnV = Node.pendingProposal.broadcast()
+                else:
+                    returnV = self.get_node().broadcast()
                 self.get_node().clear()
                 Node.pendingProposal = []
                 return returnV
