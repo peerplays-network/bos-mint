@@ -90,6 +90,7 @@ def account_info():
 @app.route('/bookiesports/sync', methods=['GET', 'POST'])
 @unlocked_wallet_required
 def bookiesports_sync():
+    raise Exception("Sync currently disabled")
     form = SynchronizationForm()
 
     if form.validate_on_submit():
@@ -236,6 +237,9 @@ def show_incidents(from_date=None, to_date=None, matching=None, use="mongodb"):
 @app.route('/incidents/details/<incident_id>/<call>')
 @app.route('/incidents/details/<incident_id>/<call>/<use>')
 def show_incidents_per_id(incident_id=None, call=None, use="dataproxy"):
+    if use == "bos-auto":
+        use = "mongodb"
+
     store = factory.get_incident_storage(use=use)
     try:
         event = store.get_event_by_id(incident_id, resolve=True)
@@ -429,7 +433,8 @@ def pending_operations_discard():
 @unlocked_wallet_required
 def pending_operations_broadcast():
     if ViewConfiguration.get('automatic_approval', 'enabled', False):
-        Node().get_node().blocking = True
+#         Node().get_node().blocking = True
+        flash("Automatic approval currently disabled")
 
     try:
         answer = Node().broadcastPendingTransaction()
@@ -445,8 +450,9 @@ def pending_operations_broadcast():
         flash(message)
         return redirect(url_for('pending_operations'))
     except Exception as e:
-        Node().get_node().blocking = False
         raise e
+    finally:
+        Node().get_node().blocking = False
 
 
 @app.route("/pending", methods=['get'])
