@@ -63,7 +63,7 @@ class OperationWidget(RenderTemplateWidget):
         file = 'operation_' + name + '.html'
 
         if kwargs['operationId'] == 22:
-            self.template = 'widgets' + os.sep + 'operation_proposal.html'
+            self.template = os.path.join('widgets', 'operation_proposal.html')
 
             # add child operations
             operation = kwargs['data']
@@ -81,20 +81,20 @@ class OperationWidget(RenderTemplateWidget):
                 'widgets',
                 file
         )):
-            self.template = file
+            self.template = os.path.join('widgets', file)
         elif os.path.isfile(os.path.join(
                 'templates',
                 'widgets',
                 file
         )):
-            self.template = file
+            self.template = os.path.join('widgets', file)
         elif os.path.isfile(os.path.join(
                 os.path.dirname(os.path.realpath(__file__)),
                 'templates',
                 'widgets',
                 file
         )):
-            self.template = file
+            self.template = os.path.join('widgets', file)
         else:
             self.template = 'widgets/operation_unknown.html'
 
