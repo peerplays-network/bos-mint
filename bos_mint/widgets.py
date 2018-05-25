@@ -60,7 +60,7 @@ class OperationWidget(RenderTemplateWidget):
         super(OperationWidget, self).__init__(**kwargs)
 
         name = operationids.getOperationNameForId(kwargs['operationId'])
-        file = 'widgets' + os.sep + 'operation_' + name + '.html'
+        file = 'operation_' + name + '.html'
 
         if kwargs['operationId'] == 22:
             self.template = 'widgets' + os.sep + 'operation_proposal.html'
@@ -75,9 +75,25 @@ class OperationWidget(RenderTemplateWidget):
 
             for tmpOp in operation['proposed_ops']:
                 self.addOperation(tmpOp['op'][0], tmpOp['op'][1])
-        elif os.path.isfile('bos_mint' + os.sep + 'templates' + os.sep + file):
+        elif os.path.isfile(os.path.join(
+                'bos_mint',
+                'templates',
+                'widgets',
+                file
+        )):
             self.template = file
-        elif os.path.isfile('templates' + os.sep + file):
+        elif os.path.isfile(os.path.join(
+                'templates',
+                'widgets',
+                file
+        )):
+            self.template = file
+        elif os.path.isfile(os.path.join(
+                os.path.dirname(os.path.realpath(__file__)),
+                'templates',
+                'widgets',
+                file
+        )):
             self.template = file
         else:
             self.template = 'widgets/operation_unknown.html'

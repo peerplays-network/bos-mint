@@ -76,13 +76,25 @@ def unlock():
     return render_template_menuinfo('unlock.html', **locals())
 
 
-@app.route('/account/info')
-@wallet_required
+@app.route('/account/info', methods=['GET', 'POST'])
+@unlocked_wallet_required
 def account_info():
-    account = Node().getSelectedAccount()
-
     form = forms.AccountForm()
-    form.fill(account)
+
+    if form.validate_on_submit():
+        if Config.get("advanced_features", default=False):
+            ViewConfiguration.set('synchronous_operations', 'enabled', form.synchronous_operations.data)
+            Node().get_node().blocking = ViewConfiguration.get('synchronous_operations', 'enabled', False)
+            message = "Synchronous operations is set to " + str(ViewConfiguration.get('synchronous_operations', 'enabled', False))
+            if ViewConfiguration.get('synchronous_operations', 'enabled', False):
+                message = message + " Calls are now blocking."
+            flash(message)
+        else:
+            flash("Updating account settings is currently disabled")
+    else:
+        account = Node().getSelectedAccount()
+        form.fill(account)
+        form.synchronous_operations.data = ViewConfiguration.get('synchronous_operations', 'enabled', False)
 
     return render_template_menuinfo("account.html", **locals())
 
@@ -90,7 +102,9 @@ def account_info():
 @app.route('/bookiesports/sync', methods=['GET', 'POST'])
 @unlocked_wallet_required
 def bookiesports_sync():
-    raise Exception("Sync currently disabled")
+    if not Config.get("advanced_features", default=False):
+        raise Exception("Sync currently disabled")
+
     form = SynchronizationForm()
 
     if form.validate_on_submit():
@@ -433,16 +447,21 @@ def pending_operations_discard():
 @unlocked_wallet_required
 def pending_operations_broadcast():
     if ViewConfiguration.get('automatic_approval', 'enabled', False):
-#         Node().get_node().blocking = True
-        flash("Automatic approval currently disabled")
+        if Config.get("advanced_features", default=False):
+            Node().get_node().blocking = True
+        else:
+            flash("Automatic approval currently not supported", category="warning")
 
     try:
         answer = Node().broadcastPendingTransaction()
 
         if ViewConfiguration.get('automatic_approval', 'enabled', False):
-            proposalId = answer['trx']['operation_results'][0][1]
-            message = 'All pending operations have been broadcasted and the resulting proposal has been approved.'
-            Node().acceptProposal(proposalId)
+            try:
+                proposalId = answer['trx']['operation_results'][0][1]
+                message = 'All pending operations have been broadcasted and the resulting proposal has been approved.'
+                Node().acceptProposal(proposalId)
+            except Exception as e:
+                message = 'All pending operations have been broadcasted, but the resulting proposal could not be approved automatically (' + e.__class__.__name__ + ':' + str(e) + ')'
         else:
             message = 'All pending operations have been broadcasted.'
         if Node().get_node().nobroadcast:
@@ -452,7 +471,7 @@ def pending_operations_broadcast():
     except Exception as e:
         raise e
     finally:
-        Node().get_node().blocking = False
+        Node().get_node().blocking = ViewConfiguration.get('synchronous_operations', 'enabled', False)
 
 
 @app.route("/pending", methods=['get'])
@@ -559,9 +578,12 @@ def genericNewForm(formClass, parentId=None):
         flash("A creation proposal for a new " +
               utils.getTitle(typeName) + " was created and will be" +
               " displayed with a relative id in the overview.")
-        return redirect(url_for('overview',
-                        typeName=operation['typeName'],
-                        identifier=operation['id']))
+        if operation is None:
+            return redirect(url_for('overview'))
+        else:
+            return redirect(url_for('overview',
+                                    typeName=operation['typeName'],
+                                    identifier=operation['id']))
 
     return render_template_menuinfo("new.html", **locals())
 
@@ -641,7 +663,15 @@ def genericUpdate(formClass, selectId, removeSubmits=False):
         selectedObject = selectFunction(selectId)
 
     # help file present?
-    if os.path.isfile("app/static/img/help/" + typeName + ".png"):
+    if os.path.isfile("bos_mint/static/img/help/" + typeName + ".png"):
+        help_file = "../../static/img/help/" + typeName + ".png"
+    elif os.path.isfile(os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            'static',
+            'img',
+            'help',
+            typeName + ".png"
+    )):
         help_file = "../../static/img/help/" + typeName + ".png"
 
     form.init(selectedObject)

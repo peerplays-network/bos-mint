@@ -647,29 +647,32 @@ class BettingMarketGroupResolveForm(FlaskForm):
 
 
 class AmountForm(FlaskForm):
-    symbol = TextField(
+    symbol = StringField(
         label='Asset',
         validators=[DataRequired()],
-        render_kw={'disabled': True})
+        render_kw={'readonly': True})
 
 
 class AccountForm(FlaskForm):
-    id = TextField(label='Id',
-                   validators=[DataRequired()],
-                   render_kw={'disabled': True})
-    name = TextField(label='Name',
+    id = StringField(label='Id',
                      validators=[DataRequired()],
-                     render_kw={'disabled': True})
+                     render_kw={'readonly': True})
+    name = StringField(label='Name',
+                       validators=[DataRequired()],
+                       render_kw={'readonly': True})
     balances = FieldList(FormField(AmountForm, label=''),
                          label='Balances',
-                         min_entries=0)
+                         min_entries=1)
+    synchronous_operations = BooleanField(label="Synchronous operations")
+
+    submit = SubmitField("Submit")
 
     def fill(self, account):
         self.id.data = account['id']
         self.name.data = account['name']
 
         # self.membershipExpirationDate.data = account['membership_expiration_date']
-
+        self.balances.pop_entry()
         for balance in account.balances:
             tmpForm = AmountForm()
             tmpForm.symbol = str(balance.amount) + ' ' + balance.symbol
