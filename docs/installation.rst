@@ -20,33 +20,58 @@ a Ubuntu 16.04. machine, please install
 
 ::
 
-    apt-get install mysql-server
     apt-get install libmysqlclient-dev
 
-Install bos-mint
+Install bos-mint (as user)
 ##########################
 
-For production use install bos-mint via pip3. Suggested is a seperate user
+You can either install bos-mint via pypi / pip3 (production installation) or via git clone (debug installation). For production use install bos-auto via pip3 is recommended, but the git master branch is always the latest release as well, making both installations equivalent. Suggested is a seperate user
 
 ::
 
     cd ~
     mkdir bos-mint
     cd bos-mint
+    # create virtual environment
     virtualenv -p python3 env
+    # activate environment
     source env/bin/activate
+    # install bos-mint into virtual environment
     pip3 install bos-mint
     
-For development use, checkout from github and install dependencies manually
+For debug use, checkout from github (master branch) and install dependencies manually 
 
 ::
 
     cd ~	
+    # checkout from github
     git checkout https://github.com/pbsa/bos-mint
     cd bos-mint
+    # create virtual environment
     virtualenv -p python3 env
+    # activate environment
     source env/bin/activate
+    # install dependencies
     pip3 install -r requirements.txt
+
+BOS MINT is supposed to run in the virtual environment. Either activate it beforehand like shown above or 
+run it directly in the env/bin folder.
+
+Upgrading bos-mint  (as user)
+######################################
+
+For production installation, upgrade to the latest version - including all dependencies - via
+
+::
+
+    pip3 install --upgrade --upgrade-strategy eager bos-mint
+
+For debug installation, pull latest master branch and upgrade dependencies manually
+
+::
+
+    git pull
+    pip3 install -r requirements.txt --upgrade --upgrade-strategy eager
 
 Modify configuration
 ##########################
@@ -54,7 +79,7 @@ Modify configuration
 We now need to configure bos-auto.
 
 ::
-   
+
    # basic mint configuration file
    wget https://raw.githubusercontent.com/PBSA/bos-mint/master/config-example.yaml
    mv config-example.yaml config-bos-mint.yaml
@@ -71,7 +96,8 @@ Possible override values are described below:
    :literal:
 
 Running bos-mint
-#########
+####################
+
 To run MINT in debug mode use
 
 .. code-block:: sh
