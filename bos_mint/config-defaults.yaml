@@ -35,13 +35,13 @@ allowed_transitions:
             - frozen
             - canceled
         finished:
-            - settled
             - canceled
         frozen:
             - upcoming
             - in_progress
             - frozen
             - canceled
+            - finished
     BettingMarketGroupStatus:
         create:
             - upcoming
