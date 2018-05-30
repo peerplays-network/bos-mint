@@ -107,7 +107,7 @@ Markings according to the status:
 						DT#3
 					</a>
 					{% if event['in_progress'] and event['in_progress']['status'] and not event['in_progress']['status']['name'] == 'unknown' %}
-						<br/>{{ event['create']['status']['name'] }}
+						<br/>{{ event['in_progress']['status']['name'] }}
 					{% endif %}
 				</td>
 				<td>
@@ -116,7 +116,7 @@ Markings according to the status:
 						DT#4
 					</a>
 					{% if event['finish'] and event['create']['finish'] and not event['finish']['status']['name'] == 'unknown' %}
-						<br/>{{ event['create']['status']['name'] }}
+						<br/>{{ event['finish']['status']['name'] }}
 					{% endif %}
 				</td>
 				<td>
@@ -125,7 +125,7 @@ Markings according to the status:
 						DT#5
 					</a>
 					{% if event['result'] and event['result']['status'] and not event['result']['status']['name'] == 'unknown' %}
-						<br/>{{ event['create']['status']['name'] }}
+						<br/>{{ event['result']['status']['name'] }}
 					{% endif %}
 				</td>
 			</thead>
