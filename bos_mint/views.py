@@ -39,6 +39,7 @@ from bos_incidents import factory
 from bos_incidents.exceptions import EventNotFoundException
 
 from bookiesports import BookieSports
+from strict_rfc3339 import InvalidRFC3339Error
 
 
 ###############################################################################
@@ -214,7 +215,10 @@ def show_incidents(from_date=None, to_date=None, matching=None, use="mongodb"):
     events = []
     # resort for provider view
     for event in unresolved_events:
-        event_scheduled = utils.string_to_date(event["id_string"][0:20])
+        try:
+            event_scheduled = utils.string_to_date(event["id_string"][0:20])
+        except InvalidRFC3339Error:
+            event_scheduled = utils.string_to_date(event["id_string"][0:23])
         if event_scheduled <= to_date and event_scheduled >= from_date and\
                 (matching is None or matching.lower() in event["id_string"].lower()):
             store.resolve_event(event)
