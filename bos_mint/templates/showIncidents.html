@@ -97,24 +97,36 @@ Markings according to the status:
 						Create<br />
 						DT#1
 					</a>
+					{% if event['create'] and event['create']['status'] and not event['create']['status']['name'] == 'unknown' %}
+						<br/>{{ event['create']['status']['name'] }}
+					{% endif %}
 				</td>
 				<td>
 					<a href="{{ url_for('show_incidents_per_id', incident_id=event['id_string'], call='in_progress', use=use) }}">
 						In progress<br />
 						DT#3
 					</a>
+					{% if event['in_progress'] and event['in_progress']['status'] and not event['in_progress']['status']['name'] == 'unknown' %}
+						<br/>{{ event['create']['status']['name'] }}
+					{% endif %}
 				</td>
 				<td>
 					<a href="{{ url_for('show_incidents_per_id', incident_id=event['id_string'], call='finish', use=use) }}">
 						Finish<br />
 						DT#4
 					</a>
+					{% if event['finish'] and event['create']['finish'] and not event['finish']['status']['name'] == 'unknown' %}
+						<br/>{{ event['create']['status']['name'] }}
+					{% endif %}
 				</td>
 				<td>
 					<a href="{{ url_for('show_incidents_per_id', incident_id=event['id_string'], call='result', use=use) }}">
 						Result<br />
 						DT#5
 					</a>
+					{% if event['result'] and event['result']['status'] and not event['result']['status']['name'] == 'unknown' %}
+						<br/>{{ event['create']['status']['name'] }}
+					{% endif %}
 				</td>
 			</thead>
 			<tr>
