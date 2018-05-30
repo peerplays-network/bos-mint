@@ -115,7 +115,7 @@ Markings according to the status:
 						Finish<br />
 						DT#4
 					</a>
-					{% if event['finish'] and event['create']['finish'] and not event['finish']['status']['name'] == 'unknown' %}
+					{% if event['finish'] and event['finish']['status'] and not event['finish']['status']['name'] == 'unknown' %}
 						<br/>{{ event['finish']['status']['name'] }}
 					{% endif %}
 				</td>
