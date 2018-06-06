@@ -2,15 +2,16 @@
 import pkg_resources
 from flask import redirect, flash, url_for, request, render_template
 from functools import wraps
-from datetime import datetime, timedelta
+from datetime import datetime
 from peerplaysbase.operationids import getOperationNameForId
+import logging
+
+from bos_mint import Config
 
 from .node import Node, NodeException
 from . import wrapper, tostring, __VERSION__
-import strict_rfc3339
 from . import config
-import logging
-from bos_mint import Config
+from . import datestring
 
 # dictionary to configure types (Sport, EventGroup, etc.)
 #  title: human readable title
@@ -448,34 +449,8 @@ def getProposalOperations(tx):
 
 
 def date_to_string(date_object=None):
-    """ rfc3339 conform string represenation of a date
-        can also be given as str YYYY-mm-dd HH:MM:SS """
-    if type(date_object) == int:
-        if date_object < 365:
-            date_object = datetime.utcnow() + timedelta(days=date_object)
-        else:
-            date_object = datetime.utcfromtimestamp(date_object)
-    if type(date_object) == float:
-        date_object = datetime.utcfromtimestamp(date_object)
-    if type(date_object) == str:
-        try:
-            date_object = datetime.strptime(date_object + "+0000",
-                                                     '%Y-%m-%d %H:%M:%S%z')
-        except ValueError:
-            date_object = string_to_date(date_object)
-    if not date_object:
-        return strict_rfc3339.now_to_rfc3339_utcoffset()
-    else:
-        return strict_rfc3339.timestamp_to_rfc3339_utcoffset(
-            date_object.timestamp())
+    return datestring.date_to_string(date_object)
 
 
-def string_to_date(date_string):
-    """ assumes rfc3339 conform string and creates date object """
-    if type(date_string) == str:
-        if len(date_string) == 8:
-            date_string = date_string[0:4] + "-" + date_string[4:6] + "-" + date_string[6:8] + "T00:00:00Z"
-        return datetime.utcfromtimestamp(
-            strict_rfc3339.rfc3339_to_timestamp(date_string))
-    raise Exception("Only string covnersion supported")
-
+def string_to_date(date_string=None):
+    return datestring.string_to_date(date_string)

@@ -3,6 +3,7 @@ bookiesports
 bos-incidents
 bos-sync
 
+pytz
 Flask
 Flask-Assets
 Flask-Mail

@@ -40,6 +40,7 @@ from bos_incidents.exceptions import EventNotFoundException
 
 from bookiesports import BookieSports
 from strict_rfc3339 import InvalidRFC3339Error
+from bos_mint.istring import InternationalizedString
 
 
 ###############################################################################
@@ -203,11 +204,21 @@ def newwallet():
 @app.route('/incidents/<matching>')
 @app.route('/incidents/<matching>/<use>')
 def show_incidents(from_date=None, to_date=None, matching=None, use="mongodb"):
-    if from_date is None:
-        from_date = utils.string_to_date(utils.date_to_string(-14))
-    if to_date is None:
-        to_date = utils.string_to_date(utils.date_to_string(42))
+    if request.args.get("matching_today", None) is not None:
+        return redirect(url_for("show_incidents", matching=utils.date_to_string()[0:10]))
 
+    if from_date is None:
+        from_date = request.args.get("from_date", None)
+        if from_date is None:
+            from_date = utils.date_to_string(-3)
+        if type(from_date) == str:
+            from_date = utils.string_to_date(from_date)
+    if to_date is None:
+        to_date = request.args.get("to_date", None)
+        if from_date is None:
+            to_date = utils.date_to_string(21)
+        if type(from_date) == str:
+            to_date = utils.string_to_date(to_date)
     store = factory.get_incident_storage(use=use)
 
     unresolved_events = store.get_events(resolve=False)
@@ -254,7 +265,7 @@ def show_incidents(from_date=None, to_date=None, matching=None, use="mongodb"):
 
 @app.route('/incidents/details/<incident_id>/<call>')
 @app.route('/incidents/details/<incident_id>/<call>/<use>')
-def show_incidents_per_id(incident_id=None, call=None, use="dataproxy"):
+def show_incidents_per_id(incident_id=None, call=None, use="mongodb"):
     if use == "bos-auto":
         use = "mongodb"
 
@@ -275,6 +286,18 @@ def show_incidents_per_id(incident_id=None, call=None, use="dataproxy"):
     )
 
 
+@app.route("/event/incidents/<selectId>", methods=['get'])
+@wallet_required
+def event_incidents(selectId=None):
+    event = Node().getEvent(selectId)
+    incident_id = (event["start_time"] + "Z-" +
+                   InternationalizedString.listToDict(event.eventgroup.sport["name"])["identifier"] + "-" +
+                   InternationalizedString.listToDict(event.eventgroup["name"])["identifier"] + "-" +
+                   InternationalizedString.listToDict(event["name"])["en"].split(" ")[0])
+
+    return redirect(url_for("show_incidents", matching=incident_id))
+
+
 @app.route('/overview')
 @app.route('/overview/<typeName>')
 @app.route('/overview/<typeName>/<identifier>')
@@ -290,6 +313,12 @@ def overview(typeName=None, identifier=None):
             for entry in tmpList:
                 if entry['typeName'] == 'event':
                     entry['extraLink'] = [{
+                        'title': 'Show incidents',
+                        'link': 'event_incidents',
+                        'icon': 'unhide'
+                    }, {
+                        'title': 'divider',
+                    }, {
                         'title': 'Start/Resume',
                         'link': 'event_start',
                         'icon': 'lightning'

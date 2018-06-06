@@ -39,7 +39,7 @@
 {% block content %}
 <h2>Received incidents ({{ use }})</h2>
 
-Showing all received incidents for events that are scheduled between {{ from_date }} and {{ to_date }}
+Showing all received incidents for events that are scheduled between {{ from_date }} (change with from_date url argument) and {{ to_date }} (change with to_date url argument)
 {% if matching %}
  that match {{ matching }} in their identifier
 {% endif %}
