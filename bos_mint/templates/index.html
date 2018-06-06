@@ -31,11 +31,18 @@
       	<i title="Update" class="large edit icon"></i>
       	Update
       </a>
+      {% if entry['extraLink'] %}
+      	<div class="divider"></div>
+      {% endif %}
       {% for sublink in entry['extraLink'] %}
-  	  	<a class="item" href="{{ url_for(sublink['link'], selectId=entry['id'], next=request.path) }}">
-      		<i title="{{ sublink['title'] }}" class="large {{ sublink['icon'] }} icon"></i>
-      		{{ sublink['title'] }}
-      	</a>
+      	{% if sublink['title'] == "divider" %}
+      		<div class="divider"></div>
+      	{% else %}
+	  	  	<a class="item" href="{{ url_for(sublink['link'], selectId=entry['id'], next=request.path) }}">
+	      		<i title="{{ sublink['title'] }}" class="large {{ sublink['icon'] }} icon"></i>
+	      		{{ sublink['title'] }}
+	      	</a>
+      	{% endif %}
       {% endfor %}
     </div>
   </div>
@@ -45,9 +52,9 @@
   <a class="item">No {{ listChain['title'] }} found</a>
   {% endif %}
   {% if parentChain %}
-  <a class="item" href="{{ url_for(listChain['typeName'] + '_new', parentId=selected[parentChain['typeName']], next=request.path) }}">
+  	<a class="item" href="{{ url_for(listChain['typeName'] + '_new', parentId=selected[parentChain['typeName']], next=request.path) }}">
   {% else %}
-  <a class="item" href="{{ url_for(listChain['typeName'] + '_new', next=request.path) }}">
+  	<a class="item" href="{{ url_for(listChain['typeName'] + '_new', next=request.path) }}">
   {% endif %}
   <span><i class="small plus icon"></i> Create {{ listChain['title'] }}</span></a>
   {% if listChain['extraLink'] %}

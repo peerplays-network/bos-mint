@@ -22,14 +22,49 @@
 
 {%- endmacro -%}
 
+{%- macro call_indicator(call_dict) -%}
+	{% if call_dict and call_dict['incidents'] %}
+		{{ call_dict['incidents']|length }}
+		{%- if call_dict['status'] and call_dict['status']['name'] == 'unknown' %}
+		{% elif call_dict['status'] and call_dict['status']['name'] == 'done' %}*
+		{% elif call_dict['status'] and call_dict['status']['name'] == 'postponed' %}+
+		{% elif call_dict['status'] and call_dict['status']['name'] == 'insufficient incidents' %}
+		{% else %}?
+		{% endif %}
+	{% else %}
+		0
+    {% endif %}
+{%- endmacro -%}
+
 {% block content %}
 <h2>Received incidents ({{ use }})</h2>
 
-Showing all received incidents for events that are scheduled between {{ from_date }} and {{ to_date }}
+Showing all received incidents for events that are scheduled between {{ from_date }} (change with from_date url argument) and {{ to_date }} (change with to_date url argument)
 {% if matching %}
  that match {{ matching }} in their identifier
 {% endif %}
-<br />
+<br /><br />
+<p>
+All events are listed as with their id and incidents count
+<table class="ui very basic collapsing celled table">
+<tr>
+<td>Id</td>
+<td>"Scheduled Time-Sport-Event Group-Home Team-Away Team"</td>
+</tr>
+<tr>
+<td style="vertical-align: top;">Incident count</td>
+<td>"Create - In progress - Finish - Result"<br/><br />
+Markings according to the status:
+<ul>
+  <li>No special mark - Nothing done yet</li>
+  <li>* - Incident successfully triggered an action on the blockchain</li>
+  <li>+ - Action is deliberately postponed</li>
+  <li>? - An error occured, manual checking necessary</li>
+</ul></td>
+</tr>
+</table>
+
+</p>
 
 {% if events|length > 0 %}
 
@@ -44,29 +79,13 @@ Showing all received incidents for events that are scheduled between {{ from_dat
   		
   		<div class="title">
 <i class="dropdown icon"></i>{{ event['id_string'] }}:
-	{% if event['create'] and event['create']['incidents'] %}
-		{{ event['create']['incidents']|length }}
-	{% else %}
-		0
-    {% endif %}
+	{{ call_indicator(event['create']) }}
     -
-   	{% if event['in_progress'] and event['in_progress']['incidents'] %}
-		{{ event['in_progress']['incidents']|length }}
-	{% else %}
-		0
-    {% endif %}
+   	{{ call_indicator(event['in_progress']) }}
     -
-   	{% if event['finish'] and event['finish']['incidents'] %}
-		{{ event['finish']['incidents']|length }}
-	{% else %}
-		0
-    {% endif %}
+   	{{ call_indicator(event['finish']) }}
     -
-   	{% if event['result'] and event['result']['incidents'] %}
-		{{ event['result']['incidents']|length }}
-	{% else %}
-		0
-    {% endif %}
+   	{{ call_indicator(event['result']) }}
 </div>
 <div class="content">
 	<p class="transition visible" style="display: block !important;">
@@ -78,24 +97,36 @@ Showing all received incidents for events that are scheduled between {{ from_dat
 						Create<br />
 						DT#1
 					</a>
+					{% if event['create'] and event['create']['status'] and not event['create']['status']['name'] == 'unknown' %}
+						<br/>{{ event['create']['status']['name'] }}
+					{% endif %}
 				</td>
 				<td>
 					<a href="{{ url_for('show_incidents_per_id', incident_id=event['id_string'], call='in_progress', use=use) }}">
 						In progress<br />
 						DT#3
 					</a>
+					{% if event['in_progress'] and event['in_progress']['status'] and not event['in_progress']['status']['name'] == 'unknown' %}
+						<br/>{{ event['in_progress']['status']['name'] }}
+					{% endif %}
 				</td>
 				<td>
 					<a href="{{ url_for('show_incidents_per_id', incident_id=event['id_string'], call='finish', use=use) }}">
 						Finish<br />
 						DT#4
 					</a>
+					{% if event['finish'] and event['finish']['status'] and not event['finish']['status']['name'] == 'unknown' %}
+						<br/>{{ event['finish']['status']['name'] }}
+					{% endif %}
 				</td>
 				<td>
 					<a href="{{ url_for('show_incidents_per_id', incident_id=event['id_string'], call='result', use=use) }}">
 						Result<br />
 						DT#5
 					</a>
+					{% if event['result'] and event['result']['status'] and not event['result']['status']['name'] == 'unknown' %}
+						<br/>{{ event['result']['status']['name'] }}
+					{% endif %}
 				</td>
 			</thead>
 			<tr>
