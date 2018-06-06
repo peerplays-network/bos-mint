@@ -41,6 +41,7 @@ from bos_incidents.exceptions import EventNotFoundException
 from bookiesports import BookieSports
 from strict_rfc3339 import InvalidRFC3339Error
 from bos_mint.istring import InternationalizedString
+from datetime import timedelta
 
 
 ###############################################################################
@@ -206,6 +207,15 @@ def newwallet():
 def show_incidents(from_date=None, to_date=None, matching=None, use="mongodb"):
     if request.args.get("matching_today", None) is not None:
         return redirect(url_for("show_incidents", matching=utils.date_to_string()[0:10]))
+
+    try:
+        match_date = utils.string_to_date(matching[0:20])
+        if from_date is None:
+            from_date = match_date - timedelta(days=3)
+        if to_date is None:
+            to_date = match_date + timedelta(days=3)
+    except InvalidRFC3339Error:
+        pass
 
     if from_date is None:
         from_date = request.args.get("from_date", None)
