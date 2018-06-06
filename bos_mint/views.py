@@ -220,7 +220,7 @@ def show_incidents(from_date=None, to_date=None, matching=None, use="mongodb"):
     if from_date is None:
         from_date = request.args.get("from_date", None)
         if from_date is None:
-            from_date = utils.date_to_string(-3)
+            from_date = utils.date_to_string(-7)
         if type(from_date) == str:
             from_date = utils.string_to_date(from_date)
     if to_date is None:
