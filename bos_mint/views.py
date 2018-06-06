@@ -215,9 +215,9 @@ def show_incidents(from_date=None, to_date=None, matching=None, use="mongodb"):
             from_date = utils.string_to_date(from_date)
     if to_date is None:
         to_date = request.args.get("to_date", None)
-        if from_date is None:
+        if to_date is None:
             to_date = utils.date_to_string(21)
-        if type(from_date) == str:
+        if type(to_date) == str:
             to_date = utils.string_to_date(to_date)
     store = factory.get_incident_storage(use=use)
 

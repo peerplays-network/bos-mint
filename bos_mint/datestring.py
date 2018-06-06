@@ -37,4 +37,3 @@ def string_to_date(date_string):
             strict_rfc3339.rfc3339_to_timestamp(date_string))
         return pytz.utc.localize(date_time_object)
     raise Exception("Only string covnersion supported")
-
