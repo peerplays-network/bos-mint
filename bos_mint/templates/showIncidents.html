@@ -140,7 +140,7 @@ Markings according to the status:
 									{% for incident in incidents_dict["incidents"] %}
 									<li>
 										{{ incident['provider_info']['pushed'] }}: {{ incident['arguments'] }}
-										{% if incidents_dict["replay_links"][incident['unique_string']] %}
+										{% if incidents_dict["replay_links"] and incidents_dict["replay_links"][incident['unique_string']] %}
 											<a style="float: right" target="_blank" href="{{ incidents_dict['replay_links'][incident['unique_string']] }}">replay</a>
 										{% endif %}
 									</li>

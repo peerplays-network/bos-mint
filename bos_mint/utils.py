@@ -385,9 +385,13 @@ def getMenuInfo():
         "id": Node().get_node().rpc.chain_params["chain_id"]
     }
     
-    menuInfo['incidents'] = {
-        "dataproxy_link": Ping().get_status()
-    }
+    try:
+        menuInfo['incidents'] = {
+            "dataproxy_link": Ping().get_status()
+        }
+    except Exception:
+        pass
+        
 
     logging.getLogger(__name__).debug("getMenuInfo done")
 
