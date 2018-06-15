@@ -13,6 +13,8 @@ from . import wrapper, tostring, __VERSION__
 from . import config
 from . import datestring
 
+from .dataproxy_link.ping import Ping
+
 # dictionary to configure types (Sport, EventGroup, etc.)
 #  title: human readable title
 TYPENAMES = {
@@ -381,6 +383,10 @@ def getMenuInfo():
     menuInfo['chain'] = {
         "name": Config.get("connection", "use"),
         "id": Node().get_node().rpc.chain_params["chain_id"]
+    }
+    
+    menuInfo['incidents'] = {
+        "dataproxy_link": Ping().get_status()
     }
 
     logging.getLogger(__name__).debug("getMenuInfo done")

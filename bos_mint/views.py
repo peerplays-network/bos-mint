@@ -35,6 +35,8 @@ from .utils import (
     unlocked_wallet_required,
     wallet_required
 )
+from .dataproxy_link.ping import Ping
+
 import os
 from bos_incidents import factory
 from bos_incidents.exceptions import EventNotFoundException
@@ -262,19 +264,9 @@ def show_incidents(from_date=None, to_date=None, matching=None, use="mongodb"):
                     incident_provider_dict[provider]["incidents"].append(incident)
                     
                     try:
-                        proxy_control = Config.get("dataproxy_requests", provider)
-                        isalive_url = proxy_control["endpoint"] + "/isalive?token=" + proxy_control["token"]
-                        replay_url = proxy_control["endpoint"] + "/replay?token=" + proxy_control["token"]
-                        response = requests.get(replay_url)
-                        assert response.status_code == 200
-                        
-                        replay_url = replay_url + "&name_filter=" + incident["unique_string"] + "," + call
-                        replay_url = replay_url + "&restrict_witness_group=" + Config.get("connection", "use") 
-                        replay_url = replay_url + "&only_report=True"
-                        
-                        incident_dict["replay_links"][incident["unique_string"]] = replay_url
-                    except KeyError:
-                        pass
+                        replay_url = Ping().get_replay_url(provider, incident, call)
+                        if replay_url is not None:
+                            incident_dict["replay_links"][incident["unique_string"]] = replay_url
                     except Exception as e:
                         pass
                     
