@@ -27,7 +27,8 @@ setup(
     url='http://pbsa.info',
     keywords=['peerplays', 'bos'],
     packages=[
-        "bos_mint"
+        "bos_mint",
+        "bos_mint.dataproxy_link"
     ],
     classifiers=[
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
