@@ -38,7 +38,19 @@
     	</h3>
     </div>
 	<a title="Lists all votable proposals" class="item" href="{{ url_for('votable_proposals') }}"><i class="thumbs up icon"></i><i class="thumbs down icon"></i> {{ menuInfo["numberOfVotableProposals"] }}</a>
-	<a title="Show incoming dataproxy incidents" class="item" href="{{ url_for('show_incidents') + '?matching_today' }}"><i class="angle double right icon"></i> Incidents</a>
+	<a title="Show incoming dataproxy incidents" class="item" href="{{ url_for('show_incidents') + '?matching_today' }}"><i class="angle double right icon"></i>
+		Incidents
+		{% if menuInfo['incidents'] %}
+			<br />
+			{% for provider_hash, provider in menuInfo['incidents']['dataproxy_link'].items() %}
+				{% if provider["status"] == 200 %}
+					<i class="tiny green circle icon"></i>
+				{% else %}
+					<i class="tiny red circle icon"></i>			
+				{% endif %}
+			{% endfor %}
+		{% endif %}
+	</a>
 	<!-- Header Menu -->
 	<div class="right menu">
 	 	<div class="ui dropdown right item"><!-- <table><tr><td>Account</td></tr><tr><td> -->{{menuInfo['account']['toString']}}<!-- </td></tr></table> --> 

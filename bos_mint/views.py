@@ -10,6 +10,7 @@ from flask import (
 )
 from wtforms import FormField, SubmitField
 from peerplays.exceptions import WalletExists
+import requests
 
 from . import app, forms, utils, widgets, Config
 from .forms import (
@@ -34,6 +35,8 @@ from .utils import (
     unlocked_wallet_required,
     wallet_required
 )
+from .dataproxy_link.ping import Ping
+
 import os
 from bos_incidents import factory
 from bos_incidents.exceptions import EventNotFoundException
@@ -252,11 +255,21 @@ def show_incidents(from_date=None, to_date=None, matching=None, use="mongodb"):
                 for incident in event[call]["incidents"]:
                     provider = incident["provider_info"]["name"]
                     try:
-                        incident_list = incident_provider_dict[provider]
+                        incident_dict = incident_provider_dict[provider]
                     except KeyError:
-                        incident_provider_dict[provider] = []
-                        incident_list = incident_provider_dict[provider]
-                    incident_provider_dict[provider].append(incident)
+                        incident_provider_dict[provider] = {"incidents": [],
+                                                            "replay_links": {}}
+                        incident_dict = incident_provider_dict[provider]
+
+                    incident_provider_dict[provider]["incidents"].append(incident)
+                    
+                    try:
+                        replay_url = Ping().get_replay_url(provider, incident, call)
+                        if replay_url is not None:
+                            incident_dict["replay_links"][incident["unique_string"]] = replay_url
+                    except Exception as e:
+                        pass
+                    
                 event[call]["incidents_per_provider"] = incident_provider_dict
             except KeyError:
                 pass
@@ -620,7 +633,7 @@ def genericNewForm(formClass, parentId=None):
         # Create new sport
         operation = form.create()
         flash("A creation proposal for a new " +
-              utils.getTitle(typeName) + " was created and will be" +
+              utils.getTitle(typeName) + " has been added to your shopping cart and will be" +
               " displayed with a relative id in the overview.")
         if operation is None:
             return redirect(url_for('overview'))
@@ -757,7 +770,7 @@ def genericUpdate(formClass, selectId, removeSubmits=False):
         # all data was entered correctly, validate and update sport
         proposal = form.update(selectedObject['id'])
         flash("An update proposal  for " + utils.getTitle(typeName) +
-              " (id=" + selectId + ") was created.")
+              " (id=" + selectId + ") has been added to your shopping cart.")
         return redirect(utils.processNextArgument(
             request.args.get('next'), 'index'))
 
@@ -939,7 +952,7 @@ def bettingmarketgroup_resolve(selectId=None):
             resultList.append([market.identifier.data, market.resolution.data])
         Node().resolveBettingMarketGroup(bettingMarketGroupId, resultList)
         flash("An update proposal to resolve Betting market group " + str(bettingMarketGroupId) +
-              " was created.")
+              " has been added to your shopping cart.")
         return redirect(utils.processNextArgument(
                         request.args.get('next'), 'index'))
 

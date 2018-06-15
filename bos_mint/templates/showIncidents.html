@@ -133,11 +133,17 @@ Markings according to the status:
 				{% for call in ['create', 'in_progress', 'finish', 'result'] %}
 					<td>
 						{% if event[call] and event[call]['incidents'] %}
-							{% for provider,incidents_list in event[call]['incidents_per_provider'].items() %}
-								{{ provider }} <br />
+							{% for provider,incidents_dict in event[call]['incidents_per_provider'].items() %}
+								{{ provider }}
+								<br />
 								<ul class="ui list">
-									{% for incident in incidents_list %}
-									<li>{{ incident['provider_info']['pushed'] }}: {{ incident['arguments'] }}</li>
+									{% for incident in incidents_dict["incidents"] %}
+									<li>
+										{{ incident['provider_info']['pushed'] }}: {{ incident['arguments'] }}
+										{% if incidents_dict["replay_links"] and incidents_dict["replay_links"][incident['unique_string']] %}
+											<a style="float: right" target="_blank" href="{{ incidents_dict['replay_links'][incident['unique_string']] }}">replay</a>
+										{% endif %}
+									</li>
 									{% endfor %}
 								</ul>	
 							{% endfor %}
