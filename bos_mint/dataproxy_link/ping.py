@@ -49,10 +49,10 @@ class Ping(object):
 
     def get_replay_url(self, provider_hash, incident, call):
         try:
-            if Ping.CACHE[provider_hash]["status"] == 200:
+            if Ping.CACHE[provider_hash]["status"] == "ok":
                 replay_url = Ping.CACHE[provider_hash]["replay"]
                 replay_url = replay_url + "&name_filter=" + incident["unique_string"] + "," + call
-                replay_url = replay_url + "&restrict_witness_group=" + Config.get("connection", "use") 
+                replay_url = replay_url + "&restrict_witness_group=" + Config.get("connection", "use")
                 replay_url = replay_url + "&only_report=True"
                 return replay_url
             else:
