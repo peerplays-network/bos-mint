@@ -37,8 +37,37 @@
 {%- endmacro -%}
 
 {% block content %}
-<h2>Received incidents ({{ use }})</h2>
+{% if menuInfo['incidents'] %}
+	<h2>Linked dataproxies</h2>
+	<ol>
+	{% for provider_hash, provider in menuInfo['incidents']['dataproxy_link'].items() %}
+		<li>
+		<a href="{{provider['isalive']}}">{{provider["name"]}}</a>
+		<br />
+		{% if not provider["status"] == "ok" %}
+			{% for group, subscriber_list in provider["details"]["subscribers"].items() %}
+				{% for subscriber in subscriber_list %}	
+				 	{% if subscriber["status"] == "nok" %}
+						<i class="small red circle icon"></i> Anonymous subscriber <br />
+					{% elif subscriber["status"] == "unknown" %}
+						<i class="small yellow circle icon"></i> Anonymous subscriber, nothing sent yet <br />
+					{% endif %}
+				{% endfor %}
+			{% endfor %}		
+			{% for incoming in provider["details"]["providers"] %}
+				{% if incoming["status"] == "ok" %}
+					<i class="small green circle icon"></i>
+				{% else %}
+					<i class="small red circle icon"></i>			
+				{% endif %} {{incoming["name"]}}: {{incoming["last_incident"]}}				<br />
+			{% endfor %}
+		{% endif %}
+		</li>
+	{% endfor %}
+	</ol>
+{% endif %}
 
+<h2>Received incidents ({{ use }})</h2>
 Showing all received incidents for events that are scheduled between {{ from_date }} (change with from_date url argument) and {{ to_date }} (change with to_date url argument)
 {% if matching %}
  that match {{ matching }} in their identifier

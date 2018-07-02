@@ -2,6 +2,7 @@ from .. import Config
 from datetime import datetime, timedelta
 import requests
 
+
 class Ping(object):
 
     CACHE = {}
@@ -21,11 +22,22 @@ class Ping(object):
             try:
                 isalive_url = proxy["endpoint"] + "/isalive?token=" + proxy["token"]
                 replay_url = proxy["endpoint"] + "/replay?token=" + proxy["token"]
-                response = requests.get(isalive_url)
-                response = requests.get(replay_url)
-
-                Ping.CACHE[provider_hash] = {"status": response.status_code,
-                                             "replay": replay_url}
+                try:
+                    response = requests.get(isalive_url)
+                    if not response.status_code == 200:
+                        raise Exception("nok")
+                    response = requests.get(isalive_url)
+                    if not response.status_code == 200:
+                        raise Exception("nok")
+                    json_body = response.json()
+                    Ping.CACHE[provider_hash] = {"status": json_body["status"],
+                                                 "name": proxy.get("name", proxy["endpoint"]),
+                                                 "isalive": proxy["endpoint"] + "/isalive",
+                                                 "replay": replay_url,
+                                                 "details": json_body}
+                except Exception:
+                    Ping.CACHE[provider_hash] = {"status": "nok",
+                                                 "replay": replay_url}
             except KeyError:
                 pass
             except Exception as e:
