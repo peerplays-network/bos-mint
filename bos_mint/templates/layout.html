@@ -43,7 +43,7 @@
 		{% if menuInfo['incidents'] %}
 			<br />
 			{% for provider_hash, provider in menuInfo['incidents']['dataproxy_link'].items() %}
-				{% if provider["status"] == 200 %}
+				{% if provider["status"] == "ok" %}
 					<i class="tiny green circle icon"></i>
 				{% else %}
 					<i class="tiny red circle icon"></i>			
