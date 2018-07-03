@@ -2,7 +2,7 @@
 import pkg_resources
 from flask import redirect, flash, url_for, request, render_template
 from functools import wraps
-from datetime import datetime
+from datetime import datetime, timedelta
 from peerplaysbase.operationids import getOperationNameForId
 import logging
 
@@ -382,8 +382,13 @@ def getMenuInfo():
 
     menuInfo['chain'] = {
         "name": Config.get("connection", "use"),
-        "id": Node().get_node().rpc.chain_params["chain_id"]
+        "id": Node().get_node().rpc.chain_params["chain_id"],
+        "block": Node().get_node().rpc.get_object("2.1.0")["head_block_number"],
+        "time": Node().get_node().rpc.get_object("2.1.0")["time"] + "Z"
     }
+
+    if (datestring.string_to_date() - timedelta(seconds=30) > datestring.string_to_date(menuInfo["chain"]["time"])):
+        menuInfo["chain"]["out_of_sync"] = True
 
     try:
         menuInfo['incidents'] = {

@@ -262,14 +262,14 @@ def show_incidents(from_date=None, to_date=None, matching=None, use="mongodb"):
                         incident_dict = incident_provider_dict[provider]
 
                     incident_provider_dict[provider]["incidents"].append(incident)
-                    
+
                     try:
                         replay_url = Ping().get_replay_url(provider, incident, call)
                         if replay_url is not None:
                             incident_dict["replay_links"][incident["unique_string"]] = replay_url
                     except Exception as e:
                         pass
-                    
+
                 event[call]["incidents_per_provider"] = incident_provider_dict
             except KeyError:
                 pass

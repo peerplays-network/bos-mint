@@ -26,10 +26,10 @@ def date_to_string(date_object=None):
             date_object.timestamp())
 
 
-def string_to_date(date_string):
+def string_to_date(date_string=None):
     """ assumes rfc3339 conform string and creates date object """
     if date_string is None:
-        return datetime.utcnow()
+        return pytz.utc.localize(datetime.utcnow())
     if type(date_string) == str:
         if len(date_string) == 8:
             date_string = date_string[0:4] + "-" + date_string[4:6] + "-" + date_string[6:8] + "T00:00:00Z"
