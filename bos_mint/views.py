@@ -316,8 +316,7 @@ def event_incidents(selectId=None):
     event = Node().getEvent(selectId)
     incident_id = (event["start_time"] + "Z-" +
                    InternationalizedString.listToDict(event.eventgroup.sport["name"])["identifier"] + "-" +
-                   InternationalizedString.listToDict(event.eventgroup["name"])["identifier"] + "-" +
-                   InternationalizedString.listToDict(event["name"])["en"].split(" ")[0])
+                   InternationalizedString.listToDict(event.eventgroup["name"])["identifier"])
 
     return redirect(url_for("show_incidents", matching=incident_id))
 
