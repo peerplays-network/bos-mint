@@ -249,7 +249,7 @@ def show_incidents(from_date=None, to_date=None, matching=None, use="mongodb"):
             store.resolve_event(event)
         else:
             continue
-        for call in ["create", "in_progress", "finish", "result"]:
+        for call in ["create", "in_progress", "finish", "result", "dynamic_bmgs", "canceled"]:
             try:
                 incident_provider_dict = {}
                 for incident in event[call]["incidents"]:
