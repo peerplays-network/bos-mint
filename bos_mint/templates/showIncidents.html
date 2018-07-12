@@ -36,6 +36,41 @@
     {% endif %}
 {%- endmacro -%}
 
+{%- macro call_table_head(event, call, use, number) -%}
+	{% if event[call] and event[call]['incidents'] %}
+	<td>
+		<a href="{{ url_for('show_incidents_per_id', incident_id=event['id_string'], call=call, use=use) }}">
+			Create<br />
+			DT#{{number}}
+		</a>
+		{% if event[call] and event[call]['status'] and not event[call]['status']['name'] == 'unknown' %}
+			<br/>{{ event[call]['status']['name'] }}
+		{% endif %}
+	</td>
+    {% endif %}
+{%- endmacro -%}
+
+{%- macro call_table_body(event, call) -%}
+	{% if event[call] and event[call]['incidents'] %}
+		<td>
+			{% for provider,incidents_dict in event[call]['incidents_per_provider'].items() %}
+				{{ provider }}
+				<br />
+				<ul class="ui list">
+					{% for incident in incidents_dict["incidents"] %}
+					<li>
+						{{ incident['provider_info']['pushed'] }}: {{ incident['arguments'] }}
+						{% if incidents_dict["replay_links"] and incidents_dict["replay_links"][incident['unique_string']] %}
+							<a style="float: right" target="_blank" href="{{ incidents_dict['replay_links'][incident['unique_string']] }}">replay</a>
+						{% endif %}
+					</li>
+					{% endfor %}
+				</ul>	
+			{% endfor %}
+		</td>	
+	{% endif %}
+{%- endmacro -%}
+
 {% block content %}
 {% if menuInfo['incidents'] %}
 	<h2>Linked dataproxies</h2>
@@ -109,76 +144,44 @@ Markings according to the status:
   		<div class="title">
 <i class="dropdown icon"></i>{{ event['id_string'] }}:
 	{{ call_indicator(event['create']) }}
-    -
+   	-
+   	{{ call_indicator(event['dynamic_bmgs']) }}
+   	-
    	{{ call_indicator(event['in_progress']) }}
     -
    	{{ call_indicator(event['finish']) }}
     -
    	{{ call_indicator(event['result']) }}
+   	-
+   	{{ call_indicator(event['canceled']) }}
 </div>
 <div class="content">
 	<p class="transition visible" style="display: block !important;">
 	<table class="ui very basic collapsing celled table">
 		<tbody>
 			<thead>
-				<td>
-					<a href="{{ url_for('show_incidents_per_id', incident_id=event['id_string'], call='create', use=use) }}">
-						Create<br />
-						DT#1
-					</a>
-					{% if event['create'] and event['create']['status'] and not event['create']['status']['name'] == 'unknown' %}
-						<br/>{{ event['create']['status']['name'] }}
-					{% endif %}
-				</td>
-				<td>
-					<a href="{{ url_for('show_incidents_per_id', incident_id=event['id_string'], call='in_progress', use=use) }}">
-						In progress<br />
-						DT#3
-					</a>
-					{% if event['in_progress'] and event['in_progress']['status'] and not event['in_progress']['status']['name'] == 'unknown' %}
-						<br/>{{ event['in_progress']['status']['name'] }}
-					{% endif %}
-				</td>
-				<td>
-					<a href="{{ url_for('show_incidents_per_id', incident_id=event['id_string'], call='finish', use=use) }}">
-						Finish<br />
-						DT#4
-					</a>
-					{% if event['finish'] and event['finish']['status'] and not event['finish']['status']['name'] == 'unknown' %}
-						<br/>{{ event['finish']['status']['name'] }}
-					{% endif %}
-				</td>
-				<td>
-					<a href="{{ url_for('show_incidents_per_id', incident_id=event['id_string'], call='result', use=use) }}">
-						Result<br />
-						DT#5
-					</a>
-					{% if event['result'] and event['result']['status'] and not event['result']['status']['name'] == 'unknown' %}
-						<br/>{{ event['result']['status']['name'] }}
-					{% endif %}
-				</td>
+				{{ call_table_head(event, 'create', use, 1) }}
+				{{ call_table_head(event, 'dynamic_bmgs', use, 2) }}
 			</thead>
 			<tr>
-				{% for call in ['create', 'in_progress', 'finish', 'result'] %}
-					<td>
-						{% if event[call] and event[call]['incidents'] %}
-							{% for provider,incidents_dict in event[call]['incidents_per_provider'].items() %}
-								{{ provider }}
-								<br />
-								<ul class="ui list">
-									{% for incident in incidents_dict["incidents"] %}
-									<li>
-										{{ incident['provider_info']['pushed'] }}: {{ incident['arguments'] }}
-										{% if incidents_dict["replay_links"] and incidents_dict["replay_links"][incident['unique_string']] %}
-											<a style="float: right" target="_blank" href="{{ incidents_dict['replay_links'][incident['unique_string']] }}">replay</a>
-										{% endif %}
-									</li>
-									{% endfor %}
-								</ul>	
-							{% endfor %}
-						{% endif %}
-					</td>
-				{% endfor %}
+				{{ call_table_body(event, 'create') }}
+				{{ call_table_body(event, 'dynamic_bmgs') }}
+			</tr>
+			<thead>
+				{{ call_table_head(event, 'in_progress', use, 3) }}
+				{{ call_table_head(event, 'finish', use, 4) }}
+			</thead>
+			<tr>
+				{{ call_table_body(event, 'in_progress') }}
+				{{ call_table_body(event, 'finish') }}
+			</tr>
+			<thead>
+				{{ call_table_head(event, 'result', use, 5) }}
+				{{ call_table_head(event, 'canceled', use, 6) }}
+			</thead>
+			<tr>
+				{{ call_table_body(event, 'result') }}
+				{{ call_table_body(event, 'canceled') }}
 			</tr>
 		</tbody>
 	</table>

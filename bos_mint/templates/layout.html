@@ -77,7 +77,12 @@
 		 {% else %}
 		 	<a title="Local wallet is unlocked. Click to lock" class="item" href="{{ url_for('lock') }}"><i class="unlock icon"></i></a>
 		 {% endif %}
-		 <div title="Connected chain" class="item">{{menuInfo["chain"]["name"]}}</div>			 
+		 <div title="Connected chain" class="item">
+		 	{{menuInfo["chain"]["name"]}}
+		 	{% if menuInfo["chain"]["out_of_sync"] %}
+		 		<br /><i class="tiny red circle icon"></i>
+	 		{% endif %}
+	 	 </div>			 
   	</div>
    </div>
    <span style="font-size: 10px; float: right; line-height: 14px; margin-right: 10px">
@@ -118,6 +123,11 @@
   <div class="ui container">
    <span style="font-size: 10px; float: right">
     {{menuInfo["chain"]["name"]}}:{{menuInfo["chain"]["id"]}}
+    block:{{menuInfo["chain"]["block"]}}
+ 	time:{{menuInfo["chain"]["time"]}}
+    {% if menuInfo["chain"]["out_of_sync"] %}
+	   (out of sync)<i class="small red circle icon"></i>
+	{% endif %}
   </span>
  </div>
  </div>

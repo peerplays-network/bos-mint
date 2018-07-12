@@ -14,8 +14,12 @@ def toString(toBeFormatted, object=None):
             name = findEnglishOrFirst(toBeFormatted.get('name'))
         else:
             name = toBeFormatted.get('name')
-
-        displayName = str(toBeFormatted["start_time"]) + "Z" + ":\n" + name
+        if name is None:
+            displayName = "Unknown (deleted?)"
+        else:
+            displayName = name
+        if toBeFormatted.get("start_time", None) is not None:
+            displayName = str(toBeFormatted["start_time"]) + "Z" + ":\n" + displayName
         if toBeFormatted.get("id", None) is not None:
             displayName = displayName + ' (' + toBeFormatted['id'] + ')'
     elif toBeFormatted.get('name') and toBeFormatted.get('id'):

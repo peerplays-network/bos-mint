@@ -249,7 +249,7 @@ def show_incidents(from_date=None, to_date=None, matching=None, use="mongodb"):
             store.resolve_event(event)
         else:
             continue
-        for call in ["create", "in_progress", "finish", "result"]:
+        for call in ["create", "in_progress", "finish", "result", "dynamic_bmgs", "canceled"]:
             try:
                 incident_provider_dict = {}
                 for incident in event[call]["incidents"]:
@@ -262,14 +262,14 @@ def show_incidents(from_date=None, to_date=None, matching=None, use="mongodb"):
                         incident_dict = incident_provider_dict[provider]
 
                     incident_provider_dict[provider]["incidents"].append(incident)
-                    
+
                     try:
                         replay_url = Ping().get_replay_url(provider, incident, call)
                         if replay_url is not None:
                             incident_dict["replay_links"][incident["unique_string"]] = replay_url
                     except Exception as e:
                         pass
-                    
+
                 event[call]["incidents_per_provider"] = incident_provider_dict
             except KeyError:
                 pass
@@ -316,8 +316,7 @@ def event_incidents(selectId=None):
     event = Node().getEvent(selectId)
     incident_id = (event["start_time"] + "Z-" +
                    InternationalizedString.listToDict(event.eventgroup.sport["name"])["identifier"] + "-" +
-                   InternationalizedString.listToDict(event.eventgroup["name"])["identifier"] + "-" +
-                   InternationalizedString.listToDict(event["name"])["en"].split(" ")[0])
+                   InternationalizedString.listToDict(event.eventgroup["name"])["identifier"])
 
     return redirect(url_for("show_incidents", matching=incident_id))
 
