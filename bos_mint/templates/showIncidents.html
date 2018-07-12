@@ -50,6 +50,27 @@
     {% endif %}
 {%- endmacro -%}
 
+{%- macro call_table_body(event, call) -%}
+	{% if event[call] and event[call]['incidents'] %}
+		<td>
+			{% for provider,incidents_dict in event[call]['incidents_per_provider'].items() %}
+				{{ provider }}
+				<br />
+				<ul class="ui list">
+					{% for incident in incidents_dict["incidents"] %}
+					<li>
+						{{ incident['provider_info']['pushed'] }}: {{ incident['arguments'] }}
+						{% if incidents_dict["replay_links"] and incidents_dict["replay_links"][incident['unique_string']] %}
+							<a style="float: right" target="_blank" href="{{ incidents_dict['replay_links'][incident['unique_string']] }}">replay</a>
+						{% endif %}
+					</li>
+					{% endfor %}
+				</ul>	
+			{% endfor %}
+		</td>	
+	{% endif %}
+{%- endmacro -%}
+
 {% block content %}
 {% if menuInfo['incidents'] %}
 	<h2>Linked dataproxies</h2>
@@ -141,32 +162,26 @@ Markings according to the status:
 			<thead>
 				{{ call_table_head(event, 'create', use, 1) }}
 				{{ call_table_head(event, 'dynamic_bmgs', use, 2) }}
+			</thead>
+			<tr>
+				{{ call_table_body(event, 'create') }}
+				{{ call_table_body(event, 'dynamic_bmgs') }}
+			</tr>
+			<thead>
 				{{ call_table_head(event, 'in_progress', use, 3) }}
 				{{ call_table_head(event, 'finish', use, 4) }}
+			</thead>
+			<tr>
+				{{ call_table_body(event, 'in_progress') }}
+				{{ call_table_body(event, 'finish') }}
+			</tr>
+			<thead>
 				{{ call_table_head(event, 'result', use, 5) }}
 				{{ call_table_head(event, 'canceled', use, 6) }}
 			</thead>
 			<tr>
-				{% for call in ['create', 'dynamic_bmgs', 'in_progress', 'finish', 'result', 'canceled'] %}
-					{% if event[call] and event[call]['incidents'] %}
-						<td>
-							{% for provider,incidents_dict in event[call]['incidents_per_provider'].items() %}
-								{{ provider }}
-								<br />
-								<ul class="ui list">
-									{% for incident in incidents_dict["incidents"] %}
-									<li>
-										{{ incident['provider_info']['pushed'] }}: {{ incident['arguments'] }}
-										{% if incidents_dict["replay_links"] and incidents_dict["replay_links"][incident['unique_string']] %}
-											<a style="float: right" target="_blank" href="{{ incidents_dict['replay_links'][incident['unique_string']] }}">replay</a>
-										{% endif %}
-									</li>
-									{% endfor %}
-								</ul>	
-							{% endfor %}
-						</td>	
-					{% endif %}
-				{% endfor %}
+				{{ call_table_body(event, 'result') }}
+				{{ call_table_body(event, 'canceled') }}
 			</tr>
 		</tbody>
 	</table>
