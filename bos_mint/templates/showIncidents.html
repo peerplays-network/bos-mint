@@ -84,7 +84,7 @@
 		<li>
 		<a href="{{provider['isalive']}}">{{provider["name"]}}</a>
 		<br />
-		{% if not provider["status"] == "ok" %}
+		{% if not provider["status"] == "ok" and provider["details"]%}
 			{% for group, subscriber_list in provider["details"]["subscribers"].items() %}
 				{% for subscriber in subscriber_list %}	
 				 	{% if subscriber["status"] == "nok" %}
