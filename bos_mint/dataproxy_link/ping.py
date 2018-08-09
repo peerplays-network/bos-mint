@@ -38,6 +38,7 @@ class Ping(object):
                 except Exception:
                     Ping.CACHE[provider_hash] = {"status": "nok",
                                                  "name": proxy.get("name", proxy["endpoint"]),
+                                                 "isalive": proxy["endpoint"] + "/isalive",
                                                  "replay": replay_url}
             except KeyError:
                 pass
