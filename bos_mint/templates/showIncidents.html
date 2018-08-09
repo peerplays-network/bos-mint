@@ -36,12 +36,17 @@
     {% endif %}
 {%- endmacro -%}
 
-{%- macro call_table_head(event, call, use, number) -%}
+{%- macro call_table_head(event, call, use) -%}
 	{% if event[call] and event[call]['incidents'] %}
 	<td>
 		<a href="{{ url_for('show_incidents_per_id', incident_id=event['id_string'], call=call, use=use) }}">
-			Create<br />
-			DT#{{number}}
+			{% if call == 'create' %}Create<br />DT#1
+			{%- elif call == 'dynamic_bmgs' %}Dynamic BMGs<br />DT#2
+			{%- elif call == 'in_progress' %}In Progress<br />DT#3
+			{%- elif call == 'finish' %}Finish<br />DT#4
+			{%- elif call == 'result' %}Result<br />DT#5
+			{%- elif call == 'canceled' %}Canceled<br />DT#6
+			{% endif %}
 		</a>
 		{% if event[call] and event[call]['status'] and not event[call]['status']['name'] == 'unknown' %}
 			<br/>{{ event[call]['status']['name'] }}
@@ -79,23 +84,27 @@
 		<li>
 		<a href="{{provider['isalive']}}">{{provider["name"]}}</a>
 		<br />
-		{% if not provider["status"] == "ok" %}
-			{% for group, subscriber_list in provider["details"]["subscribers"].items() %}
-				{% for subscriber in subscriber_list %}	
-				 	{% if subscriber["status"] == "nok" %}
-						<i class="small red circle icon"></i> Anonymous subscriber <br />
-					{% elif subscriber["status"] == "unknown" %}
-						<i class="small yellow circle icon"></i> Anonymous subscriber, nothing sent yet <br />
-					{% endif %}
+		{% if not provider["status"] == "ok"%}
+			{% if provider["details"] %}
+				{% for group, subscriber_list in provider["details"]["subscribers"].items() %}
+					{% for subscriber in subscriber_list %}	
+					 	{% if subscriber["status"] == "nok" %}
+							<i class="small red circle icon"></i> Anonymous subscriber <br />
+						{% elif subscriber["status"] == "unknown" %}
+							<i class="small yellow circle icon"></i> Anonymous subscriber, nothing sent yet <br />
+						{% endif %}
+					{% endfor %}
+				{% endfor %}		
+				{% for incoming in provider["details"]["providers"] %}
+					{% if incoming["status"] == "ok" %}
+						<i class="small green circle icon"></i>
+					{% else %}
+						<i class="small red circle icon"></i>			
+					{% endif %} {{incoming["name"]}}: {{incoming["last_incident"]}}				<br />
 				{% endfor %}
-			{% endfor %}		
-			{% for incoming in provider["details"]["providers"] %}
-				{% if incoming["status"] == "ok" %}
-					<i class="small green circle icon"></i>
-				{% else %}
-					<i class="small red circle icon"></i>			
-				{% endif %} {{incoming["name"]}}: {{incoming["last_incident"]}}				<br />
-			{% endfor %}
+			{% else %}
+				<i class="small red circle icon"></i> Unknown reason <br />
+			{% endif %}
 		{% endif %}
 		</li>
 	{% endfor %}
@@ -160,24 +169,24 @@ Markings according to the status:
 	<table class="ui very basic collapsing celled table">
 		<tbody>
 			<thead>
-				{{ call_table_head(event, 'create', use, 1) }}
-				{{ call_table_head(event, 'dynamic_bmgs', use, 2) }}
+				{{ call_table_head(event, 'create', use) }}
+				{{ call_table_head(event, 'dynamic_bmgs', use) }}
 			</thead>
 			<tr>
 				{{ call_table_body(event, 'create') }}
 				{{ call_table_body(event, 'dynamic_bmgs') }}
 			</tr>
 			<thead>
-				{{ call_table_head(event, 'in_progress', use, 3) }}
-				{{ call_table_head(event, 'finish', use, 4) }}
+				{{ call_table_head(event, 'in_progress', use) }}
+				{{ call_table_head(event, 'finish', use) }}
 			</thead>
 			<tr>
 				{{ call_table_body(event, 'in_progress') }}
 				{{ call_table_body(event, 'finish') }}
 			</tr>
 			<thead>
-				{{ call_table_head(event, 'result', use, 5) }}
-				{{ call_table_head(event, 'canceled', use, 6) }}
+				{{ call_table_head(event, 'result', use) }}
+				{{ call_table_head(event, 'canceled', use) }}
 			</thead>
 			<tr>
 				{{ call_table_body(event, 'result') }}

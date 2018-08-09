@@ -39,7 +39,8 @@ from .dataproxy_link.ping import Ping
 
 import os
 from bos_incidents import factory
-from bos_incidents.exceptions import EventNotFoundException
+from bos_incidents.exceptions import EventNotFoundException,\
+    IncidentStorageLostException
 
 from bookiesports import BookieSports
 from strict_rfc3339 import InvalidRFC3339Error
@@ -233,9 +234,15 @@ def show_incidents(from_date=None, to_date=None, matching=None, use="mongodb"):
             to_date = utils.date_to_string(21)
         if type(to_date) == str:
             to_date = utils.string_to_date(to_date)
-    store = factory.get_incident_storage(use=use)
 
-    unresolved_events = store.get_events(resolve=False)
+    store = None
+    unresolved_events = None
+    try:
+        store = factory.get_incident_storage(use=use)
+        unresolved_events = store.get_events(resolve=False)
+    except IncidentStorageLostException:
+        flash("BOS-mint could not find an incident store, or connection failed. Is a BOS-auto instance running alongside that grants access?")
+        return redirect(url_for('overview'))
 
     events = []
     # resort for provider view
