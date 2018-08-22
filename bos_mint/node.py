@@ -82,8 +82,8 @@ class Node(object):
                    network=chain_name,
                    proposing_account=self.getProposerAccountName(),
                    approving_account=self.getProposerAccountName())
-        w.clear_proposal_buffer(expiration=60 * 60 * 48)
         Lookup.proposal_buffer = Node.pendingProposal
+        Lookup.proposal_buffer.set_expiration(60 * 60 * 48)
         w.sync_bookiesports()
         return Node.pendingProposal
 
