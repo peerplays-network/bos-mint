@@ -46,6 +46,7 @@ from bookiesports import BookieSports
 from strict_rfc3339 import InvalidRFC3339Error
 from bos_mint.istring import InternationalizedString
 from datetime import timedelta
+from bos_incidents.format import get_id_as_string
 
 
 ###############################################################################
@@ -222,6 +223,9 @@ def show_incidents(from_date=None, to_date=None, matching=None, use="mongodb"):
         except InvalidRFC3339Error:
             pass
 
+    if type(matching) == str:
+        matching = matching.split(",")
+
     if from_date is None:
         from_date = request.args.get("from_date", None)
         if from_date is None:
@@ -252,7 +256,7 @@ def show_incidents(from_date=None, to_date=None, matching=None, use="mongodb"):
         except InvalidRFC3339Error:
             event_scheduled = utils.string_to_date(event["id_string"][0:23])
         if event_scheduled <= to_date and event_scheduled >= from_date and\
-                (matching is None or matching.lower() in event["id_string"].lower()):
+                (matching is None or all([x.lower() in event["id_string"].lower() for x in matching])):
             store.resolve_event(event)
         else:
             continue
@@ -280,6 +284,7 @@ def show_incidents(from_date=None, to_date=None, matching=None, use="mongodb"):
                 event[call]["incidents_per_provider"] = incident_provider_dict
             except KeyError:
                 pass
+        event["id_string"] = get_id_as_string(event["id"])
         events.append(event)
 
     from_date = utils.date_to_string(from_date)
