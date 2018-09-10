@@ -21,7 +21,7 @@ class Ping(object):
         for provider_hash, proxy in proxies.items():
             try:
                 isalive_url = proxy["endpoint"] + "/isalive?token=" + proxy["token"]
-                replay_url = proxy["endpoint"] + "/replay?token=" + proxy["token"]
+                replay_url = proxy["endpoint"] + "/replay?token=" + proxy["token"] + "&only_report=True&restrict_witness_group=" + Config.get("connection", "use")
                 try:
                     response = requests.get(replay_url)
                     if not response.status_code == 200:
@@ -54,8 +54,6 @@ class Ping(object):
             if Ping.CACHE.get(provider_hash, None) is not None:
                 replay_url = Ping.CACHE[provider_hash]["replay"]
                 replay_url = replay_url + "&name_filter=" + incident["unique_string"] + "," + call
-                replay_url = replay_url + "&restrict_witness_group=" + Config.get("connection", "use")
-                replay_url = replay_url + "&only_report=True"
                 return replay_url
             else:
                 return None
