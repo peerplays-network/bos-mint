@@ -22,17 +22,26 @@ def date_to_string(date_object=None):
     if not date_object:
         return strict_rfc3339.now_to_rfc3339_utcoffset()
     else:
-        return strict_rfc3339.timestamp_to_rfc3339_utcoffset(
-            date_object.timestamp())
+        if date_object.tzinfo is None:
+            return strict_rfc3339.timestamp_to_rfc3339_utcoffset(
+                pytz.UTC.localize(date_object).timestamp())
+        else:
+            return strict_rfc3339.timestamp_to_rfc3339_utcoffset(
+                date_object.timestamp())
 
 
 def string_to_date(date_string=None):
     """ assumes rfc3339 conform string and creates date object """
     if date_string is None:
-        return pytz.utc.localize(datetime.utcnow())
+        date_time_object = datetime.utcnow()
+        return pytz.utc.localize(date_time_object)
     if type(date_string) == str:
         if len(date_string) == 8:
             date_string = date_string[0:4] + "-" + date_string[4:6] + "-" + date_string[6:8] + "T00:00:00Z"
+        if len(date_string) == 10:
+            date_string = date_string + "T00:00:00Z"
+        if len(date_string) == 19:
+            date_string = date_string + "Z"
         date_time_object = datetime.utcfromtimestamp(
             strict_rfc3339.rfc3339_to_timestamp(date_string))
         return pytz.utc.localize(date_time_object)

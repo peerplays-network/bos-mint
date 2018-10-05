@@ -36,8 +36,8 @@
     {% endif %}
 {%- endmacro -%}
 
-{%- macro call_table_head(event, call, use) -%}
-	{% if event[call] and event[call]['incidents'] %}
+{%- macro call_table_head(event, call, use, allow_manufacture) -%}
+	{% if event[call] and event[call]['incidents'] or allow_manufacture %}
 	<td>
 		<a href="{{ url_for('show_incidents_per_id', incident_id=event['id_string'], call=call, use=use) }}">
 			{% if call == 'create' %}Create<br />DT#1
@@ -55,24 +55,37 @@
     {% endif %}
 {%- endmacro -%}
 
-{%- macro call_table_body(event, call) -%}
-	{% if event[call] and event[call]['incidents'] %}
+{%- macro call_table_body(event, call, allow_manufacture) -%}
+	{% if event[call] and event[call]['incidents'] or allow_manufacture %}
 		<td>
-			{% for provider,incidents_dict in event[call]['incidents_per_provider'].items() %}
-				{{ provider }}
+			{% if event[call] and event[call]['incidents'] %}
+				{% for provider,incidents_dict in event[call]['incidents_per_provider'].items() %}
+					{{ provider }}
+					<br />
+					<ul class="ui list">
+						{% for incident in incidents_dict["incidents"] %}
+						<li>
+							{{ incident['provider_info']['pushed'] }}: {{ incident['arguments'] }}
+							{% if incidents_dict["replay_links"] and incidents_dict["replay_links"][incident['unique_string']] %}
+								<a style="float: right" target="_blank" href="{{ incidents_dict['replay_links'][incident['unique_string']] }}">replay</a>
+							{% endif %}
+						</li>
+						{% endfor %}
+					</ul>
+				{% endfor %}
+			{% endif %}
+			{% if allow_manufacture %}
+				Manufacture
 				<br />
 				<ul class="ui list">
-					{% for incident in incidents_dict["incidents"] %}
-					<li>
-						{{ incident['provider_info']['pushed'] }}: {{ incident['arguments'] }}
-						{% if incidents_dict["replay_links"] and incidents_dict["replay_links"][incident['unique_string']] %}
-							<a style="float: right" target="_blank" href="{{ incidents_dict['replay_links'][incident['unique_string']] }}">replay</a>
-						{% endif %}
-					</li>
+				    {% for provider_hash, provider in menuInfo['incidents']['dataproxy_link'].items() %}
+						<li>
+							<a target="_blank" href="{{ provider['replay'] + '&manufacture=' + event['id_string'] + '__' + call + '__None' }}">{{ provider_hash }}</a>
+						 </li>
 					{% endfor %}
-				</ul>	
-			{% endfor %}
-		</td>	
+				</ul>
+			{% endif %}
+		</td>
 	{% endif %}
 {%- endmacro -%}
 
@@ -186,11 +199,11 @@ Markings according to the status:
 			</tr>
 			<thead>
 				{{ call_table_head(event, 'result', use) }}
-				{{ call_table_head(event, 'canceled', use) }}
+				{{ call_table_head(event, 'canceled', use, true) }}
 			</thead>
 			<tr>
 				{{ call_table_body(event, 'result') }}
-				{{ call_table_body(event, 'canceled') }}
+				{{ call_table_body(event, 'canceled', true) }}
 			</tr>
 		</tbody>
 	</table>

@@ -11,6 +11,7 @@ from flask import (
 from wtforms import FormField, SubmitField
 from peerplays.exceptions import WalletExists
 import requests
+import re
 
 from . import app, forms, utils, widgets, Config
 from .forms import (
@@ -46,6 +47,12 @@ from bookiesports import BookieSports
 from strict_rfc3339 import InvalidRFC3339Error
 from bos_mint.istring import InternationalizedString
 from datetime import timedelta
+from bos_incidents.format import get_id_as_string
+from time import sleep
+from threading import Thread
+from datetime import datetime
+from peerplays.event import Events
+from bos_mint.datestring import string_to_date
 
 
 ###############################################################################
@@ -205,6 +212,131 @@ def newwallet():
     return render_template_menuinfo('generic.html', **locals())
 
 
+@app.route('/witnesses')
+def witnesses():
+    expected_version = Config.get("witnesses_versions")
+
+    def _forward_to_beacons():
+        witnesses = Config.get("witnesses")
+        responses = {}
+        threads = []
+        for witness in witnesses:
+            def _call_beacon(_responses, _beacon, _name):
+                try:
+                    response = requests.get(_beacon, timeout=10)
+                    if response.status_code == 200 and response.json() is not None:
+                        _responses[_name] = response.json()
+                    else:
+                        sleep(0.2)
+                        response = requests.get(_beacon, timeout=10)
+                        if response.status_code == 200 and response.json() is not None:
+                            _responses[_name] = response.json()
+                except Exception as e:
+                    sleep(0.2)
+                    response = requests.get(_beacon, timeout=10)
+                    if response.status_code == 200 and response.json() is not None:
+                        _responses[_name] = response.json()
+
+            threads.append(Thread(target=_call_beacon, args=(responses, witness["url"], witness["name"])))
+            threads[len(threads) - 1].start()
+
+        for i in range(len(threads)):
+            threads[i].join()
+
+        return responses
+
+    responses = _forward_to_beacons()
+
+    for key, value in responses.items():
+        responses[key] = {
+            "qeue": str(value["queue"]["status"]["default"]["count"]) + "/" + str(value["queue"]["status"]["failed"]["count"])
+        }
+        _version = (
+            value["versions"]["bookiesports"] +
+            "/" + value["versions"]["bos-auto"] +
+            "/" + value["versions"]["bos-sync"] +
+            "/" + value["versions"]["bos-incidents"] +
+            "/" + value["versions"]["peerplays"]
+        )
+        if _version not in expected_version:
+            responses[key]["deviating_versions"] = _version
+
+    responses["<witness_name>"] = {
+        "queue": "<pending_incidents>/<failed_incidents>",
+        "allowed_versions": expected_version
+    }
+
+    response_dict = {
+        "time": datetime.now(),
+        "reponses": responses
+    }
+
+    return jsonify(
+        response_dict
+    )
+
+
+@app.route('/cancel')
+@app.route('/cancel/<event_ids>')
+@app.route('/cancel/<event_ids>/<chain>')
+def cancel(event_ids=None, chain=None):
+    if chain is None:
+        chain = "baxter"
+    if event_ids is None:
+        all_events = Node().getEvents("all")
+        all_events = sorted(all_events, key=lambda k: k["start_time"])
+        legacy_events_list = []
+        legacy_events = {}
+        legacy_events["details"] = []
+        legacy_events["args"] = "?event_ids="
+        for event in all_events:
+            if string_to_date(event["start_time"]) < string_to_date():
+                legacy_events["details"].append(
+                    "on_chain_id=" + event["id"] + ";start_time=" + event["start_time"]
+                )
+                legacy_events_list.append(event)
+
+        legacy_events_list = sorted(legacy_events_list, key=lambda k: k["id"])
+        for event in legacy_events_list:
+            legacy_events["args"] = legacy_events["args"] + event["id"] + ","
+
+        return jsonify(
+            legacy_events
+        )
+    else:
+        for event_id in event_ids.split(","):
+            event = Node().getEvent(event_id)
+            teams = [x[1] for x in event["name"] if x[0] == 'en'][0]
+            if " v " in teams:
+                teams = teams.split(" v ")
+            if " @ " in teams:
+                teams = teams.split(" @ ")
+                teams = [teams[1], teams[0]]
+
+            id_string = event["start_time"] + "Z" \
+                + '__' + [x[1] for x in event.eventgroup.sport["name"] if x[0] == 'en'][0] \
+                + '__' + [x[1] for x in event.eventgroup["name"] if x[0] == 'en'][0] \
+                + '__' + teams[0] \
+                + '__' + teams[1]
+            call = "canceled__None"
+
+            proxies = Ping().get_status()
+
+            responses = []
+            urls_to_call = {}
+            for key, value in proxies.items():
+                url = value["replay"] + "&manufacture=" + id_string + "__" + call
+                if chain == "send":
+                    url = re.sub('&only_report=True', '', url)
+                urls_to_call[url] = url
+            for url in urls_to_call.keys():
+                response = requests.get(url, timeout=1000)
+                if response.status_code == 200:
+                    responses.append(requests.get(url, timeout=1000).json())
+
+        return jsonify(responses)
+
+
 @app.route('/incidents')
 @app.route('/incidents/<matching>')
 @app.route('/incidents/<matching>/<use>')
@@ -221,6 +353,9 @@ def show_incidents(from_date=None, to_date=None, matching=None, use="mongodb"):
                 to_date = match_date + timedelta(days=3)
         except InvalidRFC3339Error:
             pass
+
+    if type(matching) == str:
+        matching = matching.split(",")
 
     if from_date is None:
         from_date = request.args.get("from_date", None)
@@ -252,7 +387,7 @@ def show_incidents(from_date=None, to_date=None, matching=None, use="mongodb"):
         except InvalidRFC3339Error:
             event_scheduled = utils.string_to_date(event["id_string"][0:23])
         if event_scheduled <= to_date and event_scheduled >= from_date and\
-                (matching is None or matching.lower() in event["id_string"].lower()):
+                (matching is None or all([x.lower() in event["id_string"].lower() for x in matching])):
             store.resolve_event(event)
         else:
             continue
@@ -280,6 +415,7 @@ def show_incidents(from_date=None, to_date=None, matching=None, use="mongodb"):
                 event[call]["incidents_per_provider"] = incident_provider_dict
             except KeyError:
                 pass
+        event["id_string"] = get_id_as_string(event["id"])
         events.append(event)
 
     from_date = utils.date_to_string(from_date)
