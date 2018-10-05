@@ -300,6 +300,16 @@ class Node(object):
                 "EventGroups could not be loaded: {}".format(self._get_exception_message(ex)))
 
     def getEvents(self, eventGroupId):
+        if eventGroupId == "all":
+            all_events = []
+            sports = self.getSports()
+            for sport in sports:
+                eventgroups = self.getEventGroups(sport["id"])
+                for eventgroup in eventgroups:
+                    events = self.getEvents(eventgroup["id"])
+                    for event in events:
+                        all_events.append(event)
+            return all_events
         if not eventGroupId:
             raise NonScalableRequest
         try:
