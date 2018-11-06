@@ -380,12 +380,20 @@ def getMenuInfo():
         pass
     menuInfo['allAccounts'] = allAccounts
 
-    menuInfo['chain'] = {
-        "name": Config.get("connection", "use"),
-        "id": Node().get_node().rpc.chain_params["chain_id"],
-        "block": Node().get_node().rpc.get_object("2.1.0")["head_block_number"],
-        "time": Node().get_node().rpc.get_object("2.1.0")["time"] + "Z"
-    }
+    try:
+        menuInfo['chain'] = {
+            "name": Config.get("connection", "use"),
+            "id": Node().get_node().rpc.chain_params["chain_id"],
+            "block": Node().get_node().rpc.get_object("2.1.0")["head_block_number"],
+            "time": Node().get_node().rpc.get_object("2.1.0")["time"] + "Z"
+        }
+    except Exception as e:
+        menuInfo['chain'] = {
+            "name": Config.get("connection", "use"),
+            "id": str(e),
+            "block": "-",
+            "time": date_to_string()
+        }
 
     if (datestring.string_to_date() - timedelta(seconds=30) > datestring.string_to_date(menuInfo["chain"]["time"])):
         menuInfo["chain"]["out_of_sync"] = True

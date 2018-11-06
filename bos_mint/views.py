@@ -288,7 +288,7 @@ def cancel(event_ids=None, chain=None):
         legacy_events_list = []
         legacy_events = {}
         legacy_events["details"] = []
-        legacy_events["args"] = "?event_ids="
+        legacy_events["event_ids"] = ""
         for event in all_events:
             if string_to_date(event["start_time"]) < string_to_date():
                 legacy_events["details"].append(
@@ -298,7 +298,7 @@ def cancel(event_ids=None, chain=None):
 
         legacy_events_list = sorted(legacy_events_list, key=lambda k: k["id"])
         for event in legacy_events_list:
-            legacy_events["args"] = legacy_events["args"] + event["id"] + ","
+            legacy_events["event_ids"] = legacy_events["event_ids"] + event["id"] + ","
 
         return jsonify(
             legacy_events
@@ -334,7 +334,10 @@ def cancel(event_ids=None, chain=None):
                 if response.status_code == 200:
                     responses.append(requests.get(url, timeout=1000).json())
 
-        return jsonify(responses)
+        return jsonify({
+            "responses": responses,
+            "urls_to_call": list(urls_to_call.keys())
+        })
 
 
 @app.route('/incidents')
