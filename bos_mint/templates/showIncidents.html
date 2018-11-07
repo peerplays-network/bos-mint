@@ -74,7 +74,7 @@
 					</ul>
 				{% endfor %}
 			{% endif %}
-			{% if allow_manufacture %}
+			{% if allow_manufacture and menuInfo['incidents'] and menuInfo['incidents']['dataproxy_link'] %}
 				Manufacture
 				<br />
 				<ul class="ui list">
