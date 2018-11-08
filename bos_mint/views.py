@@ -281,7 +281,7 @@ def witnesses():
 @app.route('/cancel/<event_ids>/<chain>')
 def cancel(event_ids=None, chain=None):
     if chain is None:
-        chain = "baxter"
+        chain = "beatrice"
     if event_ids is None:
         all_events = Node().getEvents("all")
         all_events = sorted(all_events, key=lambda k: k["start_time"])
