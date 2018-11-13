@@ -52,6 +52,7 @@ def getMenuInfo():
     except Exception:
         pass
 
+    global CACHE_VERSIONS
     if CACHE_VERSIONS is None:
         CACHE_VERSIONS = {}
         for name in ["bos-incidents", "peerplays", "bookiesports"]:
