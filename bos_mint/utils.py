@@ -1,19 +1,14 @@
 # -*- coding: utf-8 -*-
-import pkg_resources
 from flask import redirect, flash, url_for, request, render_template
 from functools import wraps
-from datetime import datetime, timedelta
+from datetime import datetime
 from peerplaysbase.operationids import getOperationNameForId
-import logging
-
-from bos_mint import Config
 
 from .node import Node, NodeException
-from . import wrapper, tostring, __VERSION__
+from . import wrapper
 from . import config
 from . import datestring
-
-from .dataproxy_link.ping import Ping
+from .menu_info import getMenuInfo
 
 # dictionary to configure types (Sport, EventGroup, etc.)
 #  title: human readable title
@@ -305,109 +300,6 @@ def render_template_menuinfo(tmpl_name, **kwargs):
     """
     menuInfo = getMenuInfo()
     return render_template(tmpl_name, menuInfo=menuInfo, **kwargs)
-
-
-def getMenuInfo():
-    logging.getLogger(__name__).debug("getMenuInfo init")
-    try:
-        account = Node().getSelectedAccount()
-        accountDict = {
-            'id': account.identifier,
-            'name': account.name,
-            'toString': tostring.toString(account)}
-    except NodeException:
-        try:
-            any_account = len(Node().getAllAccountsOfWallet()) > 0
-        except Exception:
-            any_account = False
-        if any_account:
-            accountDict = {'id': '-', 'name': '-', 'toString': 'Please select an account'}
-        else:
-            accountDict = {'id': '-', 'name': '-', 'toString': 'Please add an account'}
-
-    numberOfOpenTransactions = 0
-    try:
-        currentTransaction = Node().getPendingTransaction()
-        if currentTransaction:
-            numberOfOpenTransactions = len(Node().getPendingTransaction().ops)
-    except NodeException:
-        pass
-
-    numberOfVotableProposals = 0
-    try:
-        numberOfVotableProposals = len(Node().getAllProposals())
-    except NodeException:
-        pass
-
-    walletLocked = True
-    try:
-        walletLocked = Node().locked()
-    except Exception:
-        pass
-
-    versions = {}
-    for name in ["bos-incidents", "peerplays", "bookiesports"]:  # "bos-auto", 
-        try:
-            versions[name] = pkg_resources.require(name)[0].version
-        except pkg_resources.DistributionNotFound:
-            versions[name] = "not installed"
-
-    menuInfo = {
-        'account': accountDict,
-        'numberOfOpenTransactions': numberOfOpenTransactions,
-        'numberOfVotableProposals': numberOfVotableProposals,
-        'walletLocked': walletLocked,
-        'version': __VERSION__,
-        'versions': versions
-    }
-
-    allAccounts = []
-    try:
-        for account in Node().getAllAccountsOfWallet():
-            if account['name']:
-                allAccounts.append({
-                    'id': account['account'].identifier,
-                    'name': account['account'].name,
-                    'publicKey': account['pubkey'],
-                    'toString': account['account'].identifier + ' - ' + account['account'].name})
-            else:
-                allAccounts.append({
-                    'id': 'None',
-                    'name': 'This shouldnt happen',
-                    'publicKey': 'None',
-                    'toString': 'None - Error shouldnt happen' + account['pubkey']})
-    except NodeException:
-        pass
-    menuInfo['allAccounts'] = allAccounts
-
-    try:
-        menuInfo['chain'] = {
-            "name": Config.get("connection", "use"),
-            "id": Node().get_node().rpc.chain_params["chain_id"],
-            "block": Node().get_node().rpc.get_object("2.1.0")["head_block_number"],
-            "time": Node().get_node().rpc.get_object("2.1.0")["time"] + "Z"
-        }
-    except Exception as e:
-        menuInfo['chain'] = {
-            "name": Config.get("connection", "use"),
-            "id": str(e),
-            "block": "-",
-            "time": date_to_string()
-        }
-
-    if (datestring.string_to_date() - timedelta(seconds=30) > datestring.string_to_date(menuInfo["chain"]["time"])):
-        menuInfo["chain"]["out_of_sync"] = True
-
-    try:
-        menuInfo['incidents'] = {
-            "dataproxy_link": Ping().get_status()
-        }
-    except Exception:
-        pass
-
-    logging.getLogger(__name__).debug("getMenuInfo done")
-
-    return menuInfo
 
 
 def processNextArgument(nextArg, default):

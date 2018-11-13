@@ -214,7 +214,10 @@ def newwallet():
 
 @app.route('/witnesses')
 def witnesses():
-    expected_version = Config.get("witnesses_versions")
+    if not Config.get("advanced_features", False):
+        abort(404)
+
+    expected_version = Config.get("witnesses_versions", [])
 
     def _forward_to_beacons():
         witnesses = Config.get("witnesses")
@@ -280,6 +283,9 @@ def witnesses():
 @app.route('/cancel/<event_ids>')
 @app.route('/cancel/<event_ids>/<chain>')
 def cancel(event_ids=None, chain=None):
+    if not Config.get("advanced_features", False):
+        abort(404)
+
     if chain is None:
         chain = "beatrice"
     if event_ids is None:
