@@ -14,6 +14,7 @@ import requests
 import re
 
 from . import app, forms, utils, widgets, Config
+from .menu_info import clear_accounts_cache
 from .forms import (
     TranslatedFieldForm,
     NewWalletForm,
@@ -177,6 +178,7 @@ def account_add():
         # submit checks if account exists
         try:
             Node().addAccountToWallet(form.privateKey.data)
+            clear_accounts_cache()
             flash("Key and all underlying registered accounts imported!")
         except Exception as e:
             flash(
@@ -251,8 +253,14 @@ def witnesses():
     responses = _forward_to_beacons()
 
     for key, value in responses.items():
+        ok = "NA"
+        if value["queue"]["status"].get("default", None) is not None:
+            ok = value["queue"]["status"]["default"]["count"]
+        nok = "NA"
+        if value["queue"]["status"].get("failed", None) is not None:
+            nok = value["queue"]["status"]["failed"]["count"]
         responses[key] = {
-            "qeue": str(value["queue"]["status"]["default"]["count"]) + "/" + str(value["queue"]["status"]["failed"]["count"])
+            "qeue": str(ok) + "/" + str(nok)
         }
         _version = (
             value["versions"]["bookiesports"] +

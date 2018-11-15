@@ -13,6 +13,12 @@ from .dataproxy_link.ping import Ping
 
 
 CACHE_VERSIONS = None
+CACHE_ACCOUNTS = None
+
+
+def clear_accounts_cache():
+    global CACHE_ACCOUNTS
+    CACHE_ACCOUNTS = None
 
 
 def getMenuInfo():
@@ -70,24 +76,27 @@ def getMenuInfo():
         'versions': CACHE_VERSIONS
     }
 
-    allAccounts = []
-    try:
-        for account in Node().getAllAccountsOfWallet():
-            if account['name']:
-                allAccounts.append({
-                    'id': account['account'].identifier,
-                    'name': account['account'].name,
-                    'publicKey': account['pubkey'],
-                    'toString': account['account'].identifier + ' - ' + account['account'].name})
-            else:
-                allAccounts.append({
-                    'id': 'None',
-                    'name': 'This shouldnt happen',
-                    'publicKey': 'None',
-                    'toString': 'None - Error shouldnt happen' + account['pubkey']})
-    except NodeException:
-        pass
-    menuInfo['allAccounts'] = allAccounts
+    global CACHE_ACCOUNTS
+    if CACHE_ACCOUNTS is None:
+        CACHE_ACCOUNTS = []
+        try:
+            for account in Node().getAllAccountsOfWallet():
+                if account['name']:
+                    CACHE_ACCOUNTS.append({
+                        'id': account['account'].identifier,
+                        'name': account['account'].name,
+                        'publicKey': account['pubkey'],
+                        'toString': account['account'].identifier + ' - ' + account['account'].name})
+                else:
+                    CACHE_ACCOUNTS.append({
+                        'id': 'None',
+                        'name': 'This shouldnt happen',
+                        'publicKey': 'None',
+                        'toString': 'None - Error shouldnt happen' + account['pubkey']})
+        except NodeException:
+            pass
+
+    menuInfo['allAccounts'] = CACHE_ACCOUNTS
 
     try:
         menuInfo['chain'] = {
