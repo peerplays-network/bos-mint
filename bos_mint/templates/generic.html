@@ -6,10 +6,16 @@
 <h2>{{ formTitle }}{% if form.title %}{{ form.title }}{% endif %}</h2>
 </td></tr></tbody></table><br />
 
+{{ data }}
 
 {{ quickform(form) }}
 
-
 {{ formMessage }}
+
+{% if formMessages %}
+{% for message in formMessages %}
+	{{ message }}<br />
+{% endfor %}
+{% endif %}
 
 {% endblock %}

@@ -19,6 +19,7 @@ from .forms import (
     TranslatedFieldForm,
     NewWalletForm,
     GetAccountForm,
+    ReplayForm,
     ApprovalForm,
     BettingMarketGroupResolveForm,
     SynchronizationForm
@@ -187,6 +188,77 @@ def account_add():
                 category='error')
 
         return redirect(url_for('overview'))
+
+    return render_template_menuinfo('generic.html', **locals())
+
+
+@app.route("/incidents/replay", methods=['GET', 'POST'])
+@app.route("/incidents/replay/<filter>", methods=['GET', 'POST'])
+@app.route("/incidents/replay/<filter>/<use>", methods=['GET', 'POST'])
+@unlocked_wallet_required
+def replay(filter=None, use="mongodb"):
+    if not Config.get("advanced_features", False):
+        abort(404)
+
+    form = ReplayForm()
+    form.chain.data = Config.get("connection", "use")
+    formTitle = "Replay incidents"
+    formMessages = []
+
+    proxy_incidents = None
+
+    if not form.back.data and form.validate_on_submit():
+        if form.check.data:
+            from .dataproxy_link import control
+            # query dataproxy
+            try:
+                proxy_incidents = control.get_replayable_incidents(form.unique_string.data, form.dataproxy.data, form.chain.data, form.witness.data)
+
+                form.replay.render_kw = {'disabled': False}
+
+                del form.check
+
+                formMessages.append(str(len(proxy_incidents)) + " incidents found on dataproxy")
+                for _tmp in proxy_incidents:
+                    if type(_tmp) == dict:
+                        formMessages.append(" - " + _tmp["unique_string"] + " provider: " + _tmp["provider_info"]["name"])
+                    else:
+                        formMessages.append(" - " + _tmp)
+            except Exception as e:
+                del form.back
+                flash(str(e), category="error")
+        if form.replay.data:
+            del form.back
+            from .dataproxy_link import control
+            try:
+                proxy_incidents = control.replay_incidents(form.unique_string.data, form.dataproxy.data, form.chain.data, form.witness.data)
+
+                formMessages = ["Replay has been triggered"]
+                formMessages.append("")
+                formMessages.append(str(len(proxy_incidents)) + " incidents found on dataproxy")
+                for _tmp in proxy_incidents:
+                    if type(_tmp) == dict:
+                        formMessages.append(" - " + _tmp["unique_string"] + " provider: " + _tmp["provider_info"]["name"])
+                    else:
+                        formMessages.append(" - " + _tmp)
+            except Exception as e:
+                flash(str(e), category="error")
+    else:
+        if filter is not None:
+            form.unique_string.data = filter
+        form.witness.data = "All"
+        del form.back
+
+    if form.unique_string.data is not None and not form.unique_string.data.strip() == "":
+        store = factory.get_incident_storage(use=use)
+        incidents = list(store.get_incidents(filter_dict=dict(
+            unique_string={"$regex": ".*" + form.unique_string.data + ".*"}
+        )))
+        if len(formMessages) > 0:
+            formMessages.append("")
+        formMessages.append(str(len(incidents)) + " incidents found locally for " + str(form.unique_string.data))
+        for _tmp in incidents:
+            formMessages.append(" - " + _tmp["unique_string"] + " provider: " + _tmp["provider_info"]["name"])
 
     return render_template_menuinfo('generic.html', **locals())
 
@@ -459,15 +531,11 @@ def show_incidents_per_id(incident_id=None, call=None, use="mongodb"):
     except EventNotFoundException:
         return jsonify("Event not found")
 
-    # fetch them seperately, we want raw data
-    incidents = store.get_incidents_by_id(incident_id, call)
+    for key in list(event.keys()):
+        if not (key == call or key == "id" or key == "id_string"):
+            event.pop(key)
 
-    return jsonify(
-        {
-            "status": event.get(call, {"status": "empty"})["status"],
-            "incidents": list(incidents)
-        }
-    )
+    return jsonify(event)
 
 
 @app.route("/event/incidents/<selectId>", methods=['get'])

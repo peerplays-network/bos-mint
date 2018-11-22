@@ -32,6 +32,7 @@ from .istring import InternationalizedString, LanguageNotFoundException
 from .node import Node
 import datetime
 from . import utils, wrapper, tostring, config
+from bos_mint import Config
 
 
 def selectDictToList(sourceDictionary):
@@ -143,7 +144,7 @@ class UnlockForm(FlaskForm):
 
 
 class NewWalletForm(FlaskForm):
-    password_confirm = PasswordField('Password', validators=[ DataRequired() ])
+    password_confirm = PasswordField('Password', validators=[DataRequired()])
     password = PasswordField('Confirm password', validators['password'])
     submit = SubmitField("Create new wallet")
 
@@ -173,6 +174,25 @@ class GetAccountForm(FlaskForm):
                 return False
         else:
             return False
+
+
+class ReplayForm(FlaskForm):
+    unique_string = TextField('Incident Unique String', validators=[DataRequired()])
+    chain = TextField('Chain', render_kw={'disabled': True}, validators=[DataRequired()])
+    witness = SelectField(
+        "Block Producer",
+        validators=[Optional()],
+        choices=[("All", "All")] + [(x["name"], x["name"]) for x in Config.get("witnesses", [])]
+    )
+    dataproxy = SelectField(
+        "Dataproxy",
+        validators=[DataRequired()],
+        choices=[(k, k + " - " + v["name"]) for k, v in Config.get("dataproxy_link", "proxies", {}).items()]
+    )
+
+    check = SubmitField("Check")
+    back = SubmitField("Reset")
+    replay = SubmitField("Replay", render_kw={'disabled': True})
 
 
 class NewSportForm(FlaskForm):
