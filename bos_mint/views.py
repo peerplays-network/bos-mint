@@ -197,6 +197,8 @@ def account_add():
 @app.route("/incidents/replay/<filter>/<use>", methods=['GET', 'POST'])
 @unlocked_wallet_required
 def replay(filter=None, use="mongodb"):
+    if use == "bos-auto":
+        use = "mongodb"
     if not Config.get("advanced_features", False):
         abort(404)
 
@@ -291,7 +293,7 @@ def witnesses():
     if not Config.get("advanced_features", False):
         abort(404)
 
-    expected_version = Config.get("witnesses_versions", [])
+    expected_version = Config.get("witnesses_versions", []).copy()
 
     def _forward_to_beacons():
         witnesses = Config.get("witnesses")
@@ -308,11 +310,18 @@ def witnesses():
                         response = requests.get(_beacon, timeout=10)
                         if response.status_code == 200 and response.json() is not None:
                             _responses[_name] = response.json()
+                        else:
+                            _responses[_name] = "HTTP response " + str(response.status_code)
                 except Exception as e:
-                    sleep(0.2)
-                    response = requests.get(_beacon, timeout=10)
-                    if response.status_code == 200 and response.json() is not None:
-                        _responses[_name] = response.json()
+                    try:
+                        sleep(0.2)
+                        response = requests.get(_beacon, timeout=10)
+                        if response.status_code == 200 and response.json() is not None:
+                            _responses[_name] = response.json()
+                        else:
+                            _responses[_name] = "HTTP response " + str(response.status_code)
+                    except Exception as e:
+                            _responses[_name] = "Errored, " + str(e)
 
             threads.append(Thread(target=_call_beacon, args=(responses, witness["url"], witness["name"])))
             threads[len(threads) - 1].start()
@@ -325,15 +334,25 @@ def witnesses():
     responses = _forward_to_beacons()
 
     for key, value in responses.items():
+        if type(value) == str:
+            responses[key] = value
+            continue
         ok = "NA"
         if value["queue"]["status"].get("default", None) is not None:
             ok = value["queue"]["status"]["default"]["count"]
         nok = "NA"
         if value["queue"]["status"].get("failed", None) is not None:
             nok = value["queue"]["status"]["failed"]["count"]
+        scheduler = False
+        if (value.get("background", None) is not None and
+                value["background"].get("scheduler", None) is not None and
+                value["background"]["scheduler"].get("running", None) is not None):
+            scheduler = value["background"]["scheduler"]["running"]
         responses[key] = {
             "qeue": str(ok) + "/" + str(nok)
         }
+        if not scheduler:
+            responses[key]["scheduler"] = scheduler
         _version = (
             value["versions"]["bookiesports"] +
             "/" + value["versions"]["bos-auto"] +
@@ -344,6 +363,7 @@ def witnesses():
         if _version not in expected_version:
             responses[key]["deviating_versions"] = _version
 
+    expected_version.append("<bookiesports>/<bos-auto>/<bos-sync>/<bos-incidents>/<peerplays>")
     responses["<witness_name>"] = {
         "queue": "<pending_incidents>/<failed_incidents>",
         "allowed_versions": expected_version
