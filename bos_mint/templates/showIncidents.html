@@ -64,12 +64,14 @@
 					<br />
 					<ul class="ui list">
 						{% for incident in incidents_dict["incidents"] %}
-						<li>
-							{{ incident['provider_info']['pushed'] }}: {{ incident['arguments'] }}
-							{% if incidents_dict["replay_links"] and incidents_dict["replay_links"][incident['unique_string']] %}
-								<a style="float: right" target="_blank" href="{{ incidents_dict['replay_links'][incident['unique_string']] }}">replay</a>
-							{% endif %}
-						</li>
+							<li>
+								{{ incident['provider_info']['pushed'] }}: {{ incident['arguments'] }}
+								{% if incidents_dict["replay_links"] and incidents_dict["replay_links"][incident['unique_string']] %}
+									<a style="float: right" target="_blank" href="{{ incidents_dict['replay_links'][incident['unique_string']] }}">replay</a>
+								{% endif %}
+								<br />
+								<a href="{{ url_for('replay', filter=incident['unique_string'], use=use) }}">replay</a>
+							</li>
 						{% endfor %}
 					</ul>
 				{% endfor %}

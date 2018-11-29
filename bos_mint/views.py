@@ -14,10 +14,12 @@ import requests
 import re
 
 from . import app, forms, utils, widgets, Config
+from .menu_info import clear_accounts_cache
 from .forms import (
     TranslatedFieldForm,
     NewWalletForm,
     GetAccountForm,
+    ReplayForm,
     ApprovalForm,
     BettingMarketGroupResolveForm,
     SynchronizationForm
@@ -177,6 +179,7 @@ def account_add():
         # submit checks if account exists
         try:
             Node().addAccountToWallet(form.privateKey.data)
+            clear_accounts_cache()
             flash("Key and all underlying registered accounts imported!")
         except Exception as e:
             flash(
@@ -185,6 +188,79 @@ def account_add():
                 category='error')
 
         return redirect(url_for('overview'))
+
+    return render_template_menuinfo('generic.html', **locals())
+
+
+@app.route("/incidents/replay", methods=['GET', 'POST'])
+@app.route("/incidents/replay/<filter>", methods=['GET', 'POST'])
+@app.route("/incidents/replay/<filter>/<use>", methods=['GET', 'POST'])
+@unlocked_wallet_required
+def replay(filter=None, use="mongodb"):
+    if use == "bos-auto":
+        use = "mongodb"
+    if not Config.get("advanced_features", False):
+        abort(404)
+
+    form = ReplayForm()
+    form.chain.data = Config.get("connection", "use")
+    formTitle = "Replay incidents"
+    formMessages = []
+
+    proxy_incidents = None
+
+    if not form.back.data and form.validate_on_submit():
+        if form.check.data:
+            from .dataproxy_link import control
+            # query dataproxy
+            try:
+                proxy_incidents = control.get_replayable_incidents(form.unique_string.data, form.dataproxy.data, form.chain.data, form.witness.data)
+
+                form.replay.render_kw = {'disabled': False}
+
+                del form.check
+
+                formMessages.append(str(len(proxy_incidents)) + " incidents found on dataproxy")
+                for _tmp in proxy_incidents:
+                    if type(_tmp) == dict:
+                        formMessages.append(" - " + _tmp["unique_string"] + " provider: " + _tmp["provider_info"]["name"])
+                    else:
+                        formMessages.append(" - " + _tmp)
+            except Exception as e:
+                del form.back
+                flash(str(e), category="error")
+        if form.replay.data:
+            del form.back
+            from .dataproxy_link import control
+            try:
+                proxy_incidents = control.replay_incidents(form.unique_string.data, form.dataproxy.data, form.chain.data, form.witness.data)
+
+                formMessages = ["Replay has been triggered"]
+                formMessages.append("")
+                formMessages.append(str(len(proxy_incidents)) + " incidents found on dataproxy")
+                for _tmp in proxy_incidents:
+                    if type(_tmp) == dict:
+                        formMessages.append(" - " + _tmp["unique_string"] + " provider: " + _tmp["provider_info"]["name"])
+                    else:
+                        formMessages.append(" - " + _tmp)
+            except Exception as e:
+                flash(str(e), category="error")
+    else:
+        if filter is not None:
+            form.unique_string.data = filter
+        form.witness.data = "All"
+        del form.back
+
+    if form.unique_string.data is not None and not form.unique_string.data.strip() == "":
+        store = factory.get_incident_storage(use=use)
+        incidents = list(store.get_incidents(filter_dict=dict(
+            unique_string={"$regex": ".*" + form.unique_string.data + ".*"}
+        )))
+        if len(formMessages) > 0:
+            formMessages.append("")
+        formMessages.append(str(len(incidents)) + " incidents found locally for " + str(form.unique_string.data))
+        for _tmp in incidents:
+            formMessages.append(" - " + _tmp["unique_string"] + " provider: " + _tmp["provider_info"]["name"])
 
     return render_template_menuinfo('generic.html', **locals())
 
@@ -214,7 +290,10 @@ def newwallet():
 
 @app.route('/witnesses')
 def witnesses():
-    expected_version = Config.get("witnesses_versions")
+    if not Config.get("advanced_features", False):
+        abort(404)
+
+    expected_version = Config.get("witnesses_versions", []).copy()
 
     def _forward_to_beacons():
         witnesses = Config.get("witnesses")
@@ -231,11 +310,18 @@ def witnesses():
                         response = requests.get(_beacon, timeout=10)
                         if response.status_code == 200 and response.json() is not None:
                             _responses[_name] = response.json()
+                        else:
+                            _responses[_name] = "HTTP response " + str(response.status_code)
                 except Exception as e:
-                    sleep(0.2)
-                    response = requests.get(_beacon, timeout=10)
-                    if response.status_code == 200 and response.json() is not None:
-                        _responses[_name] = response.json()
+                    try:
+                        sleep(0.2)
+                        response = requests.get(_beacon, timeout=10)
+                        if response.status_code == 200 and response.json() is not None:
+                            _responses[_name] = response.json()
+                        else:
+                            _responses[_name] = "HTTP response " + str(response.status_code)
+                    except Exception as e:
+                            _responses[_name] = "Errored, " + str(e)
 
             threads.append(Thread(target=_call_beacon, args=(responses, witness["url"], witness["name"])))
             threads[len(threads) - 1].start()
@@ -248,9 +334,25 @@ def witnesses():
     responses = _forward_to_beacons()
 
     for key, value in responses.items():
+        if type(value) == str:
+            responses[key] = value
+            continue
+        ok = "NA"
+        if value["queue"]["status"].get("default", None) is not None:
+            ok = value["queue"]["status"]["default"]["count"]
+        nok = "NA"
+        if value["queue"]["status"].get("failed", None) is not None:
+            nok = value["queue"]["status"]["failed"]["count"]
+        scheduler = False
+        if (value.get("background", None) is not None and
+                value["background"].get("scheduler", None) is not None and
+                value["background"]["scheduler"].get("running", None) is not None):
+            scheduler = value["background"]["scheduler"]["running"]
         responses[key] = {
-            "qeue": str(value["queue"]["status"]["default"]["count"]) + "/" + str(value["queue"]["status"]["failed"]["count"])
+            "qeue": str(ok) + "/" + str(nok)
         }
+        if not scheduler:
+            responses[key]["scheduler"] = scheduler
         _version = (
             value["versions"]["bookiesports"] +
             "/" + value["versions"]["bos-auto"] +
@@ -261,6 +363,7 @@ def witnesses():
         if _version not in expected_version:
             responses[key]["deviating_versions"] = _version
 
+    expected_version.append("<bookiesports>/<bos-auto>/<bos-sync>/<bos-incidents>/<peerplays>")
     responses["<witness_name>"] = {
         "queue": "<pending_incidents>/<failed_incidents>",
         "allowed_versions": expected_version
@@ -280,8 +383,11 @@ def witnesses():
 @app.route('/cancel/<event_ids>')
 @app.route('/cancel/<event_ids>/<chain>')
 def cancel(event_ids=None, chain=None):
+    if not Config.get("advanced_features", False):
+        abort(404)
+
     if chain is None:
-        chain = "baxter"
+        chain = "beatrice"
     if event_ids is None:
         all_events = Node().getEvents("all")
         all_events = sorted(all_events, key=lambda k: k["start_time"])
@@ -304,6 +410,8 @@ def cancel(event_ids=None, chain=None):
             legacy_events
         )
     else:
+        responses = []
+        urls_to_call = {}
         for event_id in event_ids.split(","):
             event = Node().getEvent(event_id)
             teams = [x[1] for x in event["name"] if x[0] == 'en'][0]
@@ -322,8 +430,6 @@ def cancel(event_ids=None, chain=None):
 
             proxies = Ping().get_status()
 
-            responses = []
-            urls_to_call = {}
             for key, value in proxies.items():
                 url = value["replay"] + "&manufacture=" + id_string + "__" + call
                 if chain == "send":
@@ -445,15 +551,11 @@ def show_incidents_per_id(incident_id=None, call=None, use="mongodb"):
     except EventNotFoundException:
         return jsonify("Event not found")
 
-    # fetch them seperately, we want raw data
-    incidents = store.get_incidents_by_id(incident_id, call)
+    for key in list(event.keys()):
+        if not (key == call or key == "id" or key == "id_string"):
+            event.pop(key)
 
-    return jsonify(
-        {
-            "status": event.get(call, {"status": "empty"})["status"],
-            "incidents": list(incidents)
-        }
-    )
+    return jsonify(event)
 
 
 @app.route("/event/incidents/<selectId>", methods=['get'])
