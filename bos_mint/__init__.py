@@ -32,8 +32,8 @@ class Config():
     """
 
     ERRORS = {
-        "secret_key": "Please create a configuration file config-bos-mint.yml in your working directory with a secret_key entry, see config-example.yaml",
-        "connection.use": "Please create a configuration file config-bos-mint.yml in your working directory with a connection.use entry, see config-example.yaml"
+        "secret_key": "Please create a configuration file config-bos-mint.yaml in your working directory with a secret_key entry, see config-example.yaml",
+        "connection.use": "Please create a configuration file config-bos-mint.yaml in your working directory with a connection.use entry, see config-example.yaml"
     }
 
     data = None

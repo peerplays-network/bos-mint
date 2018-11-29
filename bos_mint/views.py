@@ -410,6 +410,8 @@ def cancel(event_ids=None, chain=None):
             legacy_events
         )
     else:
+        responses = []
+        urls_to_call = {}
         for event_id in event_ids.split(","):
             event = Node().getEvent(event_id)
             teams = [x[1] for x in event["name"] if x[0] == 'en'][0]
@@ -428,8 +430,6 @@ def cancel(event_ids=None, chain=None):
 
             proxies = Ping().get_status()
 
-            responses = []
-            urls_to_call = {}
             for key, value in proxies.items():
                 url = value["replay"] + "&manufacture=" + id_string + "__" + call
                 if chain == "send":
