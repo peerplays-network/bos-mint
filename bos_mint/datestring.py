@@ -42,6 +42,8 @@ def string_to_date(date_string=None):
             date_string = date_string + "T00:00:00Z"
         if len(date_string) == 19:
             date_string = date_string + "Z"
+        if len(date_string) == 18 and date_string[10:11] == "t":
+            date_string = date_string[0:10] + "T" + date_string[11:13] + ":" + date_string[13:15] + ":" + date_string[15:17] + "Z"
         date_time_object = datetime.utcfromtimestamp(
             strict_rfc3339.rfc3339_to_timestamp(date_string))
         return pytz.utc.localize(date_time_object)

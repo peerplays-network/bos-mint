@@ -11,6 +11,9 @@ from . import datestring
 
 from .dataproxy_link.ping import Ping
 
+from flask import (
+    flash
+)
 
 CACHE_VERSIONS = None
 CACHE_ACCOUNTS = None
@@ -22,8 +25,28 @@ def clear_accounts_cache():
 
 
 def getMenuInfo():
+    info_less = Config.get("notifications", "accountLessThanCoreInfo", 1000)
+    warning_less = Config.get("notifications", "accountLessThanCoreWarning", 200)
+
+    try:
+        witnessAccount = Node().getWitnessAccount()
+        for balance in witnessAccount.balances:
+            if balance.asset.id == "1.3.0":
+                if float(balance) < warning_less:
+                    flash("Account witness-account has only " + str(float(balance)) + " " + balance.asset.symbol + ", please replenish immediately", category="warning")
+                elif float(balance) < info_less:
+                    flash("Account witness-account has only " + str(float(balance)) + " " + balance.asset.symbol + ", please replenish")
+    except NodeException:
+        pass
+
     try:
         account = Node().getSelectedAccount()
+        for balance in account.balances:
+            if balance.asset.id == "1.3.0":
+                if float(balance) < warning_less:
+                    flash("Account " + account.name + " has only " + str(float(balance)) + " " + balance.asset.symbol + ", please replenish immediately", category="warning")
+                elif float(balance) < info_less:
+                    flash("Account " + account.name + " has only " + str(float(balance)) + " " + balance.asset.symbol + ", please replenish")
         accountDict = {
             'id': account.identifier,
             'name': account.name,
