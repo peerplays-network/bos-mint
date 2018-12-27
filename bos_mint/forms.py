@@ -219,6 +219,10 @@ class NewSportForm(FlaskForm):
             InternationalizedString.parseToList(self.name))
 
 
+class DeleteForm(FlaskForm):
+    cancel = SubmitField("Cancel")
+    submit = SubmitField("Delete")
+
 class NewEventGroupForm(FlaskForm):
     sport = SelectField("Sport", validators=[DataRequired()],
                         choices=None)

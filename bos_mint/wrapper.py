@@ -30,7 +30,11 @@ class BlockchainIdentifiable(dict):
         if default:
             return kwargs.get(name, default)
         else:
-            return kwargs[name]
+            try:
+                tmpname = kwargs[name]
+            except KeyError:
+                tmpname = "to be deleted"
+            return tmpname
 
 
 class Sport(BlockchainIdentifiable):
@@ -44,6 +48,11 @@ class Sport(BlockchainIdentifiable):
             return {'pendingOperationId': operationData['operationId'],
                     'id': operationData['sport_id'],
                     'name': operationData['new_name']}
+        elif operationData.get('operationName', None) == 'sport_delete':
+            return {'pendingOperationId': operationData['operationId'],
+                    'id': operationData['sport_id'],
+                    'name': 'To be deleted',
+                    }
         else:
             from .node import NodeException
             raise NodeException(
@@ -69,6 +78,12 @@ class EventGroup(BlockchainIdentifiable):
                     'id': operationData['event_group_id'],
                     'name': operationData['new_name'],
                     'sport_id': operationData['new_sport_id']}
+        elif operationData.get('operationName', None) == 'event_group_delete':
+            return {
+                'pendingOperationId': operationData['operationId'],
+                'id': operationData['operationId'],
+                'name': 'To be deleted',
+            }
         else:
             from .node import NodeException
             raise NodeException(

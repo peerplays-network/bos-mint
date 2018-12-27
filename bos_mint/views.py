@@ -22,7 +22,8 @@ from .forms import (
     ReplayForm,
     ApprovalForm,
     BettingMarketGroupResolveForm,
-    SynchronizationForm
+    SynchronizationForm,
+    DeleteForm
 )
 from .models import (
     LocalProposal,
@@ -54,6 +55,8 @@ from time import sleep
 from threading import Thread
 from datetime import datetime
 from peerplays.event import Events
+from peerplays.eventgroup import EventGroup
+from peerplays.sport import Sport
 from bos_mint.datestring import string_to_date
 
 
@@ -580,9 +583,21 @@ def overview(typeName=None, identifier=None):
 
         # same structure for all chain elements and list elements
         def buildListElements(tmpList):
-            tmpList = sorted(tmpList, key=lambda k: k['toString']) 
+            tmpList = sorted(tmpList, key=lambda k: k['toString'])
             for entry in tmpList:
-                if entry['typeName'] == 'event':
+                if entry['typeName'] == 'sport':
+                    entry['extraLink'] = [{
+                        'title': 'Delete',
+                        'link': 'sport_delete',
+                        'icon': 'trash alternate outline'
+                    }]
+                elif entry['typeName'] == 'eventgroup':
+                    entry['extraLink'] = [{
+                        'title': 'Delete',
+                        'link': 'eventgroup_delete',
+                        'icon': 'trash alternate outline'
+                    }]
+                elif entry['typeName'] == 'event':
                     entry['extraLink'] = [{
                         'title': 'Show incidents',
                         'link': 'event_incidents',
@@ -934,6 +949,50 @@ def bettingmarket_new(parentId):
 def bet_new():
     flash("Bet creation not implemented")
     return render_template_menuinfo('index.html', **locals())
+
+
+@app.route("/sport/delete/", methods=['post', 'get'])
+@app.route("/sport/delete/<selectId>", methods=['post', 'get'])
+@unlocked_wallet_required
+def sport_delete(selectId=None):
+    """If this button is pressed a form will be opened to delete the Sport with a given selectId"""
+    form = DeleteForm(sport_id=selectId)
+    sport = Sport(selectId)
+    formTitle = "Are you sure that you want do delete {0} ({1})?".format(sport['name'][0][1], sport['id'])
+    flash('All related Eventgroups will be cancelled and deleted as well', category='warning')
+
+    if form.validate_on_submit():
+        if form.cancel.data:  # cancel button has been pressed
+            return redirect(url_for('overview'))
+
+        try:
+            Node().deleteSport(selectId)
+            return redirect(url_for('overview'))
+        except Exception as e:
+            flash(e.__repr__(), category='error')
+
+    return render_template_menuinfo("generic.html", **locals())
+
+
+@app.route("/eventgroup/delete/", methods=['post', 'get'])
+@app.route("/eventgroup/delete/<selectId>", methods=['post', 'get'])
+@unlocked_wallet_required
+def eventgroup_delete(selectId=None):
+    form = DeleteForm()
+    eventgroup = EventGroup(selectId)
+    print(eventgroup)
+    formTitle = "Are you sure that you want to delete {0} ({1})?".format(eventgroup['name'][0][1], eventgroup['id'])
+    flash("All related Events will be cancelled and deleted as well", category='warning')
+    if form.validate_on_submit():
+        if form.cancel.data:
+            return redirect(url_for('overview'))
+        try:
+            Node().deleteEventgroup(event_group_id=selectId)
+            return redirect(url_for('overview'))
+        except Exception as e:
+            flash(e.__repr__(), category="error")
+
+    return render_template_menuinfo("generic.html", **locals())
 
 
 def genericUpdate(formClass, selectId, removeSubmits=False):

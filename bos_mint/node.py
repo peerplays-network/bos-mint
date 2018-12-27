@@ -359,6 +359,29 @@ class Node(object):
             raise NodeException(ex.__class__.__name__ + ": " + str(ex))
 
     @proposedOperation
+    def deleteSport(self, sportId):
+        try:
+            return self.get_node().sport_delete(
+                sport_id=sportId,
+                account=self.getSelectedAccountName(),
+                append_to=self.getPendingProposal()
+            )
+        except Exception as ex:
+            raise NodeException(ex.__class__.__name__ + ": " + str(ex))
+
+    @proposedOperation
+    def deleteEventgroup(self, event_group_id):
+
+        try:
+            return self.get_node().eventgroup_delete(
+                event_group_id=event_group_id,
+                account=self.getSelectedAccountName(),
+                append_to=self.getPendingProposal()
+            )
+        except Exception as ex:
+            raise NodeException(ex.__class__.__name__ + ": " + str(ex))
+
+    @proposedOperation
     def createEventGroup(self, istrings, sportId):
         try:
             return self.get_node().event_group_create(istrings, sportId, account=self.getSelectedAccountName(), append_to=self.getPendingProposal())
