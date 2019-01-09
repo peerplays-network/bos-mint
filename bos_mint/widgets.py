@@ -110,7 +110,7 @@ class OperationWidget(RenderTemplateWidget):
         self.template_args['operations'].append(ow)
 
 
-def prepareProposalsDataForRendering(proposals, accountId=None):
+def prepareProposalsDataForRendering(proposals, accountId=None, advanced_user=False):
     tmpList = []
     for proposal in proposals:
         # ensure the parent expiration time is the shortest time
@@ -151,7 +151,10 @@ def prepareProposalsDataForRendering(proposals, accountId=None):
             buttonNegativeURL=url_for('votable_proposals_reject',
                                       proposalId=proposal['id']),
             buttonPositiveURL=url_for('votable_proposals_accept',
-                                      proposalId=proposal['id'])
+                                      proposalId=proposal['id']),
+            buttonDelete="Delete",
+            buttonDeleteURL=url_for("proposal_delete", proposalId=proposal['id']),
+            advanced_user=advanced_user
         )
 
         for operation in proposal['proposed_transaction']['operations']:
