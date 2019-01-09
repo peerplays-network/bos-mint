@@ -1,3 +1,4 @@
+
 from flask import (
     redirect,
     request,
@@ -326,7 +327,7 @@ def witnesses():
                     except Exception as e:
                             _responses[_name] = "Errored, " + str(e)
 
-            threads.append(Thread(target=_call_beacon, args=(responses, witness["url"], witness["name"])))
+            threads.append(Thread(target=_call_beacon, args=(responses, witness["url"] + "/isalive", witness["name"])))
             threads[len(threads) - 1].start()
 
         for i in range(len(threads)):
@@ -495,9 +496,13 @@ def show_incidents(from_date=None, to_date=None, matching=None, use="mongodb"):
     # resort for provider view
     for event in unresolved_events:
         try:
-            event_scheduled = utils.string_to_date(event["id_string"][0:20])
+            event_scheduled = utils.string_to_date(event["id_string"][0:18])
         except InvalidRFC3339Error:
-            event_scheduled = utils.string_to_date(event["id_string"][0:23])
+            try:
+                event_scheduled = utils.string_to_date(event["id_string"][0:20])
+            except InvalidRFC3339Error:
+                event_scheduled = utils.string_to_date(event["id_string"][0:23])
+
         if event_scheduled <= to_date and event_scheduled >= from_date and\
                 (matching is None or all([x.lower() in event["id_string"].lower() for x in matching])):
             store.resolve_event(event)
@@ -823,7 +828,8 @@ def votable_proposals():
     if proposals:
         accountId = Node().getSelectedAccount()['id']
 
-        containerList = widgets.prepareProposalsDataForRendering(proposals)
+        advanced_user = Config.get("advanced_features", default=False)
+        containerList = widgets.prepareProposalsDataForRendering(proposals, accountId=accountId, advanced_user=advanced_user)
         containerReview = {}
         reviewedProposals = LocalProposal.getAllAsList()
 
@@ -860,6 +866,18 @@ def votable_proposals_reject(proposalId):
 
     LocalProposal.wasReviewed(proposalId)
     flash('Proposal (' + proposalId + ') has been rejected')
+    return redirect(url_for('votable_proposals'))
+
+
+@app.route("/proposals/delete/<proposalId>", methods=['post', 'get'])
+@unlocked_wallet_required
+def proposal_delete(proposalId):
+    try:
+        Node().deleteProposal(proposalId)
+        flash('Added Proposal delete proposal to Pending operations')
+    except Exception as e:
+        flash(e.__repr__(), category="error")
+
     return redirect(url_for('votable_proposals'))
 
 
@@ -911,6 +929,7 @@ def genericNewForm(formClass, parentId=None):
 @unlocked_wallet_required
 def sport_new():
     return genericNewForm(forms.NewSportForm)
+
 
 
 @app.route("/eventgroup/new", methods=['post', 'get'])
@@ -995,7 +1014,17 @@ def eventgroup_delete(selectId=None):
     return render_template_menuinfo("generic.html", **locals())
 
 
+
 def genericUpdate(formClass, selectId, removeSubmits=False):
+    """ This method is used to render update/details forms for any formClass you specify
+
+        :param FlaskForm formClass: Class of the form that you want to create. You can choose from a
+            list of implemented classes in bos_mint.forms
+        :param selectId: Identifier of the sport/event/etc. to be updated
+
+        :param bool removeSubmits: If True removes the submit Button from the from (defaults to ``False``)
+
+        """
     typeName = formClass.getTypeName()
 
     selectFunction = utils.getTypeGetter(typeName)
