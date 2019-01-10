@@ -31,22 +31,22 @@ def getMenuInfo():
     try:
         witnessAccount = Node().getWitnessAccount()
         for balance in witnessAccount.balances:
-            if balance.asset.id == "1.3.0":
+            if balance.asset["id"] == "1.3.0":
                 if float(balance) < warning_less:
-                    flash("Account witness-account has only " + str(float(balance)) + " " + balance.asset.symbol + ", please replenish immediately", category="warning")
+                    flash("Account witness-account has only " + str(float(balance)) + " " + balance.asset["symbol"] + ", please replenish immediately", category="warning")
                 elif float(balance) < info_less:
-                    flash("Account witness-account has only " + str(float(balance)) + " " + balance.asset.symbol + ", please replenish")
+                    flash("Account witness-account has only " + str(float(balance)) + " " + balance.asset["symbol"] + ", please replenish")
     except NodeException:
         pass
 
     try:
         account = Node().getSelectedAccount()
         for balance in account.balances:
-            if balance.asset.id == "1.3.0":
+            if balance.asset["id"] == "1.3.0":
                 if float(balance) < warning_less:
-                    flash("Account " + account.name + " has only " + str(float(balance)) + " " + balance.asset.symbol + ", please replenish immediately", category="warning")
+                    flash("Account " + account.name + " has only " + str(float(balance)) + " " + balance.asset["symbol"] + ", please replenish immediately", category="warning")
                 elif float(balance) < info_less:
-                    flash("Account " + account.name + " has only " + str(float(balance)) + " " + balance.asset.symbol + ", please replenish")
+                    flash("Account " + account.name + " has only " + str(float(balance)) + " " + balance.asset["symbol"] + ", please replenish")
         accountDict = {
             'id': account.identifier,
             'name': account.name,
