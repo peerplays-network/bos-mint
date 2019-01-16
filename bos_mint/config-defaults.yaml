@@ -15,6 +15,10 @@ connection:
         nobroadcast: False
         num_retries: 1
 
+notifications:
+    accountLessThanCoreInfo: 1000
+    accountLessThanCoreWarning: 200
+
 allowed_assets:
     - BTF
     - BTC

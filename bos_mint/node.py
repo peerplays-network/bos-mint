@@ -121,6 +121,16 @@ class Node(object):
         except Exception as ex:
             raise NodeException(ex.__class__.__name__ + ": " + str(ex))
 
+    def getWitnessAccount(self):
+        # so far default is always active
+        try:
+            return Account(
+                "witness-account",
+                peerplays_instance=self.get_node()
+            )
+        except Exception as ex:
+            raise NodeException(ex.__class__.__name__ + ": " + str(ex))
+
     def getAccounts(self, idList):
         accounts = []
         try:

@@ -326,7 +326,7 @@ def witnesses():
                     except Exception as e:
                             _responses[_name] = "Errored, " + str(e)
 
-            threads.append(Thread(target=_call_beacon, args=(responses, witness["url"], witness["name"])))
+            threads.append(Thread(target=_call_beacon, args=(responses, witness["url"] + "/isalive", witness["name"])))
             threads[len(threads) - 1].start()
 
         for i in range(len(threads)):
@@ -495,9 +495,13 @@ def show_incidents(from_date=None, to_date=None, matching=None, use="mongodb"):
     # resort for provider view
     for event in unresolved_events:
         try:
-            event_scheduled = utils.string_to_date(event["id_string"][0:20])
+            event_scheduled = utils.string_to_date(event["id_string"][0:18])
         except InvalidRFC3339Error:
-            event_scheduled = utils.string_to_date(event["id_string"][0:23])
+            try:
+                event_scheduled = utils.string_to_date(event["id_string"][0:20])
+            except InvalidRFC3339Error:
+                event_scheduled = utils.string_to_date(event["id_string"][0:23])
+
         if event_scheduled <= to_date and event_scheduled >= from_date and\
                 (matching is None or all([x.lower() in event["id_string"].lower() for x in matching])):
             store.resolve_event(event)
