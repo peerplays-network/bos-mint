@@ -3,16 +3,15 @@ debug: False
 project_name: MINT
 project_sub_name: The BOS Manual Intervention Module
 secret_key: # enter any random string 
-advanced_features: True
 
 sql_database: "sqlite:///{cwd}/bookied-local.db"
 
 connection:
-    use: elizabeth # enter your desired chain
+    use: # enter your desired chain
 
-    elizabeth:
+    baxter:
         node:
-            - ws://ec2-18-195-242-233.eu-central-1.compute.amazonaws.com:8090
+            - # enter your node
         nobroadcast: False
         num_retries: 1
 
