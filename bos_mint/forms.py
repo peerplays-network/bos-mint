@@ -10,7 +10,8 @@ from wtforms import (
     SelectField,
     FieldList,
     DateTimeField,
-    FormField
+    FormField,
+    Label
 )
 from wtforms.validators import (
     Required,
@@ -39,7 +40,8 @@ def selectDictToList(sourceDictionary):
     return [(x['id'], x['toString']) for x in sourceDictionary]
 
 
-def buildUpdateForm(typeName, selectChoices, newFormClass, selected=None):
+def buildUpdateForm(typeName, selectChoices, newFormClass, selected=None, details=False):
+    # Fifth parameter is added to display read only text instead of disabled text on Details page
     # All objects have their own Form for their creation. This reuses those
     # forms and adds a selection field
     class _UpdateForm(FlaskForm):
@@ -53,10 +55,16 @@ def buildUpdateForm(typeName, selectChoices, newFormClass, selected=None):
                              validators=[DataRequired()],
                              choices=selectChoices)
     else:
-        select = SelectField(label=utils.getTitle(typeName),
-                             validators=[DataRequired()],
-                             choices=selectChoices,
-                             render_kw={"disabled": True})
+        if not details:
+            select = SelectField(label=utils.getTitle(typeName),
+                               validators=[DataRequired()],
+                               choices=selectChoices,
+                               render_kw={"disabled": True})
+        else:
+            select = TextField(label=utils.getTitle(typeName),
+                               validators=[Optional()],
+                               render_kw={'readonly': True})           
+
 
     if selected:
         select.data = selected
@@ -137,6 +145,31 @@ class TranslatedFieldForm(FlaskForm):
             # append entry to a FieldList creates forms from dictionary!
             self.translations.append_entry(lng.getForm())
 
+class InternationalizedStringFormDetails(FlaskForm):
+    country = TextField("Language",
+                          render_kw={'readonly': True}, validators=[Optional()])
+    text = StringField('Text', render_kw={'readonly': True}, validators=[Optional()])
+
+
+class TranslatedFieldFormDetails(FlaskForm):
+    translations = FieldList(FormField(InternationalizedStringFormDetails, label=""),
+                             render_kw={'readonly': True},
+                             label="")
+    
+    def fill(self, translationsList):
+        # empty the fieldlist
+        while len(self.translations) > 0:
+            self.translations.pop_entry()
+
+        for country, text in translationsList:
+            try:
+                lng = InternationalizedString(country, text)
+            except LanguageNotFoundException:
+                # append an entry indicating the unknown language
+                lng = InternationalizedString(InternationalizedString.UNKNOWN, country + " - " + text)
+
+            # append entry to a FieldList creates forms from dictionary!
+            self.translations.append_entry(lng.getForm())    
 
 class UnlockForm(FlaskForm):
     password = PasswordField('Password', validators['unlock'])
@@ -218,13 +251,27 @@ class NewSportForm(FlaskForm):
             selectedId,
             InternationalizedString.parseToList(self.name))
 
+class SportFormDetails(FlaskForm):
+    name = FormField(TranslatedFieldFormDetails, render_kw={'readonly': True})
+    submit = SubmitField("Submit")
+
+    @classmethod
+    def getTypeName(cls):
+        return 'sport'
+
+    def init(self, selectedObject, defaultSelectedId=None):
+        pass
+
+    def fill(self, selectedObject):
+        self.name.fill(selectedObject['name'])
+
 
 class NewEventGroupForm(FlaskForm):
     sport = SelectField("Sport", validators=[DataRequired()],
                         choices=None)
     name = FormField(TranslatedFieldForm)
     submit = SubmitField("Submit")
-
+    
     @classmethod
     def getTypeName(cls):
         return 'eventgroup'
@@ -248,6 +295,26 @@ class NewEventGroupForm(FlaskForm):
             selectedId,
             InternationalizedString.parseToList(self.name), self.sport.data)
 
+class EventGroupFormDetails(FlaskForm):
+    sport = TextField("Sport", render_kw={'readonly': True}, validators=[Optional()])
+    name = FormField(TranslatedFieldFormDetails, render_kw={'readonly': True})
+    submit = SubmitField("Submit")
+
+    print(" ** forms.py 256 ** " )
+    @classmethod
+    def getTypeName(cls):
+        return 'eventgroup'
+
+    def init(self, selectedObject, default=None):
+        self.sport.choices = selectDictToList(
+            utils.getComprisedTypesGetter('sport')(None))
+        if default:
+            self.sport.data = default['parentId']
+
+    def fill(self, selectedObject):
+        self.sport.data = selectedObject['sport_id']
+        self.name.fill(selectedObject['name'])
+    
 
 class NewEventForm(FlaskForm):
     eventgroup = SelectField("Event group",
@@ -320,6 +387,51 @@ class NewEventForm(FlaskForm):
             self.start.data,
             self.eventgroup.data,
             new_state)
+
+class EventFormDetails(FlaskForm):
+    eventgroup = TextField("Event group", render_kw={'readonly': True}, validators=[Optional()])
+    name = FormField(TranslatedFieldFormDetails, render_kw={'readonly': True})
+    status = TextField("Status", render_kw={'readonly': True}, validators=[Optional()])
+    season = FormField(TranslatedFieldFormDetails, render_kw={'readonly': True}, label="Season")
+    start = DateTimeField("Start (Format 'year-month-day hour:minute:secondZ' UTC)", format='%Y-%m-%d %H:%M:%SZ',
+                          default=datetime.datetime.utcnow(),
+                          render_kw={'readonly': True}, validators=[Optional()])
+    submit = SubmitField("Submit")
+
+    @classmethod
+    def getTypeName(cls):
+        return 'event'
+
+    def init(self, selectedObject, default=None):
+        self.status.choices = utils.filterOnlyAllowed(EventStatus, "create")
+
+        sportId = None
+        if isinstance(selectedObject, EventGroup):
+            sportId = selectedObject['sport_id']
+        elif isinstance(selectedObject, Event):
+            sportId = selectedObject.eventgroup.sport['id']
+            self.status.choices = utils.filterOnlyAllowed(EventStatus, selectedObject['status'])
+        elif isinstance(selectedObject, wrapper.EventGroup):
+            sportId = selectedObject.get('parentId')
+
+        # choices need to be filled at all times
+        self.eventgroup.choices = selectDictToList(
+            utils.getComprisedTypesGetter('eventgroup')(sportId))
+
+        if default:
+            self.eventgroup.data = default['parentId']
+
+    def fill(self, selectedObject):
+        self.eventgroup.data = selectedObject.eventgroup['id']
+        self.name.fill(selectedObject['name'])
+        self.season.fill(selectedObject['season'])
+
+        # fill status choices on selection
+        self.status.choices = utils.filterOnlyAllowed(EventStatus, selectedObject['status'])
+        self.status.label.text = self.status.label.text + " (" + selectedObject['status'] + ")"
+        self.status.data = selectedObject['status']
+
+        self.start.data = utils.string_to_date(selectedObject['start_time'] + "Z")
 
 
 class EventStatusForm(FlaskForm):
@@ -461,6 +573,57 @@ class NewBettingMarketGroupForm(FlaskForm):
             self.bettingmarketrule.data,
             new_state)
 
+class BettingMarketGroupFormDetails(FlaskForm):
+    event = TextField("Event", render_kw={'readonly': True}, validators=[Optional()])
+    description = FormField(TranslatedFieldFormDetails, render_kw={'readonly': True})
+    status = TextField("Status",render_kw={'readonly': True}, validators=[Optional()])
+    bettingmarketrule = TextField(
+        "Betting market group rule",
+        render_kw={'readonly': True}, validators=[Optional()])
+    asset = TextField("Asset", render_kw={'readonly': True}, validators=[Optional()])
+    submit = SubmitField("Submit")
+
+    @classmethod
+    def getTypeName(cls):
+        return 'bettingmarketgroup'
+
+    def init(self, selectedObject, default=None):
+        self.status.choices = utils.filterOnlyAllowed(BettingMarketGroupStatus, "create")
+
+        # choices need to be filled at all times
+        eventGroupId = None
+        if isinstance(selectedObject, Event):
+            eventGroupId = selectedObject['event_group_id']
+        elif isinstance(selectedObject, BettingMarketGroup):
+            eventGroupId = selectedObject.event['event_group_id']
+            self.status.choices = utils.filterOnlyAllowed(BettingMarketGroupStatus, selectedObject['status'])
+        elif isinstance(selectedObject, wrapper.Event):
+            eventGroupId = selectedObject.get('parentId')
+
+        # choices need to be filled at all times
+        self.event.choices = selectDictToList(
+            utils.getComprisedTypesGetter('event')(eventGroupId))
+
+        if default:
+            self.event.data = default['parentId']
+
+        self.bettingmarketrule.choices = selectDictToList(
+            utils.getComprisedTypesGetter('bettingmarketgrouprule')(None))
+
+        if self.asset.data == "None":
+            self.asset.data = config.get("allowed_assets")[0]
+
+    def fill(self, selectedObject):
+        self.event.data = selectedObject['event_id']
+        self.bettingmarketrule.data = selectedObject['rules_id']
+        self.description.fill(selectedObject['description'])
+
+        # fill status choices on selection
+        self.status.choices = utils.filterOnlyAllowed(BettingMarketGroupStatus, selectedObject['status'])
+        self.status.label.text = self.status.label.text + " (" + selectedObject['status'] + ")"
+        self.status.data = selectedObject['status']
+
+        self.asset.data = Node().getAsset(selectedObject["asset_id"])["symbol"]
 
 class NewBettingMarketForm(FlaskForm):
     bettingmarketgroup = SelectField(
@@ -524,6 +687,47 @@ class NewBettingMarketForm(FlaskForm):
             InternationalizedString.parseToList(self.description),
             self.bettingmarketgroup.data)
 
+class BettingMarketFormDetails(FlaskForm):
+    bettingmarketgroup = TextField(
+        "Betting market group",
+        render_kw={'readonly': True}, validators=[Optional()])
+    description = FormField(TranslatedFieldFormDetails, render_kw={'readonly': True}, label="Description")
+    payoutCondition = FormField(TranslatedFieldFormDetails, render_kw={'readonly': True}, label="Payout condition")
+    status = TextField("Status", render_kw={'readonly': True}, validators=[Optional()])
+    submit = SubmitField("Submit")
+
+    @classmethod
+    def getTypeName(cls):
+        return 'bettingmarket'
+
+    def init(self, selectedObject, default=None):
+        self.status.choices = utils.filterOnlyAllowed(BettingMarketStatus, "create")
+
+        eventId = None
+        if isinstance(selectedObject, BettingMarketGroup):
+            eventId = selectedObject['event_id']
+        elif isinstance(selectedObject, BettingMarket):
+            eventId = selectedObject.bettingmarketgroup['event_id']
+            self.status.choices = utils.filterOnlyAllowed(BettingMarketStatus, selectedObject['status'])
+        elif isinstance(selectedObject, wrapper.BettingMarketGroup):
+            eventId = selectedObject.get('parentId')
+
+        self.bettingmarketgroup.choices = selectDictToList(
+            utils.getComprisedTypesGetter('bettingmarketgroup')(eventId))
+
+        if default:
+            self.bettingmarketgroup.data = default['parentId']
+
+    def fill(self, selectedObject):
+        self.bettingmarketgroup.data = selectedObject['group_id']
+        self.payoutCondition.fill(selectedObject['payout_condition'])
+        self.description.fill(selectedObject['description'])
+
+        # fill status choices on selection
+        self.status.choices = utils.filterOnlyAllowed(BettingMarketStatus, selectedObject['status'])
+        self.status.label.text = self.status.label.text + " (" + selectedObject['status'] + ")"
+        self.status.data = selectedObject['status']
+
 
 class NewBettingMarketGroupRuleForm(FlaskForm):
     name = FormField(TranslatedFieldForm, label="Name")
@@ -551,6 +755,22 @@ class NewBettingMarketGroupRuleForm(FlaskForm):
             selectedId,
             InternationalizedString.parseToList(self.name),
             InternationalizedString.parseToList(self.description))
+
+class BettingMarketGroupRuleFormDetails(FlaskForm):
+    name = FormField(TranslatedFieldFormDetails, render_kw={'readonly': True}, label="Name")
+    description = FormField(TranslatedFieldFormDetails, render_kw={'readonly': True}, label="Description")
+    submit = SubmitField("Submit")
+
+    @classmethod
+    def getTypeName(cls):
+        return 'bettingmarketgrouprule'
+
+    def init(self, selectedObject, default=None):
+        pass
+
+    def fill(self, selectedObject):
+        self.name.fill(selectedObject['name'])
+        self.description.fill(selectedObject['description'])
 
 
 class ApprovalForm(FlaskForm):
