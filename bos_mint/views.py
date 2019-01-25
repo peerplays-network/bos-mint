@@ -584,7 +584,7 @@ def overview(typeName=None, identifier=None):
 
         # same structure for all chain elements and list elements
         def buildListElements(tmpList):
-            tmpList = sorted(tmpList, key=lambda k: k['toString'])
+            tmpList = sorted(tmpList, key=lambda k: k['toString']) 
             for entry in tmpList:
                 if entry['typeName'] == 'event':
                     entry['extraLink'] = [{
@@ -940,7 +940,7 @@ def bet_new():
     return render_template_menuinfo('index.html', **locals())
 
 
-def genericUpdate(formClass, selectId, removeSubmits=False, details=False):
+def genericUpdate(formClass, selectId, removeSubmits=False):
     typeName = formClass.getTypeName()
 
     selectFunction = utils.getTypeGetter(typeName)
@@ -951,13 +951,11 @@ def genericUpdate(formClass, selectId, removeSubmits=False, details=False):
     parentId = None
     if selectId:
         parentId = utils.getParentTypeGetter(typeName)(selectId)
-    print("**** Views.py **** selectId, parentId, typeName",\
-    selectId, parentId, typeName)
+
     form = forms.buildUpdateForm(typeName,
                                  choicesFunction(parentId),
                                  formClass,
-                                 selectId,
-                                 details)
+                                 selectId)
 
     typeNameTitle = utils.getTitle(typeName)
 
@@ -985,7 +983,7 @@ def genericUpdate(formClass, selectId, removeSubmits=False, details=False):
         help_file = "../../static/img/help/" + typeName + ".png"
 
     form.init(selectedObject)
- 
+
     # user wants to add language?
     if findAndProcessTranslatons(form):
         return render_template_menuinfo("update.html", **locals())
@@ -1042,7 +1040,7 @@ def sport_update(selectId=None):
 @unlocked_wallet_required
 def eventgroup_update(selectId=None):
     formClass = forms.NewEventGroupForm
-    
+
     return genericUpdate(formClass, selectId)
 
 
@@ -1088,37 +1086,37 @@ def bettingmarketgrouprule_update(selectId=None):
 
 @app.route("/sport/details/<selectId>")
 def sport_details(selectId):
-    return genericUpdate(forms.SportFormDetails, selectId, True, True)
+    return genericUpdate(forms.NewSportForm, selectId, True)
 
 
 @app.route("/eventgroup/details/<selectId>")
 def eventgroup_details(selectId):
-    formClass = forms.EventGroupFormDetails
-    return genericUpdate(formClass, selectId, True, True)
+    formClass = forms.NewEventGroupForm
+    return genericUpdate(formClass, selectId, True)
 
 
 @app.route("/event/details/<selectId>")
 def event_details(selectId):
-    formClass = forms.EventFormDetails
-    return genericUpdate(formClass, selectId, True, True)
+    formClass = forms.NewEventForm
+    return genericUpdate(formClass, selectId, True)
 
 
 @app.route("/bettingmarketgroup/details/<selectId>")
 def bettingmarketgroup_details(selectId):
-    formClass = forms.BettingMarketGroupFormDetails
-    return genericUpdate(formClass, selectId, True, True)
+    formClass = forms.NewBettingMarketGroupForm
+    return genericUpdate(formClass, selectId, True)
 
 
 @app.route("/bettingmarketgrouprule/details/<selectId>")
 def bettingmarketgrouprule_details(selectId):
-    formClass = forms.BettingMarketGroupRuleFormDetails
-    return genericUpdate(formClass, selectId, True, True)
+    formClass = forms.NewBettingMarketGroupRuleForm
+    return genericUpdate(formClass, selectId, True)
 
 
 @app.route("/bettingmarket/details/<selectId>")
 def bettingmarket_details(selectId):
-    formClass = forms.BettingMarketFormDetails
-    return genericUpdate(formClass, selectId, True, True)
+    formClass = forms.NewBettingMarketForm
+    return genericUpdate(formClass, selectId, True)
 
 
 @app.route("/event/start/<selectId>", methods=['post', 'get'])
