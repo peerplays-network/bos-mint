@@ -15,11 +15,16 @@ connection:
         nobroadcast: False
         num_retries: 1
 
+notifications:
+    accountLessThanCoreInfo: 1000
+    accountLessThanCoreWarning: 200
+
 allowed_assets:
     - BTF
     - BTC
     - PPY
     - BTCTEST
+    - TEST
 
 allowed_transitions:
     EventStatus:
@@ -54,6 +59,11 @@ allowed_transitions:
             - frozen
             - closed
             - canceled
+        frozen:
+            - closed
+            - canceled
+            - in_play
+            - upcoming
         closed:
             - graded
             - canceled
