@@ -24,6 +24,7 @@ allowed_assets:
     - BTC
     - PPY
     - BTCTEST
+    - TEST
 
 allowed_transitions:
     EventStatus:
@@ -58,6 +59,11 @@ allowed_transitions:
             - frozen
             - closed
             - canceled
+        frozen:
+            - closed
+            - canceled
+            - in_play
+            - upcoming
         closed:
             - graded
             - canceled
