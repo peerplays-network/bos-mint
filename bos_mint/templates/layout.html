@@ -67,8 +67,13 @@
 		    			<a class="item" href="{{ url_for('account_add') }}"><i class="small plus icon"></i>Add new</a>
 		   			</div>
 				 </div>
-				 <div class="ui divider"></div>
-  				 <a class="item" href="{{ url_for('bookiesports_sync') }}">Synchronize bookiesports</a>
+				 {% if menuInfo["advanced_features"] %}
+				 	<div class="ui divider"></div>
+  				 	<a class="item" href="{{ url_for('bookiesports_sync') }}">Synchronize bookiesports</a>
+  				 	<a class="item" href="{{ url_for('witnesses') }}">Ping witnesses</a>
+  				 	<a class="item" href="{{ url_for('cancel') }}">Cancel legacy events</a>
+  				 	<a class="item" href="{{ url_for('replay') }}">Replay events</a>
+  				 {% endif %}
   			</div>
 		 </div>
 		 <a title="Lists all operations to be proposed" class="item" href="{{ url_for('pending_operations') }}"><i class="large in cart icon"></i> {{ menuInfo["numberOfOpenTransactions"] }}</a>

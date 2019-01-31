@@ -49,12 +49,14 @@ from bookiesports import BookieSports
 from strict_rfc3339 import InvalidRFC3339Error
 from bos_mint.istring import InternationalizedString
 from datetime import timedelta
-from bos_incidents.format import get_id_as_string
+from bos_incidents.format import get_reconstruct_string
 from time import sleep
 from threading import Thread
 from datetime import datetime
 from peerplays.event import Events
 from bos_mint.datestring import string_to_date
+from pprint import pformat, pprint
+import json
 
 
 ###############################################################################
@@ -289,6 +291,7 @@ def newwallet():
 
 
 @app.route('/witnesses')
+@unlocked_wallet_required
 def witnesses():
     if not Config.get("advanced_features", False):
         abort(404)
@@ -323,7 +326,7 @@ def witnesses():
                     except Exception as e:
                             _responses[_name] = "Errored, " + str(e)
 
-            threads.append(Thread(target=_call_beacon, args=(responses, witness["url"], witness["name"])))
+            threads.append(Thread(target=_call_beacon, args=(responses, witness["url"] + "/isalive", witness["name"])))
             threads[len(threads) - 1].start()
 
         for i in range(len(threads)):
@@ -370,18 +373,23 @@ def witnesses():
     }
 
     response_dict = {
-        "time": datetime.now(),
+        "time": str(datetime.now()),
         "reponses": responses
     }
 
-    return jsonify(
-        response_dict
+    preformatted_string = json.dumps(
+        response_dict,
+        sort_keys=True,
+        indent=4
     )
+
+    return render_template_menuinfo('generic.html', preformatted_string=preformatted_string)
 
 
 @app.route('/cancel')
 @app.route('/cancel/<event_ids>')
 @app.route('/cancel/<event_ids>/<chain>')
+@unlocked_wallet_required
 def cancel(event_ids=None, chain=None):
     if not Config.get("advanced_features", False):
         abort(404)
@@ -398,16 +406,20 @@ def cancel(event_ids=None, chain=None):
         for event in all_events:
             if string_to_date(event["start_time"]) < string_to_date():
                 legacy_events["details"].append(
-                    "on_chain_id=" + event["id"] + ";start_time=" + event["start_time"]
+                    "event_id=" + event["id"] + "; start_time=" + event["start_time"]
                 )
                 legacy_events_list.append(event)
 
         legacy_events_list = sorted(legacy_events_list, key=lambda k: k["id"])
         for event in legacy_events_list:
-            legacy_events["event_ids"] = legacy_events["event_ids"] + event["id"] + ","
+            legacy_events["all_event_ids"] = legacy_events["event_ids"] + event["id"] + ","
 
-        return jsonify(
-            legacy_events
+        legacy_events["usage"] = "To cancel a specific event (or several): Dryrun with '/cancel/<comma-separated-list-of-ids>', execute with '/cancel/<comma-separated-list-of-ids>/send'"
+
+        preformatted_string = json.dumps(
+            legacy_events,
+            sort_keys=True,
+            indent=4
         )
     else:
         responses = []
@@ -440,10 +452,16 @@ def cancel(event_ids=None, chain=None):
                 if response.status_code == 200:
                     responses.append(requests.get(url, timeout=1000).json())
 
-        return jsonify({
-            "responses": responses,
-            "urls_to_call": list(urls_to_call.keys())
-        })
+        preformatted_string = json.dumps(
+            {
+                "responses": responses,
+                "urls_to_call": list(urls_to_call.keys())
+            },
+            sort_keys=True,
+            indent=4
+        )
+
+    return render_template_menuinfo('generic.html', preformatted_string=preformatted_string)
 
 
 @app.route('/incidents')
@@ -492,9 +510,13 @@ def show_incidents(from_date=None, to_date=None, matching=None, use="mongodb"):
     # resort for provider view
     for event in unresolved_events:
         try:
-            event_scheduled = utils.string_to_date(event["id_string"][0:20])
+            event_scheduled = utils.string_to_date(event["id_string"][0:18])
         except InvalidRFC3339Error:
-            event_scheduled = utils.string_to_date(event["id_string"][0:23])
+            try:
+                event_scheduled = utils.string_to_date(event["id_string"][0:20])
+            except InvalidRFC3339Error:
+                event_scheduled = utils.string_to_date(event["id_string"][0:23])
+
         if event_scheduled <= to_date and event_scheduled >= from_date and\
                 (matching is None or all([x.lower() in event["id_string"].lower() for x in matching])):
             store.resolve_event(event)
@@ -524,7 +546,7 @@ def show_incidents(from_date=None, to_date=None, matching=None, use="mongodb"):
                 event[call]["incidents_per_provider"] = incident_provider_dict
             except KeyError:
                 pass
-        event["id_string"] = get_id_as_string(event["id"])
+        event["reconstruct_string"] = get_reconstruct_string(event["id"])
         events.append(event)
 
     from_date = utils.date_to_string(from_date)
@@ -580,7 +602,7 @@ def overview(typeName=None, identifier=None):
 
         # same structure for all chain elements and list elements
         def buildListElements(tmpList):
-            tmpList = sorted(tmpList, key=lambda k: k['toString'])
+            tmpList = sorted(tmpList, key=lambda k: k['toString']) 
             for entry in tmpList:
                 if entry['typeName'] == 'event':
                     entry['extraLink'] = [{
@@ -937,7 +959,7 @@ def bet_new():
     return render_template_menuinfo('index.html', **locals())
 
 
-def genericUpdate(formClass, selectId, removeSubmits=False, details=False):
+def genericUpdate(formClass, selectId, removeSubmits=False):
     typeName = formClass.getTypeName()
 
     selectFunction = utils.getTypeGetter(typeName)
@@ -948,13 +970,11 @@ def genericUpdate(formClass, selectId, removeSubmits=False, details=False):
     parentId = None
     if selectId:
         parentId = utils.getParentTypeGetter(typeName)(selectId)
-    print("**** Views.py **** selectId, parentId, typeName",\
-    selectId, parentId, typeName)
+
     form = forms.buildUpdateForm(typeName,
                                  choicesFunction(parentId),
                                  formClass,
-                                 selectId,
-                                 details)
+                                 selectId)
 
     typeNameTitle = utils.getTitle(typeName)
 
@@ -982,7 +1002,7 @@ def genericUpdate(formClass, selectId, removeSubmits=False, details=False):
         help_file = "../../static/img/help/" + typeName + ".png"
 
     form.init(selectedObject)
- 
+
     # user wants to add language?
     if findAndProcessTranslatons(form):
         return render_template_menuinfo("update.html", **locals())
@@ -1063,7 +1083,6 @@ def eventgroup_update(selectId=None):
         formClass = forms.EventGroupFormDetails
         return genericUpdate(formClass, selectId, True, True) 
 
-
 @app.route("/event/update", methods=['post', 'get'])
 @app.route("/event/update/<selectId>", methods=['post', 'get'])
 @unlocked_wallet_required
@@ -1123,37 +1142,37 @@ def bettingmarketgrouprule_update(selectId=None):
 
 @app.route("/sport/details/<selectId>")
 def sport_details(selectId):
-    return genericUpdate(forms.SportFormDetails, selectId, True, True)
+    return genericUpdate(forms.NewSportForm, selectId, True)
 
 
 @app.route("/eventgroup/details/<selectId>")
 def eventgroup_details(selectId):
-    formClass = forms.EventGroupFormDetails
-    return genericUpdate(formClass, selectId, True, True)
+    formClass = forms.NewEventGroupForm
+    return genericUpdate(formClass, selectId, True)
 
 
 @app.route("/event/details/<selectId>")
 def event_details(selectId):
-    formClass = forms.EventFormDetails
-    return genericUpdate(formClass, selectId, True, True)
+    formClass = forms.NewEventForm
+    return genericUpdate(formClass, selectId, True)
 
 
 @app.route("/bettingmarketgroup/details/<selectId>")
 def bettingmarketgroup_details(selectId):
-    formClass = forms.BettingMarketGroupFormDetails
-    return genericUpdate(formClass, selectId, True, True)
+    formClass = forms.NewBettingMarketGroupForm
+    return genericUpdate(formClass, selectId, True)
 
 
 @app.route("/bettingmarketgrouprule/details/<selectId>")
 def bettingmarketgrouprule_details(selectId):
-    formClass = forms.BettingMarketGroupRuleFormDetails
-    return genericUpdate(formClass, selectId, True, True)
+    formClass = forms.NewBettingMarketGroupRuleForm
+    return genericUpdate(formClass, selectId, True)
 
 
 @app.route("/bettingmarket/details/<selectId>")
 def bettingmarket_details(selectId):
-    formClass = forms.BettingMarketFormDetails
-    return genericUpdate(formClass, selectId, True, True)
+    formClass = forms.NewBettingMarketForm
+    return genericUpdate(formClass, selectId, True)
 
 
 @app.route("/event/start/<selectId>", methods=['post', 'get'])
