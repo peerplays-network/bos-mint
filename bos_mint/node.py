@@ -121,6 +121,16 @@ class Node(object):
         except Exception as ex:
             raise NodeException(ex.__class__.__name__ + ": " + str(ex))
 
+    def getWitnessAccount(self):
+        # so far default is always active
+        try:
+            return Account(
+                "witness-account",
+                peerplays_instance=self.get_node()
+            )
+        except Exception as ex:
+            raise NodeException(ex.__class__.__name__ + ": " + str(ex))
+
     def getAccounts(self, idList):
         accounts = []
         try:
@@ -446,7 +456,7 @@ class Node(object):
         return self.updateEventStatus(eventId, "in_progress")
 
     def freezeEvent(self, eventId):
-        return self.updateEventStatus("frozen")
+        return self.updateEventStatus(eventId, "frozen")
 
     def cancelEvent(self, eventId):
         return self.updateEventStatus(eventId, "canceled")

@@ -66,9 +66,6 @@
 						{% for incident in incidents_dict["incidents"] %}
 							<li>
 								{{ incident['provider_info']['pushed'] }}: {{ incident['arguments'] }}
-								{% if incidents_dict["replay_links"] and incidents_dict["replay_links"][incident['unique_string']] %}
-									<a style="float: right" target="_blank" href="{{ incidents_dict['replay_links'][incident['unique_string']] }}">replay</a>
-								{% endif %}
 								<br />
 								<a href="{{ url_for('replay', filter=incident['unique_string'], use=use) }}">replay</a>
 							</li>
@@ -82,7 +79,7 @@
 				<ul class="ui list">
 				    {% for provider_hash, provider in menuInfo['incidents']['dataproxy_link'].items() %}
 						<li>
-							<a target="_blank" href="{{ provider['replay'] + '&manufacture=' + event['id_string'] + '__' + call + '__None' }}">{{ provider_hash }}</a>
+							<a target="_blank" href="{{ provider['replay'] + '&manufacture=' + event['reconstruct_string'] + '__' + call + '__None' }}">{{ provider_hash }}</a>
 						 </li>
 					{% endfor %}
 				</ul>
@@ -164,9 +161,8 @@ Markings according to the status:
 <br />
 <div class="ui styled accordion" style="width: 100%;">
 	{% for event in events %}
-  		
   		<div class="title">
-<i class="dropdown icon"></i>{{ event['id_string'] }}:
+<i class="dropdown icon"></i>{{ event['reconstruct_string'] }}:
 	{{ call_indicator(event['create']) }}
    	-
    	{{ call_indicator(event['dynamic_bmgs']) }}
@@ -181,6 +177,7 @@ Markings according to the status:
 </div>
 <div class="content">
 	<p class="transition visible" style="display: block !important;">
+	Id string: {{ event['id_string'] }}:
 	<table class="ui very basic collapsing celled table">
 		<tbody>
 			<thead>
