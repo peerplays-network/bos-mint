@@ -65,7 +65,6 @@ def buildUpdateForm(typeName, selectChoices, newFormClass, selected=None, detail
                                validators=[Optional()],
                                render_kw={'readonly': True})           
 
-
     if selected:
         select.data = selected
 

@@ -1116,7 +1116,6 @@ def bettingmarket_details(selectId):
     formClass = forms.BettingMarketFormDetails
     return genericUpdate(formClass, selectId, True, True)
 
-
 @app.route("/event/start/<selectId>", methods=['post', 'get'])
 @unlocked_wallet_required
 def event_start(selectId):
