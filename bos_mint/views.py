@@ -326,8 +326,8 @@ def witnesses():
                     except Exception as e:
                             _responses[_name] = "Errored, " + str(e)
 
-            threads.append(Thread(target=_call_beacon, args=(responses, witness["url"], witness["name"])))
-            threads[len(threads) - 1].start()
+             threads.append(Thread(target=_call_beacon, args=(responses, witness["url"] + "/isalive", witness["name"])))
+             threads[len(threads) - 1].start()
 
         for i in range(len(threads)):
             threads[i].join()
