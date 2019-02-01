@@ -53,11 +53,15 @@ def buildUpdateForm(typeName, selectChoices, newFormClass, selected=None):
                              validators=[DataRequired()],
                              choices=selectChoices)
     else:
-        select = SelectField(label=utils.getTitle(typeName),
-                             validators=[DataRequired()],
-                             choices=selectChoices,
-                             render_kw={"disabled": True})
-
+        if not details:
+            select = SelectField(label=utils.getTitle(typeName),
+                               validators=[DataRequired()],
+                               choices=selectChoices,
+                               render_kw={"disabled": True})
+        else:
+            select = TextField(label=utils.getTitle(typeName),
+                               validators=[Optional()],
+                               render_kw={'readonly': True})           
     if selected:
         select.data = selected
 
