@@ -264,7 +264,6 @@ class SportFormDetails(FlaskForm):
     def fill(self, selectedObject):
         self.name.fill(selectedObject['name'])
 
-
 class NewEventGroupForm(FlaskForm):
     sport = SelectField("Sport", validators=[DataRequired()],
                         choices=None)
