@@ -1046,7 +1046,7 @@ def genericUpdate(formClass, selectId, removeSubmits=False, details=False):
 
     return render_template_menuinfo("update.html", **locals())
 
-def proposal_awaiting_approval(dict1=None):
+def proposal_awaiting_approval(pendingUpdate=None):
     proposals = Node().getAllProposals()
     # Should not update proposal when the proposal of same id is pending for approval
     approve = False
@@ -1054,7 +1054,7 @@ def proposal_awaiting_approval(dict1=None):
         for operation in proposal['proposed_transaction']['operations']:
             for d in operation[1:]:
                 for k,v in d.items():
-                    if k in dict1.keys() and v in dict1.values():
+                    if k in pendingUpdate.keys() and v in pendingUpdate.values():
                        approve = True
         del operation
 
