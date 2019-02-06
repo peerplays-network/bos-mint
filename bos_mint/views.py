@@ -1186,7 +1186,10 @@ def bettingmarket_details(selectId):
 @app.route("/event/start/<selectId>", methods=['post', 'get'])
 @unlocked_wallet_required
 def event_start(selectId):
-    Node().startEvent(selectId)
+    if Node().getEvent(selectId).get("status") == "in_progress":
+        flash("Event is already in 'in_progress' state")
+    else:
+        Node().startEvent(selectId)
     return redirect(utils.processNextArgument(
                     request.args.get('next'), 'index'))
 
