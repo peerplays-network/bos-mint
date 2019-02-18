@@ -602,7 +602,7 @@ def overview(typeName=None, identifier=None):
 
         # same structure for all chain elements and list elements
         def buildListElements(tmpList):
-            tmpList = sorted(tmpList, key=lambda k: k['toString']) 
+            tmpList = sorted(tmpList, key=lambda k: k['toString'])
             for entry in tmpList:
                 if entry['typeName'] == 'event':
                     entry['extraLink'] = [{
@@ -958,7 +958,7 @@ def bet_new():
     return render_template_menuinfo('index.html', **locals())
 
 
-def genericUpdate(formClass, selectId, removeSubmits=False):
+def genericUpdate(formClass, selectId, removeSubmits=False, details=False):
     typeName = formClass.getTypeName()
 
     selectFunction = utils.getTypeGetter(typeName)
@@ -969,11 +969,12 @@ def genericUpdate(formClass, selectId, removeSubmits=False):
     parentId = None
     if selectId:
         parentId = utils.getParentTypeGetter(typeName)(selectId)
-
+        
     form = forms.buildUpdateForm(typeName,
                                  choicesFunction(parentId),
                                  formClass,
-                                 selectId)
+                                 selectId,
+                                 details)
 
     typeNameTitle = utils.getTitle(typeName)
 
@@ -1001,7 +1002,7 @@ def genericUpdate(formClass, selectId, removeSubmits=False):
         help_file = "../../static/img/help/" + typeName + ".png"
 
     form.init(selectedObject)
-
+ 
     # user wants to add language?
     if findAndProcessTranslatons(form):
         return render_template_menuinfo("update.html", **locals())
@@ -1045,29 +1046,59 @@ def genericUpdate(formClass, selectId, removeSubmits=False):
 
     return render_template_menuinfo("update.html", **locals())
 
+def proposal_awaiting_approval(pendingUpdate=None):
+    proposals = Node().getAllProposals()
+    # Should not update proposal when the proposal of same id is pending for approval
+    approve = False
+    for proposal in proposals:
+        for operation in proposal['proposed_transaction']['operations']:
+            for d in operation[1:]:
+                for k,v in d.items():
+                    if k in pendingUpdate.keys() and v in pendingUpdate.values():
+                       approve = True
+        del operation
+
+    return approve
+
 
 @app.route("/sport/update", methods=['post', 'get'])
 @app.route("/sport/update/<selectId>", methods=['post', 'get'])
 @unlocked_wallet_required
 def sport_update(selectId=None):
-    return genericUpdate(forms.NewSportForm, selectId)
+    dict1 = {'sport_id' : selectId}
+    if not proposal_awaiting_approval(dict1):
+        return genericUpdate(forms.NewSportForm, selectId)
+    else:
+        flash("Current Sport update is not allowed, Proposal is pending for approval")
+        return genericUpdate(forms.SportFormDetails, selectId, True, True)
 
 
 @app.route("/eventgroup/update", methods=['post', 'get'])
 @app.route("/eventgroup/update/<selectId>", methods=['post', 'get'])
 @unlocked_wallet_required
 def eventgroup_update(selectId=None):
-    formClass = forms.NewEventGroupForm
-
-    return genericUpdate(formClass, selectId)
+    dict1 = {'event_group_id' : selectId}
+    if not proposal_awaiting_approval(dict1):
+        formClass = forms.NewEventGroupForm
+        return genericUpdate(formClass, selectId)
+    else:
+        flash("Current EventGroup update is not allowed, Proposal is pending for approval")
+        formClass = forms.EventGroupFormDetails
+        return genericUpdate(formClass, selectId, True, True) 
 
 
 @app.route("/event/update", methods=['post', 'get'])
 @app.route("/event/update/<selectId>", methods=['post', 'get'])
 @unlocked_wallet_required
 def event_update(selectId=None):
-    formClass = forms.NewEventForm
-    return genericUpdate(formClass, selectId)
+    dict1 = {'event_id' : selectId}
+    if not proposal_awaiting_approval(dict1):
+        formClass = forms.NewEventForm
+        return genericUpdate(formClass, selectId)
+    else:
+        flash("Current Event update is not allowed, Proposal is pending for approval")
+        formClass = forms.EventFormDetails
+        return genericUpdate(formClass, selectId, True, True)
 
 
 @app.route("/event/finish", methods=['post', 'get'])
@@ -1082,65 +1113,83 @@ def event_status_update(selectId=None):
 @app.route("/bettingmarketgroup/update/<selectId>", methods=['post', 'get'])
 @unlocked_wallet_required
 def bettingmarketgroup_update(selectId=None):
-    formClass = forms.NewBettingMarketGroupForm
-    return genericUpdate(formClass, selectId)
-
+    dict1 = {'betting_market_group_id' : selectId}
+    if not proposal_awaiting_approval(dict1):
+        formClass = forms.NewBettingMarketGroupForm
+        return genericUpdate(formClass, selectId)
+    else:
+        flash("Current BettingMarketGroup update is not allowed, Proposal is pending for approval")
+        formClass = forms.BettingMarketGroupFormDetails
+        return genericUpdate(formClass, selectId, True, True)
 
 @app.route("/bettingmarket/update", methods=['post', 'get'])
 @app.route("/bettingmarket/update/<selectId>", methods=['post', 'get'])
 @unlocked_wallet_required
 def bettingmarket_update(selectId=None):
-    formClass = forms.NewBettingMarketForm
-    return genericUpdate(formClass, selectId)
-
+    dict1 = {'betting_market_id' : selectId}
+    if not proposal_awaiting_approval(dict1):
+        formClass = forms.NewBettingMarketForm
+        return genericUpdate(formClass, selectId)
+    else:
+        flash("Current BettingMarket update is not allowed, Proposal is pending for approval")
+        formClass = forms.BettingMarketFormDetails
+        return genericUpdate(formClass, selectId, True, True)
 
 @app.route("/bettingmarketgrouprule/update", methods=['post', 'get'])
 @app.route("/bettingmarketgrouprule/update/<selectId>", methods=['post', 'get'])
 @unlocked_wallet_required
 def bettingmarketgrouprule_update(selectId=None):
-    formClass = forms.NewBettingMarketGroupRuleForm
-    return genericUpdate(formClass, selectId)
-
+    dict1 = {'betting_market_rules_id' : selectId}
+    if not proposal_awaiting_approval(dict1):
+        formClass = forms.NewBettingMarketGroupRuleForm
+        return genericUpdate(formClass, selectId)
+    else:
+        flash("Current BettingMarketGroupRule update is not allowed, Proposal is pending for approval")
+        formClass = forms.BettingMarketGroupRuleFormDetails
+        return genericUpdate(formClass, selectId, True, True)
 
 @app.route("/sport/details/<selectId>")
 def sport_details(selectId):
-    return genericUpdate(forms.NewSportForm, selectId, True)
+    return genericUpdate(forms.SportFormDetails, selectId, True, True)
 
 
 @app.route("/eventgroup/details/<selectId>")
 def eventgroup_details(selectId):
-    formClass = forms.NewEventGroupForm
-    return genericUpdate(formClass, selectId, True)
+    formClass = forms.EventGroupFormDetails
+    return genericUpdate(formClass, selectId, True, True)
 
 
 @app.route("/event/details/<selectId>")
 def event_details(selectId):
-    formClass = forms.NewEventForm
-    return genericUpdate(formClass, selectId, True)
+    formClass = forms.EventFormDetails
+    return genericUpdate(formClass, selectId, True, True)
 
 
 @app.route("/bettingmarketgroup/details/<selectId>")
 def bettingmarketgroup_details(selectId):
-    formClass = forms.NewBettingMarketGroupForm
-    return genericUpdate(formClass, selectId, True)
+    formClass = forms.BettingMarketGroupFormDetails
+    return genericUpdate(formClass, selectId, True, True)
 
 
 @app.route("/bettingmarketgrouprule/details/<selectId>")
 def bettingmarketgrouprule_details(selectId):
-    formClass = forms.NewBettingMarketGroupRuleForm
-    return genericUpdate(formClass, selectId, True)
+    formClass = forms.BettingMarketGroupRuleFormDetails
+    return genericUpdate(formClass, selectId, True, True)
 
 
 @app.route("/bettingmarket/details/<selectId>")
 def bettingmarket_details(selectId):
-    formClass = forms.NewBettingMarketForm
-    return genericUpdate(formClass, selectId, True)
+    formClass = forms.BettingMarketFormDetails
+    return genericUpdate(formClass, selectId, True, True)
 
 
 @app.route("/event/start/<selectId>", methods=['post', 'get'])
 @unlocked_wallet_required
 def event_start(selectId):
-    Node().startEvent(selectId)
+    if Node().getEvent(selectId).get("status") == "in_progress":
+        flash("Event is already in 'in_progress' state")
+    else:
+        Node().startEvent(selectId)
     return redirect(utils.processNextArgument(
                     request.args.get('next'), 'index'))
 

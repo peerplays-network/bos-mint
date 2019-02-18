@@ -18,7 +18,7 @@ def get_replayable_incidents(filter, identifier, chain, target=None):
         raise Exception("Dataproxy appears down, status=" + str(response.status_code))
     json_response = response.json()
 
-    if not json_response.get("any_matched_witnesses", False):
+    if json_response.get("matched_targets", 0) == 0:
         raise Exception("The dataproxy has not found matching witness to replay to")
     if json_response.get("amount_incidents", 0) == 0:
         raise Exception("The dataproxy has not found any matching incidents to replay")
@@ -40,7 +40,7 @@ def replay_incidents(filter, identifier, chain, target=None):
         raise Exception("Dataproxy appears down, status=" + str(response.status_code))
     json_response = response.json()
 
-    if not json_response.get("any_matched_witnesses", False):
+    if json_response.get("matched_targets", 0) == 0:
         raise Exception("The dataproxy has not found matching witness to replay to")
     if json_response.get("amount_incidents", 0) == 0:
         raise Exception("The dataproxy has not found any matching incidents to replay")
