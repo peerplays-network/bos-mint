@@ -51,7 +51,7 @@ from bookiesports import BookieSports
 from strict_rfc3339 import InvalidRFC3339Error
 from bos_mint.istring import InternationalizedString
 from datetime import timedelta
-from bos_incidents.format import get_id_as_string
+from bos_incidents.format import get_reconstruct_string
 from time import sleep
 from threading import Thread
 from datetime import datetime
@@ -59,6 +59,8 @@ from peerplays.event import Events
 from peerplays.eventgroup import EventGroup
 from peerplays.sport import Sport
 from bos_mint.datestring import string_to_date
+from pprint import pformat, pprint
+import json
 
 
 ###############################################################################
@@ -293,6 +295,7 @@ def newwallet():
 
 
 @app.route('/witnesses')
+@unlocked_wallet_required
 def witnesses():
     if not Config.get("advanced_features", False):
         abort(404)
@@ -374,18 +377,23 @@ def witnesses():
     }
 
     response_dict = {
-        "time": datetime.now(),
+        "time": str(datetime.now()),
         "reponses": responses
     }
 
-    return jsonify(
-        response_dict
+    preformatted_string = json.dumps(
+        response_dict,
+        sort_keys=True,
+        indent=4
     )
+
+    return render_template_menuinfo('generic.html', preformatted_string=preformatted_string)
 
 
 @app.route('/cancel')
 @app.route('/cancel/<event_ids>')
 @app.route('/cancel/<event_ids>/<chain>')
+@unlocked_wallet_required
 def cancel(event_ids=None, chain=None):
     if not Config.get("advanced_features", False):
         abort(404)
@@ -402,16 +410,20 @@ def cancel(event_ids=None, chain=None):
         for event in all_events:
             if string_to_date(event["start_time"]) < string_to_date():
                 legacy_events["details"].append(
-                    "on_chain_id=" + event["id"] + ";start_time=" + event["start_time"]
+                    "event_id=" + event["id"] + "; start_time=" + event["start_time"]
                 )
                 legacy_events_list.append(event)
 
         legacy_events_list = sorted(legacy_events_list, key=lambda k: k["id"])
         for event in legacy_events_list:
-            legacy_events["event_ids"] = legacy_events["event_ids"] + event["id"] + ","
+            legacy_events["all_event_ids"] = legacy_events["event_ids"] + event["id"] + ","
 
-        return jsonify(
-            legacy_events
+        legacy_events["usage"] = "To cancel a specific event (or several): Dryrun with '/cancel/<comma-separated-list-of-ids>', execute with '/cancel/<comma-separated-list-of-ids>/send'"
+
+        preformatted_string = json.dumps(
+            legacy_events,
+            sort_keys=True,
+            indent=4
         )
     else:
         responses = []
@@ -444,10 +456,16 @@ def cancel(event_ids=None, chain=None):
                 if response.status_code == 200:
                     responses.append(requests.get(url, timeout=1000).json())
 
-        return jsonify({
-            "responses": responses,
-            "urls_to_call": list(urls_to_call.keys())
-        })
+        preformatted_string = json.dumps(
+            {
+                "responses": responses,
+                "urls_to_call": list(urls_to_call.keys())
+            },
+            sort_keys=True,
+            indent=4
+        )
+
+    return render_template_menuinfo('generic.html', preformatted_string=preformatted_string)
 
 
 @app.route('/incidents')
@@ -532,7 +550,7 @@ def show_incidents(from_date=None, to_date=None, matching=None, use="mongodb"):
                 event[call]["incidents_per_provider"] = incident_provider_dict
             except KeyError:
                 pass
-        event["id_string"] = get_id_as_string(event["id"])
+        event["reconstruct_string"] = get_reconstruct_string(event["id"])
         events.append(event)
 
     from_date = utils.date_to_string(from_date)
