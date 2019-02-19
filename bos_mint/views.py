@@ -290,6 +290,12 @@ def newwallet():
     return render_template_menuinfo('generic.html', **locals())
 
 
+@app.route('/mainnet')
+def mainnet():
+    formMessage = "This MINT instance is connected to the peerplays mainnet (alice). Be vigilant!"
+    return render_template_menuinfo('generic.html', formMessage=formMessage)
+
+
 @app.route('/witnesses')
 @unlocked_wallet_required
 def witnesses():

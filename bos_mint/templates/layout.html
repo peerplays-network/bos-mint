@@ -26,6 +26,10 @@
  <body>
   <!-- Header Logo -->
   <div class="ui menu">
+   {% if menuInfo["chain"]["id"] == "6b6b5f0ce7a36d323768e534f3edb41c6d6332a541a95725b98e28d140850134" %}
+   <a class="ui red left corner label" href="{{ url_for('mainnet') }}"></a>
+   {% endif %}
+  	
    <div class="ui container">
     <a href="/" class="header">
      <img class="logo" src="{{ url_for('static', filename='img/logo.png') }}" />
