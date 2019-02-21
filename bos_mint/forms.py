@@ -300,7 +300,6 @@ class EventGroupFormDetails(FlaskForm):
     name = FormField(TranslatedFieldFormDetails, render_kw={'readonly': True})
     submit = SubmitField("Submit")
 
-    print(" ** forms.py 256 ** " )
     @classmethod
     def getTypeName(cls):
         return 'eventgroup'
