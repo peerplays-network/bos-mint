@@ -479,7 +479,7 @@ class Node(object):
         return self.updateEventStatus(eventId, "in_progress")
 
     def freezeEvent(self, eventId):
-        return self.updateEventStatus("frozen")
+        return self.updateEventStatus(eventId, "frozen")
 
     def cancelEvent(self, eventId):
         return self.updateEventStatus(eventId, "canceled")

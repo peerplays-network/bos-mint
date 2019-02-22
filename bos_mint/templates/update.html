@@ -7,7 +7,9 @@
 <h2>{{typeNameAction}} existing {{typeNameTitle}}</h2>
 </td><td align="right">
 <div class="ui secondary  menu">
-<div class="right menu"><a class="item" href="{{ url_for(typeName + '_update') }}">Select other</a></div></div>
+{% if typeName=="sport" %}
+<div class="right menu"><a class="item" type="button" href="{{ url_for(typeName + '_update') }}">Select Other</a></div></div>
+{% endif %}
 </td></tr></tbody></table><br />
 	
 {{ quickform(form) }}

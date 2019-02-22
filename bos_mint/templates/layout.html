@@ -26,6 +26,10 @@
  <body>
   <!-- Header Logo -->
   <div class="ui menu">
+   {% if menuInfo["chain"]["id"] == "6b6b5f0ce7a36d323768e534f3edb41c6d6332a541a95725b98e28d140850134" %}
+   <a class="ui red left corner label" href="{{ url_for('mainnet') }}"></a>
+   {% endif %}
+  	
    <div class="ui container">
     <a href="/" class="header">
      <img class="logo" src="{{ url_for('static', filename='img/logo.png') }}" />
@@ -67,8 +71,13 @@
 		    			<a class="item" href="{{ url_for('account_add') }}"><i class="small plus icon"></i>Add new</a>
 		   			</div>
 				 </div>
-				 <div class="ui divider"></div>
-  				 <a class="item" href="{{ url_for('bookiesports_sync') }}">Synchronize bookiesports</a>
+				 {% if menuInfo["advanced_features"] %}
+				 	<div class="ui divider"></div>
+  				 	<a class="item" href="{{ url_for('bookiesports_sync') }}">Synchronize bookiesports</a>
+  				 	<a class="item" href="{{ url_for('witnesses') }}">Ping witnesses</a>
+  				 	<a class="item" href="{{ url_for('cancel') }}">Cancel legacy events</a>
+  				 	<a class="item" href="{{ url_for('replay') }}">Replay events</a>
+  				 {% endif %}
   			</div>
 		 </div>
 		 <a title="Lists all operations to be proposed" class="item" href="{{ url_for('pending_operations') }}"><i class="large in cart icon"></i> {{ menuInfo["numberOfOpenTransactions"] }}</a>

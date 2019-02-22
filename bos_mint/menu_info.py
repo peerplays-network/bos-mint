@@ -146,6 +146,8 @@ def getMenuInfo():
     except Exception:
         pass
 
+    menuInfo["advanced_features"] = Config.get("advanced_features", False)
+
     logging.getLogger(__name__).debug("getMenuInfo done")
 
     return menuInfo
