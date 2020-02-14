@@ -156,12 +156,8 @@ def prepareProposalsDataForRendering(proposals, accountId=None):
             buttonPositiveURL=url_for('votable_proposals_accept',
                                       proposalId=proposal['id'])
         )
-        #  print('------------line 157 -------tmpListItems----')
-        #  print(proposal['proposed_transaction'])
 
         for operation in proposal['proposed_transaction']['operations']:
-            #  print('------line 160----operation-----')
-            # print(operation)
             ocw.addOperation(operation[0], operation[1])
 
         tmpList.append(ocw)
