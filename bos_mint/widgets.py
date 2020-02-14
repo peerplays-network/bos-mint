@@ -1,4 +1,3 @@
-import pprint
 from flask import url_for
 from peerplaysbase import operationids
 import os.path
