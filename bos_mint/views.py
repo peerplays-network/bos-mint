@@ -833,6 +833,37 @@ def automatic_approval():
 @app.route("/proposals", methods=['post', 'get'])
 def votable_proposals():
     proposals = Node().getAllProposals()
+    for proposal in proposals:
+        operations = proposal['proposed_transaction']['operations']
+        if len(operations) > 0:
+            operation = operations[0][1]
+            if 'betting_market_group_id' in operation.keys():
+                #  print('operation', operation)
+                bmgId = operation['betting_market_group_id']
+                #  print('bmgId', bmgId)
+                bmg = Node().get_node().rpc.get_object(bmgId)
+                if isinstance(bmg, dict):
+                    if 'event_id' in bmg.keys():
+                        event = Node().get_node().rpc.get_object(
+                            bmg['event_id'])
+                        proposal['event'] = str(event)
+
+        for operation in operations:
+            operation = operation[1]
+            if 'resolutions' in operation.keys():                                                                                                                                                        
+                resolutions = operation['resolutions']
+                for resolution in resolutions:
+                    bmId = resolution[0]
+                    try:
+                        bm = Node().get_node().rpc.get_object(bmId)
+                        if isinstance(bm, dict):
+                            bmName = bm['description'][0][1]
+                            resolution[0] = bmName
+                    except:
+                        #  These print lines are for detecting a few error cases, which I couldn't reproduce, Jemshid
+                        print('-------line 864, view.py, bmId')
+                        print(bmId)
+
     if proposals:
         accountId = Node().getSelectedAccount()['id']
 

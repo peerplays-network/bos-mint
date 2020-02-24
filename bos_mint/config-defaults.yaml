@@ -53,7 +53,6 @@ allowed_transitions:
         upcoming:
             - closed
             - canceled
-            - in_play
             - frozen
         in_play:
             - frozen
