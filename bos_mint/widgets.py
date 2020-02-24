@@ -140,7 +140,17 @@ def prepareProposalsDataForRendering(proposals, accountId=None):
                 else:
                     accountList.append(tostring.toString(x))
 
+#              print('-----------------------')
+#              print('accountList')
+#              print(accountList)
+#              print('tmpListItems')
+#              print(tmpListItems)
+#              print('-----------')
             tmpListItems.append(('Required approvals', accountList))
+        if proposal.get('event'):
+            #  print(proposal.get('event'))
+            #  tmpListItems.append(('Event', 'Test Event DAta'))
+            tmpListItems.append(('Event', str(proposal.get('event'))))
 
         ocw = OperationsContainerWidget(
             title='Proposal ' + proposal['id'],
