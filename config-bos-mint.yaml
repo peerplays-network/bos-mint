@@ -1,0 +1,28 @@
+debug: FALSE
+project_name: MINT
+project_sub_name: The BOS Manual Intervention Module
+secret_key: THINK CLOCK SMOG FLAG SMACK TINKER FLUNK # enter any random string
+advanced_features: True
+
+sql_database: "sqlite:///{cwd}/bookied-local.db"
+
+dataproxy_link:
+    ping_interval_in_seconds: 300
+
+    proxies:
+
+connection:
+    use: hercules # enter your desired chain
+
+    hercules:
+        node:
+            - wss://hercules.peerplays.download/api
+        nobroadcast: False
+        num_entries: 1
+
+allowed_assets:
+    - BTFUN
+    - PPY
+    - TEST
+    - BTF
+
