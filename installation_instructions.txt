@@ -1,0 +1,22 @@
+Installation Instruction, Temperory
+
+Install dependencies
+  sudo apt-get install mysqlclient libffi-dev libssl-dev python-dev python3-pip
+  sudo snap install bower --classic
+  pip3 install virtualenv
+
+It's better to do the following run in a tmux or screen instance
+
+  tmux new -s mint
+
+  virtualenv -p python3 env
+
+  source env/bin/activate
+
+  pip3 install -r requirements.txt
+
+  bower install
+
+  python3 cli.py start --port 8001 --host 0.0.0.0
+
+
