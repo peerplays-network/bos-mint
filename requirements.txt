@@ -21,3 +21,4 @@ mysqlclient
 SQLAlchemy
 uwsgi
 strict_rfc3339
+email_validator
