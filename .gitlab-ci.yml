@@ -10,6 +10,8 @@ stages:
   - test
 
 before_script:
+  - apt-get update
+  - apt-get install libsecp256k1-dev default-libmysqlclient-dev -y
   - pip install -r requirements.txt
 
 test:
