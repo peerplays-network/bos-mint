@@ -22,3 +22,4 @@ SQLAlchemy
 uwsgi
 strict_rfc3339
 email_validator
+ecdsa>=0.14 # not directly required, pinned by Snyk to avoid a vulnerability
