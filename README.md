@@ -18,3 +18,11 @@ Checkout the repository and run
 ```bash
 $ ./run_dev_server.sh    # Run MINT
 ```
+
+## Additional note
+Incase of 500 error, 
+
+```bash
+$ cd bos_mint
+$ bower install
+```
