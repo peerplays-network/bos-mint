@@ -53,7 +53,7 @@ target/
 
 *.swp
 legacy
-bower_components/
+# bower_components/
 app/static/.webassets-cache
 app/static/webassets-external
 app/static/css/all.css
