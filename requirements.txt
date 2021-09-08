@@ -22,3 +22,4 @@ SQLAlchemy
 uwsgi
 strict_rfc3339
 email_validator
+wtforms>=3.0.0a1 # not directly required, pinned by Snyk to avoid a vulnerability
