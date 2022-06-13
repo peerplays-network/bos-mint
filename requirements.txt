@@ -1,5 +1,5 @@
-graphenelib==1.0.1
-peerplays==0.3.0
+# graphenelib==1.0.1
+peerplays==0.4.0
 bookiesports
 bos-incidents
 bos-sync==0.3.0
