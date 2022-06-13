@@ -1,0 +1,58 @@
+debug: FALSE
+project_name: PYTHON COUCH POTATO
+project_sub_name: The Python Couch Potato project
+secret_key: THINK CLOCK SMOG FLAG SMACK TINKER FLUNK # enter any random string
+advanced_features: True
+
+sql_database: "sqlite:///{cwd}/bookied-local.db"
+
+connection:
+    use: beatrice # enter your desired chain
+
+    alice:
+        node:
+          - wss://node.peerblock.trade:8090
+          - wss://ppyapi.spacemx.tech
+          - wss://api-ppy.blckchnd.com
+          - wss://pma.blockveritas.co/ws
+          - wss://ppyws.roelandp.nl/ws
+          - wss://api.eifos.org
+          - wss://peerplaysblockchain.net/mainnet/api
+          - wss://api.ppy.alex-pu.info
+          - wss://api.ppy.blockoperations.com
+        nobroadcast: False
+        num_retries: 1
+
+    beatrice:
+        node:
+          - wss://pta.blockveritas.co/ws
+          - wss://peerplaysblockchain.net/testnet/api
+          - wss://api-ppy-beatrice.blckchnd.com
+          - wss://api-beatrice01.eifos.org
+          - wss://api-testnet.ppy.alex-pu.info
+          - wss://node.testnet.peerblock.trade
+          - wss://testnet-ppyapi.spacemx.tech
+        nobroadcast: False
+        num_retries: 1
+
+allowed_assets:
+    - BTFUN
+    - PPY
+    - TEST
+    - BTF
+
+potatoNames:
+  - "cpx"
+  - "cpy"
+
+bosApis: 
+  - "https://bos-beatrice01.eifos.org/trigger" 
+  - "https://beatrice-bos-sj7smflasyfg.blckchnd.com/trigger" 
+  - "https://peerplaysblockchain.net/testnet/trigger" 
+  - "http://159.69.223.206:8010/trigger" 
+  - "https://ptb.blockveritas.co/ptb/trigger"
+  - "https://brucespringsteen.ppy-test.roelandp.nl/trigger" 
+  - "http://173.249.19.91:8090/trigger" 
+  - "https://bos.beatrice-qwekjbn.peerblock.trade/trigger" 
+  - "http://4.16.58.145:8010/trigger"
+

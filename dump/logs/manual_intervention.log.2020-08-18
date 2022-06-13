@@ -1,0 +1,981 @@
+2020-08-18 02:17:44,924 INFO      : Custom config has been loaded ;config-defaults.yaml;incident_storage_config.yaml
+2020-08-18 02:17:45,041 INFO      :  * Running on http://localhost:5000/ (Press CTRL+C to quit)
+2020-08-18 02:18:37,030 INFO      : 127.0.0.1 - - [18/Aug/2020 02:18:37] "[32mGET / HTTP/1.1[0m" 302 -
+2020-08-18 02:18:37,035 INFO      : Using proxy None:80 http
+2020-08-18 02:18:48,305 INFO      : 127.0.0.1 - - [18/Aug/2020 02:18:48] "[32mGET / HTTP/1.1[0m" 302 -
+2020-08-18 02:19:16,028 DEBUG     : {'advanced_features': True,
+ 'allowed_assets': ['BTFUN', 'PPY', 'TEST', 'BTF'],
+ 'allowed_transitions': {'BettingMarketGroupStatus': {'closed': ['graded',
+                                                                 'canceled'],
+                                                      'create': ['upcoming'],
+                                                      'frozen': ['closed',
+                                                                 'canceled',
+                                                                 'in_play',
+                                                                 'upcoming'],
+                                                      'graded': ['re_grading',
+                                                                 'settled',
+                                                                 'canceled'],
+                                                      'in_play': ['frozen',
+                                                                  'closed',
+                                                                  'canceled'],
+                                                      're_grading': ['graded',
+                                                                     'canceled'],
+                                                      'upcoming': ['closed',
+                                                                   'canceled',
+                                                                   'frozen']},
+                         'BettingMarketStatus': {'create': ['unresolved'],
+                                                 'frozen': ['unresolved',
+                                                            'win',
+                                                            'not_win',
+                                                            'canceled'],
+                                                 'not_win': ['canceled', 'win'],
+                                                 'unresolved': ['win',
+                                                                'not_win',
+                                                                'canceled',
+                                                                'frozen'],
+                                                 'win': ['not_win',
+                                                         'canceled']},
+                         'EventStatus': {'create': ['upcoming'],
+                                         'finished': ['canceled'],
+                                         'frozen': ['upcoming',
+                                                    'in_progress',
+                                                    'frozen',
+                                                    'canceled',
+                                                    'finished'],
+                                         'in_progress': ['finished',
+                                                         'frozen',
+                                                         'canceled'],
+                                         'upcoming': ['in_progress',
+                                                      'finished',
+                                                      'frozen',
+                                                      'canceled']}},
+ 'connection': {'baxter': {'nobroadcast': False,
+                           'node': [None],
+                           'num_retries': 1},
+                'hercules': {'nobroadcast': False,
+                             'node': ['wss://hercules.peerplays.download/api'],
+                             'num_entries': 1,
+                             'num_retries': 3},
+                'use': 'hercules'},
+ 'dataproxy_link': {'ping_interval_in_seconds': 300,
+                    'proxies': {'612da494e7960539e8e45104c9a5fca2': {'endpoint': 'http://dp0.omnidata.tech:8010',
+                                                                     'name': 'Omni',
+                                                                     'token': 'pbsabookie'},
+                                '7903ac4b2b8c6486f2a56c7313e4d80b': {'endpoint': 'http://174.138.14.239:8010',
+                                                                     'name': 'BLCKCHND',
+                                                                     'token': 'pbsabookie'},
+                                'd28654530fb07360f051c713bdd749bb': {'endpoint': 'http://95.216.13.245:8010',
+                                                                     'name': 'BCP',
+                                                                     'token': 'pbsabookie'}}},
+ 'debug': True,
+ 'notifications': {'accountLessThanCoreInfo': 1000,
+                   'accountLessThanCoreWarning': 200},
+ 'project_name': 'MINT',
+ 'project_sub_name': 'The BOS Manual Intervention Module',
+ 'secret_key': 'THINK CLOCK SMOG FLAG SMACK TINKER FLUNK',
+ 'sql_database': 'sqlite:////home/j/pbsa/projects/bos-mint/bookied-local.db'}
+2020-08-18 02:19:16,028 DEBUG     : {'advanced_features': True,
+ 'allowed_assets': ['BTFUN', 'PPY', 'TEST', 'BTF'],
+ 'allowed_transitions': {'BettingMarketGroupStatus': {'closed': ['graded',
+                                                                 'canceled'],
+                                                      'create': ['upcoming'],
+                                                      'frozen': ['closed',
+                                                                 'canceled',
+                                                                 'in_play',
+                                                                 'upcoming'],
+                                                      'graded': ['re_grading',
+                                                                 'settled',
+                                                                 'canceled'],
+                                                      'in_play': ['frozen',
+                                                                  'closed',
+                                                                  'canceled'],
+                                                      're_grading': ['graded',
+                                                                     'canceled'],
+                                                      'upcoming': ['closed',
+                                                                   'canceled',
+                                                                   'frozen']},
+                         'BettingMarketStatus': {'create': ['unresolved'],
+                                                 'frozen': ['unresolved',
+                                                            'win',
+                                                            'not_win',
+                                                            'canceled'],
+                                                 'not_win': ['canceled', 'win'],
+                                                 'unresolved': ['win',
+                                                                'not_win',
+                                                                'canceled',
+                                                                'frozen'],
+                                                 'win': ['not_win',
+                                                         'canceled']},
+                         'EventStatus': {'create': ['upcoming'],
+                                         'finished': ['canceled'],
+                                         'frozen': ['upcoming',
+                                                    'in_progress',
+                                                    'frozen',
+                                                    'canceled',
+                                                    'finished'],
+                                         'in_progress': ['finished',
+                                                         'frozen',
+                                                         'canceled'],
+                                         'upcoming': ['in_progress',
+                                                      'finished',
+                                                      'frozen',
+                                                      'canceled']}},
+ 'connection': {'baxter': {'nobroadcast': False,
+                           'node': [None],
+                           'num_retries': 1},
+                'hercules': {'nobroadcast': False,
+                             'node': ['wss://hercules.peerplays.download/api'],
+                             'num_entries': 1,
+                             'num_retries': 3},
+                'use': 'hercules'},
+ 'dataproxy_link': {'ping_interval_in_seconds': 300,
+                    'proxies': {'612da494e7960539e8e45104c9a5fca2': {'endpoint': 'http://dp0.omnidata.tech:8010',
+                                                                     'name': 'Omni',
+                                                                     'token': 'pbsabookie'},
+                                '7903ac4b2b8c6486f2a56c7313e4d80b': {'endpoint': 'http://174.138.14.239:8010',
+                                                                     'name': 'BLCKCHND',
+                                                                     'token': 'pbsabookie'},
+                                'd28654530fb07360f051c713bdd749bb': {'endpoint': 'http://95.216.13.245:8010',
+                                                                     'name': 'BCP',
+                                                                     'token': 'pbsabookie'}}},
+ 'debug': True,
+ 'notifications': {'accountLessThanCoreInfo': 1000,
+                   'accountLessThanCoreWarning': 200},
+ 'project_name': 'MINT',
+ 'project_sub_name': 'The BOS Manual Intervention Module',
+ 'secret_key': 'THINK CLOCK SMOG FLAG SMACK TINKER FLUNK',
+ 'sql_database': 'sqlite:////home/j/pbsa/projects/bos-mint/bookied-local.db'}
+2020-08-18 02:19:16,147 DEBUG     : Configuration key witnesses not found in ;config-defaults.yaml;config-bos-mint.yaml;config-defaults.yaml;config-bos-mint.yaml! Using given default value.
+2020-08-18 02:19:16,147 DEBUG     : Configuration key witnesses not found in ;config-defaults.yaml;config-bos-mint.yaml;config-defaults.yaml;config-bos-mint.yaml! Using given default value.
+2020-08-18 02:19:16,167 INFO      : Custom config has been loaded ;config-defaults.yaml;incident_storage_config.yaml
+2020-08-18 02:19:16,252 DEBUG     : Successfully loaded extension "markdown.extensions.meta.MetaExtension".
+2020-08-18 02:19:16,253 DEBUG     : Successfully loaded extension "markdown.extensions.tables.TableExtension".
+2020-08-18 02:19:16,257 INFO      :  * Running on http://localhost:5000/ (Press CTRL+C to quit)
+2020-08-18 02:19:16,258 INFO      :  * Restarting with stat
+2020-08-18 02:19:17,144 DEBUG     : {'advanced_features': True,
+ 'allowed_assets': ['BTFUN', 'PPY', 'TEST', 'BTF'],
+ 'allowed_transitions': {'BettingMarketGroupStatus': {'closed': ['graded',
+                                                                 'canceled'],
+                                                      'create': ['upcoming'],
+                                                      'frozen': ['closed',
+                                                                 'canceled',
+                                                                 'in_play',
+                                                                 'upcoming'],
+                                                      'graded': ['re_grading',
+                                                                 'settled',
+                                                                 'canceled'],
+                                                      'in_play': ['frozen',
+                                                                  'closed',
+                                                                  'canceled'],
+                                                      're_grading': ['graded',
+                                                                     'canceled'],
+                                                      'upcoming': ['closed',
+                                                                   'canceled',
+                                                                   'frozen']},
+                         'BettingMarketStatus': {'create': ['unresolved'],
+                                                 'frozen': ['unresolved',
+                                                            'win',
+                                                            'not_win',
+                                                            'canceled'],
+                                                 'not_win': ['canceled', 'win'],
+                                                 'unresolved': ['win',
+                                                                'not_win',
+                                                                'canceled',
+                                                                'frozen'],
+                                                 'win': ['not_win',
+                                                         'canceled']},
+                         'EventStatus': {'create': ['upcoming'],
+                                         'finished': ['canceled'],
+                                         'frozen': ['upcoming',
+                                                    'in_progress',
+                                                    'frozen',
+                                                    'canceled',
+                                                    'finished'],
+                                         'in_progress': ['finished',
+                                                         'frozen',
+                                                         'canceled'],
+                                         'upcoming': ['in_progress',
+                                                      'finished',
+                                                      'frozen',
+                                                      'canceled']}},
+ 'connection': {'baxter': {'nobroadcast': False,
+                           'node': [None],
+                           'num_retries': 1},
+                'hercules': {'nobroadcast': False,
+                             'node': ['wss://hercules.peerplays.download/api'],
+                             'num_entries': 1,
+                             'num_retries': 3},
+                'use': 'hercules'},
+ 'dataproxy_link': {'ping_interval_in_seconds': 300,
+                    'proxies': {'612da494e7960539e8e45104c9a5fca2': {'endpoint': 'http://dp0.omnidata.tech:8010',
+                                                                     'name': 'Omni',
+                                                                     'token': 'pbsabookie'},
+                                '7903ac4b2b8c6486f2a56c7313e4d80b': {'endpoint': 'http://174.138.14.239:8010',
+                                                                     'name': 'BLCKCHND',
+                                                                     'token': 'pbsabookie'},
+                                'd28654530fb07360f051c713bdd749bb': {'endpoint': 'http://95.216.13.245:8010',
+                                                                     'name': 'BCP',
+                                                                     'token': 'pbsabookie'}}},
+ 'debug': True,
+ 'notifications': {'accountLessThanCoreInfo': 1000,
+                   'accountLessThanCoreWarning': 200},
+ 'project_name': 'MINT',
+ 'project_sub_name': 'The BOS Manual Intervention Module',
+ 'secret_key': 'THINK CLOCK SMOG FLAG SMACK TINKER FLUNK',
+ 'sql_database': 'sqlite:////home/j/pbsa/projects/bos-mint/bookied-local.db'}
+2020-08-18 02:19:17,144 DEBUG     : {'advanced_features': True,
+ 'allowed_assets': ['BTFUN', 'PPY', 'TEST', 'BTF'],
+ 'allowed_transitions': {'BettingMarketGroupStatus': {'closed': ['graded',
+                                                                 'canceled'],
+                                                      'create': ['upcoming'],
+                                                      'frozen': ['closed',
+                                                                 'canceled',
+                                                                 'in_play',
+                                                                 'upcoming'],
+                                                      'graded': ['re_grading',
+                                                                 'settled',
+                                                                 'canceled'],
+                                                      'in_play': ['frozen',
+                                                                  'closed',
+                                                                  'canceled'],
+                                                      're_grading': ['graded',
+                                                                     'canceled'],
+                                                      'upcoming': ['closed',
+                                                                   'canceled',
+                                                                   'frozen']},
+                         'BettingMarketStatus': {'create': ['unresolved'],
+                                                 'frozen': ['unresolved',
+                                                            'win',
+                                                            'not_win',
+                                                            'canceled'],
+                                                 'not_win': ['canceled', 'win'],
+                                                 'unresolved': ['win',
+                                                                'not_win',
+                                                                'canceled',
+                                                                'frozen'],
+                                                 'win': ['not_win',
+                                                         'canceled']},
+                         'EventStatus': {'create': ['upcoming'],
+                                         'finished': ['canceled'],
+                                         'frozen': ['upcoming',
+                                                    'in_progress',
+                                                    'frozen',
+                                                    'canceled',
+                                                    'finished'],
+                                         'in_progress': ['finished',
+                                                         'frozen',
+                                                         'canceled'],
+                                         'upcoming': ['in_progress',
+                                                      'finished',
+                                                      'frozen',
+                                                      'canceled']}},
+ 'connection': {'baxter': {'nobroadcast': False,
+                           'node': [None],
+                           'num_retries': 1},
+                'hercules': {'nobroadcast': False,
+                             'node': ['wss://hercules.peerplays.download/api'],
+                             'num_entries': 1,
+                             'num_retries': 3},
+                'use': 'hercules'},
+ 'dataproxy_link': {'ping_interval_in_seconds': 300,
+                    'proxies': {'612da494e7960539e8e45104c9a5fca2': {'endpoint': 'http://dp0.omnidata.tech:8010',
+                                                                     'name': 'Omni',
+                                                                     'token': 'pbsabookie'},
+                                '7903ac4b2b8c6486f2a56c7313e4d80b': {'endpoint': 'http://174.138.14.239:8010',
+                                                                     'name': 'BLCKCHND',
+                                                                     'token': 'pbsabookie'},
+                                'd28654530fb07360f051c713bdd749bb': {'endpoint': 'http://95.216.13.245:8010',
+                                                                     'name': 'BCP',
+                                                                     'token': 'pbsabookie'}}},
+ 'debug': True,
+ 'notifications': {'accountLessThanCoreInfo': 1000,
+                   'accountLessThanCoreWarning': 200},
+ 'project_name': 'MINT',
+ 'project_sub_name': 'The BOS Manual Intervention Module',
+ 'secret_key': 'THINK CLOCK SMOG FLAG SMACK TINKER FLUNK',
+ 'sql_database': 'sqlite:////home/j/pbsa/projects/bos-mint/bookied-local.db'}
+2020-08-18 02:19:17,264 DEBUG     : Configuration key witnesses not found in ;config-defaults.yaml;config-bos-mint.yaml;config-defaults.yaml;config-bos-mint.yaml! Using given default value.
+2020-08-18 02:19:17,264 DEBUG     : Configuration key witnesses not found in ;config-defaults.yaml;config-bos-mint.yaml;config-defaults.yaml;config-bos-mint.yaml! Using given default value.
+2020-08-18 02:19:17,279 INFO      : Custom config has been loaded ;config-defaults.yaml;incident_storage_config.yaml
+2020-08-18 02:19:17,355 DEBUG     : Successfully loaded extension "markdown.extensions.meta.MetaExtension".
+2020-08-18 02:19:17,356 DEBUG     : Successfully loaded extension "markdown.extensions.tables.TableExtension".
+2020-08-18 02:19:17,359 WARNING   :  * Debugger is active!
+2020-08-18 02:19:17,359 INFO      :  * Debugger PIN: 130-430-730
+2020-08-18 02:19:22,243 INFO      : SELECT CAST('test plain returns' AS VARCHAR(60)) AS anon_1
+2020-08-18 02:19:22,243 INFO      : ()
+2020-08-18 02:19:22,243 INFO      : SELECT CAST('test unicode returns' AS VARCHAR(60)) AS anon_1
+2020-08-18 02:19:22,243 INFO      : ()
+2020-08-18 02:19:22,244 INFO      : PRAGMA main.table_info("local_proposal")
+2020-08-18 02:19:22,244 INFO      : ()
+2020-08-18 02:19:22,244 INFO      : PRAGMA main.table_info("view_configuration")
+2020-08-18 02:19:22,245 INFO      : ()
+2020-08-18 02:19:22,246 DEBUG     : Updating connection from None to wss://hercules.peerplays.download/api
+2020-08-18 02:19:22,246 INFO      : Using proxy None:80 http
+2020-08-18 02:19:22,246 DEBUG     : Trying to connect to node wss://hercules.peerplays.download/api
+2020-08-18 02:19:24,056 DEBUG     : {"method": "call", "params": [1, "login", ["", ""]], "jsonrpc": "2.0", "id": 1}
+2020-08-18 02:19:24,465 DEBUG     : "{\"id\":1,\"jsonrpc\":\"2.0\",\"result\":true}"
+2020-08-18 02:19:24,465 DEBUG     : {"method": "call", "params": [1, "database", []], "jsonrpc": "2.0", "id": 2}
+2020-08-18 02:19:24,781 DEBUG     : "{\"id\":2,\"jsonrpc\":\"2.0\",\"result\":3}"
+2020-08-18 02:19:24,782 DEBUG     : {"method": "call", "params": [1, "history", []], "jsonrpc": "2.0", "id": 3}
+2020-08-18 02:19:25,097 DEBUG     : "{\"id\":3,\"jsonrpc\":\"2.0\",\"result\":4}"
+2020-08-18 02:19:25,097 DEBUG     : {"method": "call", "params": [1, "network_broadcast", []], "jsonrpc": "2.0", "id": 4}
+2020-08-18 02:19:25,489 DEBUG     : "{\"id\":4,\"jsonrpc\":\"2.0\",\"result\":5}"
+2020-08-18 02:19:25,490 DEBUG     : {"method": "call", "params": [0, "list_sports", []], "jsonrpc": "2.0", "id": 5}
+2020-08-18 02:19:25,823 DEBUG     : "{\"id\":5,\"jsonrpc\":\"2.0\",\"result\":[{\"id\":\"1.20.0\",\"name\":[[\"en\",\"Ice Hockey\"],[\"identifier\",\"Ice Hockey\"],[\"sen\",\"Ice Hockey\"]]},{\"id\":\"1.20.1\",\"name\":[[\"en\",\"Baseball\"],[\"identifier\",\"Baseball\"],[\"sen\",\"Baseball\"]]},{\"id\":\"1.20.2\",\"name\":[[\"en\",\"Basketball\"],[\"identifier\",\"Basketball\"],[\"sen\",\"Basketball\"]]},{\"id\":\"1.20.3\",\"name\":[[\"en\",\"Soccer\"],[\"identifier\",\"Soccer\"],[\"sen\",\"Soccer\"]]},{\"id\":\"1.20.4\",\"name\":[[\"en\",\"American Football\"],[\"identifier\",\"AmericanFootball\"],[\"sen\",\"Am. Football\"]]},{\"id\":\"1.20.5\",\"name\":[[\"en\",\"Esports\"],[\"identifier\",\"Esports\"],[\"sen\",\"Esports\"]]}]}"
+2020-08-18 02:19:25,824 DEBUG     : {"method": "call", "params": [0, "lookup_account_names", [["witness-account"]]], "jsonrpc": "2.0", "id": 6}
+2020-08-18 02:19:26,290 DEBUG     : "{\"id\":6,\"jsonrpc\":\"2.0\",\"result\":[{\"id\":\"1.2.1\",\"membership_expiration_date\":\"2106-02-07T06:28:15\",\"registrar\":\"1.2.1\",\"referrer\":\"1.2.1\",\"lifetime_referrer\":\"1.2.1\",\"network_fee_percentage\":2000,\"lifetime_referrer_fee_percentage\":8000,\"referrer_rewards_percentage\":0,\"name\":\"witness-account\",\"owner\":{\"weight_threshold\":1,\"account_auths\":[],\"key_auths\":[],\"address_auths\":[]},\"active\":{\"weight_threshold\":6,\"account_auths\":[[\"1.2.7\",1],[\"1.2.8\",1],[\"1.2.9\",1],[\"1.2.10\",1],[\"1.2.11\",1],[\"1.2.12\",1],[\"1.2.13\",1],[\"1.2.14\",1],[\"1.2.15\",1],[\"1.2.16\",1],[\"1.2.17\",1]],\"key_auths\":[],\"address_auths\":[]},\"options\":{\"memo_key\":\"TEST1111111111111111111111111111111114T1Anm\",\"voting_account\":\"1.2.5\",\"num_witness\":0,\"num_committee\":0,\"votes\":[],\"extensions\":[]},\"statistics\":\"2.6.1\",\"whitelisting_accounts\":[],\"blacklisting_accounts\":[],\"whitelisted_accounts\":[],\"blacklisted_accounts\":[],\"owner_special_authority\":[0,{}],\"active_special_authority\":[0,{}],\"top_n_control_flags\":0}]}"
+2020-08-18 02:19:26,291 DEBUG     : {"method": "call", "params": [0, "get_account_balances", ["1.2.1", []]], "jsonrpc": "2.0", "id": 7}
+2020-08-18 02:19:26,691 DEBUG     : "{\"id\":7,\"jsonrpc\":\"2.0\",\"result\":[{\"amount\":857800000,\"asset_id\":\"1.3.0\"},{\"amount\":\"1000000000000\",\"asset_id\":\"1.3.1\"}]}"
+2020-08-18 02:19:26,692 DEBUG     : {"method": "call", "params": [0, "get_objects", [["1.3.0"]]], "jsonrpc": "2.0", "id": 8}
+2020-08-18 02:19:27,011 DEBUG     : "{\"id\":8,\"jsonrpc\":\"2.0\",\"result\":[{\"id\":\"1.3.0\",\"symbol\":\"TEST\",\"precision\":5,\"issuer\":\"1.2.0\",\"options\":{\"max_supply\":\"1000000000000000\",\"market_fee_percent\":0,\"max_market_fee\":\"1000000000000000\",\"issuer_permissions\":0,\"flags\":0,\"core_exchange_rate\":{\"base\":{\"amount\":1,\"asset_id\":\"1.3.0\"},\"quote\":{\"amount\":1,\"asset_id\":\"1.3.0\"}},\"whitelist_authorities\":[],\"blacklist_authorities\":[],\"whitelist_markets\":[],\"blacklist_markets\":[],\"description\":\"\",\"extensions\":[]},\"dynamic_asset_data_id\":\"2.3.0\",\"dividend_data_id\":\"2.17.0\"}]}"
+2020-08-18 02:19:27,013 DEBUG     : {"method": "call", "params": [0, "get_objects", [["1.3.1"]]], "jsonrpc": "2.0", "id": 9}
+2020-08-18 02:19:27,334 DEBUG     : "{\"id\":9,\"jsonrpc\":\"2.0\",\"result\":[{\"id\":\"1.3.1\",\"symbol\":\"BTF\",\"precision\":8,\"issuer\":\"1.2.18\",\"options\":{\"max_supply\":\"1000000000000000\",\"market_fee_percent\":0,\"max_market_fee\":\"1000000000000000\",\"issuer_permissions\":79,\"flags\":0,\"core_exchange_rate\":{\"base\":{\"amount\":1,\"asset_id\":\"1.3.0\"},\"quote\":{\"amount\":1,\"asset_id\":\"1.3.1\"}},\"whitelist_authorities\":[],\"blacklist_authorities\":[],\"whitelist_markets\":[],\"blacklist_markets\":[],\"description\":\"Bitcoin with precision 8\",\"extensions\":[]},\"dynamic_asset_data_id\":\"2.3.1\"}]}"
+2020-08-18 02:19:27,337 DEBUG     : {"method": "call", "params": [0, "get_objects", [["1.2.7"]]], "jsonrpc": "2.0", "id": 10}
+2020-08-18 02:19:27,657 DEBUG     : "{\"id\":10,\"jsonrpc\":\"2.0\",\"result\":[{\"id\":\"1.2.7\",\"membership_expiration_date\":\"2106-02-07T06:28:15\",\"registrar\":\"1.2.7\",\"referrer\":\"1.2.7\",\"lifetime_referrer\":\"1.2.7\",\"network_fee_percentage\":2000,\"lifetime_referrer_fee_percentage\":8000,\"referrer_rewards_percentage\":0,\"name\":\"init0\",\"owner\":{\"weight_threshold\":1,\"account_auths\":[],\"key_auths\":[[\"TEST6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV\",1]],\"address_auths\":[]},\"active\":{\"weight_threshold\":1,\"account_auths\":[],\"key_auths\":[[\"TEST6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV\",1]],\"address_auths\":[]},\"options\":{\"memo_key\":\"TEST6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV\",\"voting_account\":\"1.2.5\",\"num_witness\":0,\"num_committee\":0,\"votes\":[],\"extensions\":[]},\"statistics\":\"2.6.7\",\"whitelisting_accounts\":[],\"blacklisting_accounts\":[],\"whitelisted_accounts\":[],\"blacklisted_accounts\":[],\"cashback_vb\":\"1.13.1\",\"owner_special_authority\":[0,{}],\"active_special_authority\":[0,{}],\"top_n_control_flags\":0}]}"
+2020-08-18 02:19:27,657 DEBUG     : {"method": "call", "params": [0, "get_account_balances", ["1.2.7", []]], "jsonrpc": "2.0", "id": 11}
+2020-08-18 02:19:28,049 DEBUG     : "{\"id\":11,\"jsonrpc\":\"2.0\",\"result\":[{\"amount\":\"10250398347\",\"asset_id\":\"1.3.0\"},{\"amount\":\"994500000000\",\"asset_id\":\"1.3.1\"}]}"
+2020-08-18 02:19:28,050 DEBUG     : {"method": "call", "params": [0, "get_proposed_transactions", ["1.2.1"]], "jsonrpc": "2.0", "id": 12}
+2020-08-18 02:19:28,459 DEBUG     : "{\"id\":12,\"jsonrpc\":\"2.0\",\"result\":[]}"
+2020-08-18 02:19:28,555 DEBUG     : {"method": "call", "params": [0, "get_chain_properties", []], "jsonrpc": "2.0", "id": 13}
+2020-08-18 02:19:28,971 DEBUG     : "{\"id\":13,\"jsonrpc\":\"2.0\",\"result\":{\"id\":\"2.11.0\",\"chain_id\":\"9e770aee9cb04b11f62391b89a38e1ee28981c94e2b8e7047e0902862568d285\",\"immutable_parameters\":{\"min_committee_member_count\":11,\"min_witness_count\":11,\"num_special_accounts\":0,\"num_special_assets\":0}}}"
+2020-08-18 02:19:28,972 DEBUG     : {"method": "call", "params": [0, "get_chain_properties", []], "jsonrpc": "2.0", "id": 14}
+2020-08-18 02:19:29,288 DEBUG     : "{\"id\":14,\"jsonrpc\":\"2.0\",\"result\":{\"id\":\"2.11.0\",\"chain_id\":\"9e770aee9cb04b11f62391b89a38e1ee28981c94e2b8e7047e0902862568d285\",\"immutable_parameters\":{\"min_committee_member_count\":11,\"min_witness_count\":11,\"num_special_accounts\":0,\"num_special_assets\":0}}}"
+2020-08-18 02:19:29,299 DEBUG     : Starting new HTTP connection (1): 95.216.13.245:8010
+2020-08-18 02:21:40,321 DEBUG     : Starting new HTTP connection (1): dp0.omnidata.tech:8010
+2020-08-18 02:21:41,779 DEBUG     : http://dp0.omnidata.tech:8010 "GET /replay?token=pbsabookie&only_report=True&restrict_witness_group=hercules HTTP/1.1" 200 48
+2020-08-18 02:21:41,784 DEBUG     : Starting new HTTP connection (1): dp0.omnidata.tech:8010
+2020-08-18 02:21:42,895 DEBUG     : http://dp0.omnidata.tech:8010 "GET /isalive?token=pbsabookie HTTP/1.1" 200 930
+2020-08-18 02:21:42,898 DEBUG     : Starting new HTTP connection (1): 174.138.14.239:8010
+2020-08-18 02:21:55,439 DEBUG     : {'advanced_features': True,
+ 'allowed_assets': ['BTFUN', 'PPY', 'TEST', 'BTF'],
+ 'allowed_transitions': {'BettingMarketGroupStatus': {'closed': ['graded',
+                                                                 'canceled'],
+                                                      'create': ['upcoming'],
+                                                      'frozen': ['closed',
+                                                                 'canceled',
+                                                                 'in_play',
+                                                                 'upcoming'],
+                                                      'graded': ['re_grading',
+                                                                 'settled',
+                                                                 'canceled'],
+                                                      'in_play': ['frozen',
+                                                                  'closed',
+                                                                  'canceled'],
+                                                      're_grading': ['graded',
+                                                                     'canceled'],
+                                                      'upcoming': ['closed',
+                                                                   'canceled',
+                                                                   'frozen']},
+                         'BettingMarketStatus': {'create': ['unresolved'],
+                                                 'frozen': ['unresolved',
+                                                            'win',
+                                                            'not_win',
+                                                            'canceled'],
+                                                 'not_win': ['canceled', 'win'],
+                                                 'unresolved': ['win',
+                                                                'not_win',
+                                                                'canceled',
+                                                                'frozen'],
+                                                 'win': ['not_win',
+                                                         'canceled']},
+                         'EventStatus': {'create': ['upcoming'],
+                                         'finished': ['canceled'],
+                                         'frozen': ['upcoming',
+                                                    'in_progress',
+                                                    'frozen',
+                                                    'canceled',
+                                                    'finished'],
+                                         'in_progress': ['finished',
+                                                         'frozen',
+                                                         'canceled'],
+                                         'upcoming': ['in_progress',
+                                                      'finished',
+                                                      'frozen',
+                                                      'canceled']}},
+ 'connection': {'baxter': {'nobroadcast': False,
+                           'node': [None],
+                           'num_retries': 1},
+                'hercules': {'nobroadcast': False,
+                             'node': ['wss://hercules.peerplays.download/api'],
+                             'num_entries': 1,
+                             'num_retries': 3},
+                'use': 'hercules'},
+ 'dataproxy_link': {'ping_interval_in_seconds': 300, 'proxies': None},
+ 'debug': True,
+ 'notifications': {'accountLessThanCoreInfo': 1000,
+                   'accountLessThanCoreWarning': 200},
+ 'project_name': 'MINT',
+ 'project_sub_name': 'The BOS Manual Intervention Module',
+ 'secret_key': 'THINK CLOCK SMOG FLAG SMACK TINKER FLUNK',
+ 'sql_database': 'sqlite:////home/j/pbsa/projects/bos-mint/bookied-local.db'}
+2020-08-18 02:21:55,439 DEBUG     : {'advanced_features': True,
+ 'allowed_assets': ['BTFUN', 'PPY', 'TEST', 'BTF'],
+ 'allowed_transitions': {'BettingMarketGroupStatus': {'closed': ['graded',
+                                                                 'canceled'],
+                                                      'create': ['upcoming'],
+                                                      'frozen': ['closed',
+                                                                 'canceled',
+                                                                 'in_play',
+                                                                 'upcoming'],
+                                                      'graded': ['re_grading',
+                                                                 'settled',
+                                                                 'canceled'],
+                                                      'in_play': ['frozen',
+                                                                  'closed',
+                                                                  'canceled'],
+                                                      're_grading': ['graded',
+                                                                     'canceled'],
+                                                      'upcoming': ['closed',
+                                                                   'canceled',
+                                                                   'frozen']},
+                         'BettingMarketStatus': {'create': ['unresolved'],
+                                                 'frozen': ['unresolved',
+                                                            'win',
+                                                            'not_win',
+                                                            'canceled'],
+                                                 'not_win': ['canceled', 'win'],
+                                                 'unresolved': ['win',
+                                                                'not_win',
+                                                                'canceled',
+                                                                'frozen'],
+                                                 'win': ['not_win',
+                                                         'canceled']},
+                         'EventStatus': {'create': ['upcoming'],
+                                         'finished': ['canceled'],
+                                         'frozen': ['upcoming',
+                                                    'in_progress',
+                                                    'frozen',
+                                                    'canceled',
+                                                    'finished'],
+                                         'in_progress': ['finished',
+                                                         'frozen',
+                                                         'canceled'],
+                                         'upcoming': ['in_progress',
+                                                      'finished',
+                                                      'frozen',
+                                                      'canceled']}},
+ 'connection': {'baxter': {'nobroadcast': False,
+                           'node': [None],
+                           'num_retries': 1},
+                'hercules': {'nobroadcast': False,
+                             'node': ['wss://hercules.peerplays.download/api'],
+                             'num_entries': 1,
+                             'num_retries': 3},
+                'use': 'hercules'},
+ 'dataproxy_link': {'ping_interval_in_seconds': 300, 'proxies': None},
+ 'debug': True,
+ 'notifications': {'accountLessThanCoreInfo': 1000,
+                   'accountLessThanCoreWarning': 200},
+ 'project_name': 'MINT',
+ 'project_sub_name': 'The BOS Manual Intervention Module',
+ 'secret_key': 'THINK CLOCK SMOG FLAG SMACK TINKER FLUNK',
+ 'sql_database': 'sqlite:////home/j/pbsa/projects/bos-mint/bookied-local.db'}
+2020-08-18 02:21:55,557 DEBUG     : Configuration key witnesses not found in ;config-defaults.yaml;config-bos-mint.yaml;config-defaults.yaml;config-bos-mint.yaml! Using given default value.
+2020-08-18 02:21:55,557 DEBUG     : Configuration key witnesses not found in ;config-defaults.yaml;config-bos-mint.yaml;config-defaults.yaml;config-bos-mint.yaml! Using given default value.
+2020-08-18 02:21:55,557 DEBUG     : Configuration key dataproxy_link.proxies not found in ;config-defaults.yaml;config-bos-mint.yaml;config-defaults.yaml;config-bos-mint.yaml! Using given default value.
+2020-08-18 02:21:55,557 DEBUG     : Configuration key dataproxy_link.proxies not found in ;config-defaults.yaml;config-bos-mint.yaml;config-defaults.yaml;config-bos-mint.yaml! Using given default value.
+2020-08-18 02:21:55,572 INFO      : Custom config has been loaded ;config-defaults.yaml;incident_storage_config.yaml
+2020-08-18 02:21:55,648 DEBUG     : Successfully loaded extension "markdown.extensions.meta.MetaExtension".
+2020-08-18 02:21:55,648 DEBUG     : Successfully loaded extension "markdown.extensions.tables.TableExtension".
+2020-08-18 02:21:55,651 INFO      :  * Running on http://localhost:5000/ (Press CTRL+C to quit)
+2020-08-18 02:21:55,652 INFO      :  * Restarting with stat
+2020-08-18 02:21:56,522 DEBUG     : {'advanced_features': True,
+ 'allowed_assets': ['BTFUN', 'PPY', 'TEST', 'BTF'],
+ 'allowed_transitions': {'BettingMarketGroupStatus': {'closed': ['graded',
+                                                                 'canceled'],
+                                                      'create': ['upcoming'],
+                                                      'frozen': ['closed',
+                                                                 'canceled',
+                                                                 'in_play',
+                                                                 'upcoming'],
+                                                      'graded': ['re_grading',
+                                                                 'settled',
+                                                                 'canceled'],
+                                                      'in_play': ['frozen',
+                                                                  'closed',
+                                                                  'canceled'],
+                                                      're_grading': ['graded',
+                                                                     'canceled'],
+                                                      'upcoming': ['closed',
+                                                                   'canceled',
+                                                                   'frozen']},
+                         'BettingMarketStatus': {'create': ['unresolved'],
+                                                 'frozen': ['unresolved',
+                                                            'win',
+                                                            'not_win',
+                                                            'canceled'],
+                                                 'not_win': ['canceled', 'win'],
+                                                 'unresolved': ['win',
+                                                                'not_win',
+                                                                'canceled',
+                                                                'frozen'],
+                                                 'win': ['not_win',
+                                                         'canceled']},
+                         'EventStatus': {'create': ['upcoming'],
+                                         'finished': ['canceled'],
+                                         'frozen': ['upcoming',
+                                                    'in_progress',
+                                                    'frozen',
+                                                    'canceled',
+                                                    'finished'],
+                                         'in_progress': ['finished',
+                                                         'frozen',
+                                                         'canceled'],
+                                         'upcoming': ['in_progress',
+                                                      'finished',
+                                                      'frozen',
+                                                      'canceled']}},
+ 'connection': {'baxter': {'nobroadcast': False,
+                           'node': [None],
+                           'num_retries': 1},
+                'hercules': {'nobroadcast': False,
+                             'node': ['wss://hercules.peerplays.download/api'],
+                             'num_entries': 1,
+                             'num_retries': 3},
+                'use': 'hercules'},
+ 'dataproxy_link': {'ping_interval_in_seconds': 300, 'proxies': None},
+ 'debug': True,
+ 'notifications': {'accountLessThanCoreInfo': 1000,
+                   'accountLessThanCoreWarning': 200},
+ 'project_name': 'MINT',
+ 'project_sub_name': 'The BOS Manual Intervention Module',
+ 'secret_key': 'THINK CLOCK SMOG FLAG SMACK TINKER FLUNK',
+ 'sql_database': 'sqlite:////home/j/pbsa/projects/bos-mint/bookied-local.db'}
+2020-08-18 02:21:56,522 DEBUG     : {'advanced_features': True,
+ 'allowed_assets': ['BTFUN', 'PPY', 'TEST', 'BTF'],
+ 'allowed_transitions': {'BettingMarketGroupStatus': {'closed': ['graded',
+                                                                 'canceled'],
+                                                      'create': ['upcoming'],
+                                                      'frozen': ['closed',
+                                                                 'canceled',
+                                                                 'in_play',
+                                                                 'upcoming'],
+                                                      'graded': ['re_grading',
+                                                                 'settled',
+                                                                 'canceled'],
+                                                      'in_play': ['frozen',
+                                                                  'closed',
+                                                                  'canceled'],
+                                                      're_grading': ['graded',
+                                                                     'canceled'],
+                                                      'upcoming': ['closed',
+                                                                   'canceled',
+                                                                   'frozen']},
+                         'BettingMarketStatus': {'create': ['unresolved'],
+                                                 'frozen': ['unresolved',
+                                                            'win',
+                                                            'not_win',
+                                                            'canceled'],
+                                                 'not_win': ['canceled', 'win'],
+                                                 'unresolved': ['win',
+                                                                'not_win',
+                                                                'canceled',
+                                                                'frozen'],
+                                                 'win': ['not_win',
+                                                         'canceled']},
+                         'EventStatus': {'create': ['upcoming'],
+                                         'finished': ['canceled'],
+                                         'frozen': ['upcoming',
+                                                    'in_progress',
+                                                    'frozen',
+                                                    'canceled',
+                                                    'finished'],
+                                         'in_progress': ['finished',
+                                                         'frozen',
+                                                         'canceled'],
+                                         'upcoming': ['in_progress',
+                                                      'finished',
+                                                      'frozen',
+                                                      'canceled']}},
+ 'connection': {'baxter': {'nobroadcast': False,
+                           'node': [None],
+                           'num_retries': 1},
+                'hercules': {'nobroadcast': False,
+                             'node': ['wss://hercules.peerplays.download/api'],
+                             'num_entries': 1,
+                             'num_retries': 3},
+                'use': 'hercules'},
+ 'dataproxy_link': {'ping_interval_in_seconds': 300, 'proxies': None},
+ 'debug': True,
+ 'notifications': {'accountLessThanCoreInfo': 1000,
+                   'accountLessThanCoreWarning': 200},
+ 'project_name': 'MINT',
+ 'project_sub_name': 'The BOS Manual Intervention Module',
+ 'secret_key': 'THINK CLOCK SMOG FLAG SMACK TINKER FLUNK',
+ 'sql_database': 'sqlite:////home/j/pbsa/projects/bos-mint/bookied-local.db'}
+2020-08-18 02:21:56,639 DEBUG     : Configuration key witnesses not found in ;config-defaults.yaml;config-bos-mint.yaml;config-defaults.yaml;config-bos-mint.yaml! Using given default value.
+2020-08-18 02:21:56,639 DEBUG     : Configuration key witnesses not found in ;config-defaults.yaml;config-bos-mint.yaml;config-defaults.yaml;config-bos-mint.yaml! Using given default value.
+2020-08-18 02:21:56,639 DEBUG     : Configuration key dataproxy_link.proxies not found in ;config-defaults.yaml;config-bos-mint.yaml;config-defaults.yaml;config-bos-mint.yaml! Using given default value.
+2020-08-18 02:21:56,639 DEBUG     : Configuration key dataproxy_link.proxies not found in ;config-defaults.yaml;config-bos-mint.yaml;config-defaults.yaml;config-bos-mint.yaml! Using given default value.
+2020-08-18 02:21:56,654 INFO      : Custom config has been loaded ;config-defaults.yaml;incident_storage_config.yaml
+2020-08-18 02:21:56,735 DEBUG     : Successfully loaded extension "markdown.extensions.meta.MetaExtension".
+2020-08-18 02:21:56,736 DEBUG     : Successfully loaded extension "markdown.extensions.tables.TableExtension".
+2020-08-18 02:21:56,739 WARNING   :  * Debugger is active!
+2020-08-18 02:21:56,739 INFO      :  * Debugger PIN: 130-430-730
+2020-08-18 02:21:59,685 INFO      : SELECT CAST('test plain returns' AS VARCHAR(60)) AS anon_1
+2020-08-18 02:21:59,685 INFO      : ()
+2020-08-18 02:21:59,686 INFO      : SELECT CAST('test unicode returns' AS VARCHAR(60)) AS anon_1
+2020-08-18 02:21:59,686 INFO      : ()
+2020-08-18 02:21:59,687 INFO      : PRAGMA main.table_info("local_proposal")
+2020-08-18 02:21:59,687 INFO      : ()
+2020-08-18 02:21:59,687 INFO      : PRAGMA main.table_info("view_configuration")
+2020-08-18 02:21:59,688 INFO      : ()
+2020-08-18 02:21:59,689 DEBUG     : Updating connection from None to wss://hercules.peerplays.download/api
+2020-08-18 02:21:59,689 INFO      : Using proxy None:80 http
+2020-08-18 02:21:59,689 DEBUG     : Trying to connect to node wss://hercules.peerplays.download/api
+2020-08-18 02:22:01,344 DEBUG     : {"method": "call", "params": [1, "login", ["", ""]], "jsonrpc": "2.0", "id": 1}
+2020-08-18 02:22:01,660 DEBUG     : "{\"id\":1,\"jsonrpc\":\"2.0\",\"result\":true}"
+2020-08-18 02:22:01,660 DEBUG     : {"method": "call", "params": [1, "database", []], "jsonrpc": "2.0", "id": 2}
+2020-08-18 02:22:01,975 DEBUG     : "{\"id\":2,\"jsonrpc\":\"2.0\",\"result\":3}"
+2020-08-18 02:22:01,976 DEBUG     : {"method": "call", "params": [1, "history", []], "jsonrpc": "2.0", "id": 3}
+2020-08-18 02:22:02,367 DEBUG     : "{\"id\":3,\"jsonrpc\":\"2.0\",\"result\":4}"
+2020-08-18 02:22:02,367 DEBUG     : {"method": "call", "params": [1, "network_broadcast", []], "jsonrpc": "2.0", "id": 4}
+2020-08-18 02:22:02,777 DEBUG     : "{\"id\":4,\"jsonrpc\":\"2.0\",\"result\":5}"
+2020-08-18 02:22:02,778 DEBUG     : {"method": "call", "params": [0, "list_sports", []], "jsonrpc": "2.0", "id": 5}
+2020-08-18 02:22:03,190 DEBUG     : "{\"id\":5,\"jsonrpc\":\"2.0\",\"result\":[{\"id\":\"1.20.0\",\"name\":[[\"en\",\"Ice Hockey\"],[\"identifier\",\"Ice Hockey\"],[\"sen\",\"Ice Hockey\"]]},{\"id\":\"1.20.1\",\"name\":[[\"en\",\"Baseball\"],[\"identifier\",\"Baseball\"],[\"sen\",\"Baseball\"]]},{\"id\":\"1.20.2\",\"name\":[[\"en\",\"Basketball\"],[\"identifier\",\"Basketball\"],[\"sen\",\"Basketball\"]]},{\"id\":\"1.20.3\",\"name\":[[\"en\",\"Soccer\"],[\"identifier\",\"Soccer\"],[\"sen\",\"Soccer\"]]},{\"id\":\"1.20.4\",\"name\":[[\"en\",\"American Football\"],[\"identifier\",\"AmericanFootball\"],[\"sen\",\"Am. Football\"]]},{\"id\":\"1.20.5\",\"name\":[[\"en\",\"Esports\"],[\"identifier\",\"Esports\"],[\"sen\",\"Esports\"]]}]}"
+2020-08-18 02:22:03,193 DEBUG     : {"method": "call", "params": [0, "lookup_account_names", [["witness-account"]]], "jsonrpc": "2.0", "id": 6}
+2020-08-18 02:22:03,513 DEBUG     : "{\"id\":6,\"jsonrpc\":\"2.0\",\"result\":[{\"id\":\"1.2.1\",\"membership_expiration_date\":\"2106-02-07T06:28:15\",\"registrar\":\"1.2.1\",\"referrer\":\"1.2.1\",\"lifetime_referrer\":\"1.2.1\",\"network_fee_percentage\":2000,\"lifetime_referrer_fee_percentage\":8000,\"referrer_rewards_percentage\":0,\"name\":\"witness-account\",\"owner\":{\"weight_threshold\":1,\"account_auths\":[],\"key_auths\":[],\"address_auths\":[]},\"active\":{\"weight_threshold\":6,\"account_auths\":[[\"1.2.7\",1],[\"1.2.8\",1],[\"1.2.9\",1],[\"1.2.10\",1],[\"1.2.11\",1],[\"1.2.12\",1],[\"1.2.13\",1],[\"1.2.14\",1],[\"1.2.15\",1],[\"1.2.16\",1],[\"1.2.17\",1]],\"key_auths\":[],\"address_auths\":[]},\"options\":{\"memo_key\":\"TEST1111111111111111111111111111111114T1Anm\",\"voting_account\":\"1.2.5\",\"num_witness\":0,\"num_committee\":0,\"votes\":[],\"extensions\":[]},\"statistics\":\"2.6.1\",\"whitelisting_accounts\":[],\"blacklisting_accounts\":[],\"whitelisted_accounts\":[],\"blacklisted_accounts\":[],\"owner_special_authority\":[0,{}],\"active_special_authority\":[0,{}],\"top_n_control_flags\":0}]}"
+2020-08-18 02:22:03,514 DEBUG     : {"method": "call", "params": [0, "get_account_balances", ["1.2.1", []]], "jsonrpc": "2.0", "id": 7}
+2020-08-18 02:22:04,119 DEBUG     : "{\"id\":7,\"jsonrpc\":\"2.0\",\"result\":[{\"amount\":857800000,\"asset_id\":\"1.3.0\"},{\"amount\":\"1000000000000\",\"asset_id\":\"1.3.1\"}]}"
+2020-08-18 02:22:04,120 DEBUG     : {"method": "call", "params": [0, "get_objects", [["1.3.0"]]], "jsonrpc": "2.0", "id": 8}
+2020-08-18 02:22:04,490 DEBUG     : "{\"id\":8,\"jsonrpc\":\"2.0\",\"result\":[{\"id\":\"1.3.0\",\"symbol\":\"TEST\",\"precision\":5,\"issuer\":\"1.2.0\",\"options\":{\"max_supply\":\"1000000000000000\",\"market_fee_percent\":0,\"max_market_fee\":\"1000000000000000\",\"issuer_permissions\":0,\"flags\":0,\"core_exchange_rate\":{\"base\":{\"amount\":1,\"asset_id\":\"1.3.0\"},\"quote\":{\"amount\":1,\"asset_id\":\"1.3.0\"}},\"whitelist_authorities\":[],\"blacklist_authorities\":[],\"whitelist_markets\":[],\"blacklist_markets\":[],\"description\":\"\",\"extensions\":[]},\"dynamic_asset_data_id\":\"2.3.0\",\"dividend_data_id\":\"2.17.0\"}]}"
+2020-08-18 02:22:04,491 DEBUG     : {"method": "call", "params": [0, "get_objects", [["1.3.1"]]], "jsonrpc": "2.0", "id": 9}
+2020-08-18 02:22:04,827 DEBUG     : "{\"id\":9,\"jsonrpc\":\"2.0\",\"result\":[{\"id\":\"1.3.1\",\"symbol\":\"BTF\",\"precision\":8,\"issuer\":\"1.2.18\",\"options\":{\"max_supply\":\"1000000000000000\",\"market_fee_percent\":0,\"max_market_fee\":\"1000000000000000\",\"issuer_permissions\":79,\"flags\":0,\"core_exchange_rate\":{\"base\":{\"amount\":1,\"asset_id\":\"1.3.0\"},\"quote\":{\"amount\":1,\"asset_id\":\"1.3.1\"}},\"whitelist_authorities\":[],\"blacklist_authorities\":[],\"whitelist_markets\":[],\"blacklist_markets\":[],\"description\":\"Bitcoin with precision 8\",\"extensions\":[]},\"dynamic_asset_data_id\":\"2.3.1\"}]}"
+2020-08-18 02:22:04,831 DEBUG     : {"method": "call", "params": [0, "get_objects", [["1.2.7"]]], "jsonrpc": "2.0", "id": 10}
+2020-08-18 02:22:05,236 DEBUG     : "{\"id\":10,\"jsonrpc\":\"2.0\",\"result\":[{\"id\":\"1.2.7\",\"membership_expiration_date\":\"2106-02-07T06:28:15\",\"registrar\":\"1.2.7\",\"referrer\":\"1.2.7\",\"lifetime_referrer\":\"1.2.7\",\"network_fee_percentage\":2000,\"lifetime_referrer_fee_percentage\":8000,\"referrer_rewards_percentage\":0,\"name\":\"init0\",\"owner\":{\"weight_threshold\":1,\"account_auths\":[],\"key_auths\":[[\"TEST6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV\",1]],\"address_auths\":[]},\"active\":{\"weight_threshold\":1,\"account_auths\":[],\"key_auths\":[[\"TEST6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV\",1]],\"address_auths\":[]},\"options\":{\"memo_key\":\"TEST6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV\",\"voting_account\":\"1.2.5\",\"num_witness\":0,\"num_committee\":0,\"votes\":[],\"extensions\":[]},\"statistics\":\"2.6.7\",\"whitelisting_accounts\":[],\"blacklisting_accounts\":[],\"whitelisted_accounts\":[],\"blacklisted_accounts\":[],\"cashback_vb\":\"1.13.1\",\"owner_special_authority\":[0,{}],\"active_special_authority\":[0,{}],\"top_n_control_flags\":0}]}"
+2020-08-18 02:22:05,237 DEBUG     : {"method": "call", "params": [0, "get_account_balances", ["1.2.7", []]], "jsonrpc": "2.0", "id": 11}
+2020-08-18 02:22:05,644 DEBUG     : "{\"id\":11,\"jsonrpc\":\"2.0\",\"result\":[{\"amount\":\"10250398347\",\"asset_id\":\"1.3.0\"},{\"amount\":\"994500000000\",\"asset_id\":\"1.3.1\"}]}"
+2020-08-18 02:22:05,645 DEBUG     : {"method": "call", "params": [0, "get_proposed_transactions", ["1.2.1"]], "jsonrpc": "2.0", "id": 12}
+2020-08-18 02:22:06,054 DEBUG     : "{\"id\":12,\"jsonrpc\":\"2.0\",\"result\":[]}"
+2020-08-18 02:22:06,149 DEBUG     : {"method": "call", "params": [0, "get_chain_properties", []], "jsonrpc": "2.0", "id": 13}
+2020-08-18 02:22:06,567 DEBUG     : "{\"id\":13,\"jsonrpc\":\"2.0\",\"result\":{\"id\":\"2.11.0\",\"chain_id\":\"9e770aee9cb04b11f62391b89a38e1ee28981c94e2b8e7047e0902862568d285\",\"immutable_parameters\":{\"min_committee_member_count\":11,\"min_witness_count\":11,\"num_special_accounts\":0,\"num_special_assets\":0}}}"
+2020-08-18 02:22:06,567 DEBUG     : {"method": "call", "params": [0, "get_chain_properties", []], "jsonrpc": "2.0", "id": 14}
+2020-08-18 02:22:06,924 DEBUG     : "{\"id\":14,\"jsonrpc\":\"2.0\",\"result\":{\"id\":\"2.11.0\",\"chain_id\":\"9e770aee9cb04b11f62391b89a38e1ee28981c94e2b8e7047e0902862568d285\",\"immutable_parameters\":{\"min_committee_member_count\":11,\"min_witness_count\":11,\"num_special_accounts\":0,\"num_special_assets\":0}}}"
+2020-08-18 02:22:06,925 DEBUG     : Configuration key dataproxy_link.proxies not found in ;config-defaults.yaml;config-bos-mint.yaml;config-defaults.yaml;config-bos-mint.yaml! Using given default value.
+2020-08-18 02:22:06,925 DEBUG     : Configuration key dataproxy_link.proxies not found in ;config-defaults.yaml;config-bos-mint.yaml;config-defaults.yaml;config-bos-mint.yaml! Using given default value.
+2020-08-18 02:22:06,925 DEBUG     : getMenuInfo done
+2020-08-18 02:22:06,925 DEBUG     : getMenuInfo done
+2020-08-18 02:22:07,013 INFO      : 127.0.0.1 - - [18/Aug/2020 02:22:07] "[37mGET /overview HTTP/1.1[0m" 200 -
+2020-08-18 02:22:07,116 INFO      : 127.0.0.1 - - [18/Aug/2020 02:22:07] "[37mGET /static/webassets-external/62ff38b6470fb237cea12a17b38dfee8_fontawesome.min.css HTTP/1.1[0m" 200 -
+2020-08-18 02:22:07,117 INFO      : 127.0.0.1 - - [18/Aug/2020 02:22:07] "[37mGET /static/webassets-external/f18661d1ea6fac930bd9e6e890c23ef4_semantic.min.css HTTP/1.1[0m" 200 -
+2020-08-18 02:22:07,122 INFO      : 127.0.0.1 - - [18/Aug/2020 02:22:07] "[37mGET /static/css/src/styles.css HTTP/1.1[0m" 200 -
+2020-08-18 02:22:07,283 INFO      : 127.0.0.1 - - [18/Aug/2020 02:22:07] "[37mGET /static/js/src/main.js HTTP/1.1[0m" 200 -
+2020-08-18 02:22:07,285 INFO      : 127.0.0.1 - - [18/Aug/2020 02:22:07] "[37mGET /static/webassets-external/e56d05ec11bf012a740b1d7f7a25f537_jquery.min.js HTTP/1.1[0m" 200 -
+2020-08-18 02:22:07,286 INFO      : 127.0.0.1 - - [18/Aug/2020 02:22:07] "[37mGET /static/img/logo.png HTTP/1.1[0m" 200 -
+2020-08-18 02:22:07,287 INFO      : 127.0.0.1 - - [18/Aug/2020 02:22:07] "[37mGET /static/webassets-external/def20dfbb1e42c1b528b6fa9387e7676_semantic.min.js HTTP/1.1[0m" 200 -
+2020-08-18 02:22:07,613 INFO      : 127.0.0.1 - - [18/Aug/2020 02:22:07] "[35m[1mGET /static/webassets-external/themes/default/assets/fonts/icons.woff2 HTTP/1.1[0m" 500 -
+2020-08-18 02:22:07,627 INFO      : 127.0.0.1 - - [18/Aug/2020 02:22:07] "[37mGET /static/favicon.ico HTTP/1.1[0m" 200 -
+2020-08-18 02:22:07,666 INFO      : 127.0.0.1 - - [18/Aug/2020 02:22:07] "[35m[1mGET /static/webassets-external/themes/default/assets/fonts/icons.woff HTTP/1.1[0m" 500 -
+2020-08-18 02:22:07,745 INFO      : 127.0.0.1 - - [18/Aug/2020 02:22:07] "[35m[1mGET /static/webassets-external/themes/default/assets/fonts/icons.ttf HTTP/1.1[0m" 500 -
+2020-08-18 03:27:59,168 DEBUG     : {'advanced_features': True,
+ 'allowed_assets': ['BTFUN', 'PPY', 'TEST', 'BTF'],
+ 'allowed_transitions': {'BettingMarketGroupStatus': {'closed': ['graded',
+                                                                 'canceled'],
+                                                      'create': ['upcoming'],
+                                                      'frozen': ['closed',
+                                                                 'canceled',
+                                                                 'in_play',
+                                                                 'upcoming'],
+                                                      'graded': ['re_grading',
+                                                                 'settled',
+                                                                 'canceled'],
+                                                      'in_play': ['frozen',
+                                                                  'closed',
+                                                                  'canceled'],
+                                                      're_grading': ['graded',
+                                                                     'canceled'],
+                                                      'upcoming': ['closed',
+                                                                   'canceled',
+                                                                   'frozen']},
+                         'BettingMarketStatus': {'create': ['unresolved'],
+                                                 'frozen': ['unresolved',
+                                                            'win',
+                                                            'not_win',
+                                                            'canceled'],
+                                                 'not_win': ['canceled', 'win'],
+                                                 'unresolved': ['win',
+                                                                'not_win',
+                                                                'canceled',
+                                                                'frozen'],
+                                                 'win': ['not_win',
+                                                         'canceled']},
+                         'EventStatus': {'create': ['upcoming'],
+                                         'finished': ['canceled'],
+                                         'frozen': ['upcoming',
+                                                    'in_progress',
+                                                    'frozen',
+                                                    'canceled',
+                                                    'finished'],
+                                         'in_progress': ['finished',
+                                                         'frozen',
+                                                         'canceled'],
+                                         'upcoming': ['in_progress',
+                                                      'finished',
+                                                      'frozen',
+                                                      'canceled']}},
+ 'connection': {'baxter': {'nobroadcast': False,
+                           'node': [None],
+                           'num_retries': 1},
+                'hercules': {'nobroadcast': False,
+                             'node': ['wss://hercules.peerplays.download/api'],
+                             'num_entries': 1,
+                             'num_retries': 3},
+                'use': 'hercules'},
+ 'dataproxy_link': {'ping_interval_in_seconds': 300, 'proxies': None},
+ 'debug': True,
+ 'notifications': {'accountLessThanCoreInfo': 1000,
+                   'accountLessThanCoreWarning': 200},
+ 'project_name': 'MINT',
+ 'project_sub_name': 'The BOS Manual Intervention Module',
+ 'secret_key': 'THINK CLOCK SMOG FLAG SMACK TINKER FLUNK',
+ 'sql_database': 'sqlite:////home/j/pbsa/projects/bos-mint/bookied-local.db'}
+2020-08-18 03:27:59,168 DEBUG     : {'advanced_features': True,
+ 'allowed_assets': ['BTFUN', 'PPY', 'TEST', 'BTF'],
+ 'allowed_transitions': {'BettingMarketGroupStatus': {'closed': ['graded',
+                                                                 'canceled'],
+                                                      'create': ['upcoming'],
+                                                      'frozen': ['closed',
+                                                                 'canceled',
+                                                                 'in_play',
+                                                                 'upcoming'],
+                                                      'graded': ['re_grading',
+                                                                 'settled',
+                                                                 'canceled'],
+                                                      'in_play': ['frozen',
+                                                                  'closed',
+                                                                  'canceled'],
+                                                      're_grading': ['graded',
+                                                                     'canceled'],
+                                                      'upcoming': ['closed',
+                                                                   'canceled',
+                                                                   'frozen']},
+                         'BettingMarketStatus': {'create': ['unresolved'],
+                                                 'frozen': ['unresolved',
+                                                            'win',
+                                                            'not_win',
+                                                            'canceled'],
+                                                 'not_win': ['canceled', 'win'],
+                                                 'unresolved': ['win',
+                                                                'not_win',
+                                                                'canceled',
+                                                                'frozen'],
+                                                 'win': ['not_win',
+                                                         'canceled']},
+                         'EventStatus': {'create': ['upcoming'],
+                                         'finished': ['canceled'],
+                                         'frozen': ['upcoming',
+                                                    'in_progress',
+                                                    'frozen',
+                                                    'canceled',
+                                                    'finished'],
+                                         'in_progress': ['finished',
+                                                         'frozen',
+                                                         'canceled'],
+                                         'upcoming': ['in_progress',
+                                                      'finished',
+                                                      'frozen',
+                                                      'canceled']}},
+ 'connection': {'baxter': {'nobroadcast': False,
+                           'node': [None],
+                           'num_retries': 1},
+                'hercules': {'nobroadcast': False,
+                             'node': ['wss://hercules.peerplays.download/api'],
+                             'num_entries': 1,
+                             'num_retries': 3},
+                'use': 'hercules'},
+ 'dataproxy_link': {'ping_interval_in_seconds': 300, 'proxies': None},
+ 'debug': True,
+ 'notifications': {'accountLessThanCoreInfo': 1000,
+                   'accountLessThanCoreWarning': 200},
+ 'project_name': 'MINT',
+ 'project_sub_name': 'The BOS Manual Intervention Module',
+ 'secret_key': 'THINK CLOCK SMOG FLAG SMACK TINKER FLUNK',
+ 'sql_database': 'sqlite:////home/j/pbsa/projects/bos-mint/bookied-local.db'}
+2020-08-18 03:27:59,356 DEBUG     : Configuration key witnesses not found in ;config-defaults.yaml;config-bos-mint.yaml;config-defaults.yaml;config-bos-mint.yaml! Using given default value.
+2020-08-18 03:27:59,356 DEBUG     : Configuration key witnesses not found in ;config-defaults.yaml;config-bos-mint.yaml;config-defaults.yaml;config-bos-mint.yaml! Using given default value.
+2020-08-18 03:27:59,356 DEBUG     : Configuration key dataproxy_link.proxies not found in ;config-defaults.yaml;config-bos-mint.yaml;config-defaults.yaml;config-bos-mint.yaml! Using given default value.
+2020-08-18 03:27:59,356 DEBUG     : Configuration key dataproxy_link.proxies not found in ;config-defaults.yaml;config-bos-mint.yaml;config-defaults.yaml;config-bos-mint.yaml! Using given default value.
+2020-08-18 03:27:59,374 INFO      : Custom config has been loaded ;config-defaults.yaml;incident_storage_config.yaml
+2020-08-18 03:27:59,476 DEBUG     : Successfully loaded extension "markdown.extensions.meta.MetaExtension".
+2020-08-18 03:27:59,477 DEBUG     : Successfully loaded extension "markdown.extensions.tables.TableExtension".
+2020-08-18 03:27:59,481 INFO      :  * Running on http://localhost:5000/ (Press CTRL+C to quit)
+2020-08-18 03:27:59,482 INFO      :  * Restarting with stat
+2020-08-18 03:28:00,353 DEBUG     : {'advanced_features': True,
+ 'allowed_assets': ['BTFUN', 'PPY', 'TEST', 'BTF'],
+ 'allowed_transitions': {'BettingMarketGroupStatus': {'closed': ['graded',
+                                                                 'canceled'],
+                                                      'create': ['upcoming'],
+                                                      'frozen': ['closed',
+                                                                 'canceled',
+                                                                 'in_play',
+                                                                 'upcoming'],
+                                                      'graded': ['re_grading',
+                                                                 'settled',
+                                                                 'canceled'],
+                                                      'in_play': ['frozen',
+                                                                  'closed',
+                                                                  'canceled'],
+                                                      're_grading': ['graded',
+                                                                     'canceled'],
+                                                      'upcoming': ['closed',
+                                                                   'canceled',
+                                                                   'frozen']},
+                         'BettingMarketStatus': {'create': ['unresolved'],
+                                                 'frozen': ['unresolved',
+                                                            'win',
+                                                            'not_win',
+                                                            'canceled'],
+                                                 'not_win': ['canceled', 'win'],
+                                                 'unresolved': ['win',
+                                                                'not_win',
+                                                                'canceled',
+                                                                'frozen'],
+                                                 'win': ['not_win',
+                                                         'canceled']},
+                         'EventStatus': {'create': ['upcoming'],
+                                         'finished': ['canceled'],
+                                         'frozen': ['upcoming',
+                                                    'in_progress',
+                                                    'frozen',
+                                                    'canceled',
+                                                    'finished'],
+                                         'in_progress': ['finished',
+                                                         'frozen',
+                                                         'canceled'],
+                                         'upcoming': ['in_progress',
+                                                      'finished',
+                                                      'frozen',
+                                                      'canceled']}},
+ 'connection': {'baxter': {'nobroadcast': False,
+                           'node': [None],
+                           'num_retries': 1},
+                'hercules': {'nobroadcast': False,
+                             'node': ['wss://hercules.peerplays.download/api'],
+                             'num_entries': 1,
+                             'num_retries': 3},
+                'use': 'hercules'},
+ 'dataproxy_link': {'ping_interval_in_seconds': 300, 'proxies': None},
+ 'debug': True,
+ 'notifications': {'accountLessThanCoreInfo': 1000,
+                   'accountLessThanCoreWarning': 200},
+ 'project_name': 'MINT',
+ 'project_sub_name': 'The BOS Manual Intervention Module',
+ 'secret_key': 'THINK CLOCK SMOG FLAG SMACK TINKER FLUNK',
+ 'sql_database': 'sqlite:////home/j/pbsa/projects/bos-mint/bookied-local.db'}
+2020-08-18 03:28:00,353 DEBUG     : {'advanced_features': True,
+ 'allowed_assets': ['BTFUN', 'PPY', 'TEST', 'BTF'],
+ 'allowed_transitions': {'BettingMarketGroupStatus': {'closed': ['graded',
+                                                                 'canceled'],
+                                                      'create': ['upcoming'],
+                                                      'frozen': ['closed',
+                                                                 'canceled',
+                                                                 'in_play',
+                                                                 'upcoming'],
+                                                      'graded': ['re_grading',
+                                                                 'settled',
+                                                                 'canceled'],
+                                                      'in_play': ['frozen',
+                                                                  'closed',
+                                                                  'canceled'],
+                                                      're_grading': ['graded',
+                                                                     'canceled'],
+                                                      'upcoming': ['closed',
+                                                                   'canceled',
+                                                                   'frozen']},
+                         'BettingMarketStatus': {'create': ['unresolved'],
+                                                 'frozen': ['unresolved',
+                                                            'win',
+                                                            'not_win',
+                                                            'canceled'],
+                                                 'not_win': ['canceled', 'win'],
+                                                 'unresolved': ['win',
+                                                                'not_win',
+                                                                'canceled',
+                                                                'frozen'],
+                                                 'win': ['not_win',
+                                                         'canceled']},
+                         'EventStatus': {'create': ['upcoming'],
+                                         'finished': ['canceled'],
+                                         'frozen': ['upcoming',
+                                                    'in_progress',
+                                                    'frozen',
+                                                    'canceled',
+                                                    'finished'],
+                                         'in_progress': ['finished',
+                                                         'frozen',
+                                                         'canceled'],
+                                         'upcoming': ['in_progress',
+                                                      'finished',
+                                                      'frozen',
+                                                      'canceled']}},
+ 'connection': {'baxter': {'nobroadcast': False,
+                           'node': [None],
+                           'num_retries': 1},
+                'hercules': {'nobroadcast': False,
+                             'node': ['wss://hercules.peerplays.download/api'],
+                             'num_entries': 1,
+                             'num_retries': 3},
+                'use': 'hercules'},
+ 'dataproxy_link': {'ping_interval_in_seconds': 300, 'proxies': None},
+ 'debug': True,
+ 'notifications': {'accountLessThanCoreInfo': 1000,
+                   'accountLessThanCoreWarning': 200},
+ 'project_name': 'MINT',
+ 'project_sub_name': 'The BOS Manual Intervention Module',
+ 'secret_key': 'THINK CLOCK SMOG FLAG SMACK TINKER FLUNK',
+ 'sql_database': 'sqlite:////home/j/pbsa/projects/bos-mint/bookied-local.db'}
+2020-08-18 03:28:00,477 DEBUG     : Configuration key witnesses not found in ;config-defaults.yaml;config-bos-mint.yaml;config-defaults.yaml;config-bos-mint.yaml! Using given default value.
+2020-08-18 03:28:00,477 DEBUG     : Configuration key witnesses not found in ;config-defaults.yaml;config-bos-mint.yaml;config-defaults.yaml;config-bos-mint.yaml! Using given default value.
+2020-08-18 03:28:00,477 DEBUG     : Configuration key dataproxy_link.proxies not found in ;config-defaults.yaml;config-bos-mint.yaml;config-defaults.yaml;config-bos-mint.yaml! Using given default value.
+2020-08-18 03:28:00,477 DEBUG     : Configuration key dataproxy_link.proxies not found in ;config-defaults.yaml;config-bos-mint.yaml;config-defaults.yaml;config-bos-mint.yaml! Using given default value.
+2020-08-18 03:28:00,493 INFO      : Custom config has been loaded ;config-defaults.yaml;incident_storage_config.yaml
+2020-08-18 03:28:00,572 DEBUG     : Successfully loaded extension "markdown.extensions.meta.MetaExtension".
+2020-08-18 03:28:00,573 DEBUG     : Successfully loaded extension "markdown.extensions.tables.TableExtension".
+2020-08-18 03:28:00,575 WARNING   :  * Debugger is active!
+2020-08-18 03:28:00,577 INFO      :  * Debugger PIN: 130-430-730
+2020-08-18 03:28:01,235 INFO      : SELECT CAST('test plain returns' AS VARCHAR(60)) AS anon_1
+2020-08-18 03:28:01,235 INFO      : ()
+2020-08-18 03:28:01,235 INFO      : SELECT CAST('test unicode returns' AS VARCHAR(60)) AS anon_1
+2020-08-18 03:28:01,235 INFO      : ()
+2020-08-18 03:28:01,236 INFO      : PRAGMA main.table_info("local_proposal")
+2020-08-18 03:28:01,236 INFO      : ()
+2020-08-18 03:28:01,236 INFO      : PRAGMA main.table_info("view_configuration")
+2020-08-18 03:28:01,237 INFO      : ()
+2020-08-18 03:28:01,238 DEBUG     : Updating connection from None to wss://hercules.peerplays.download/api
+2020-08-18 03:28:01,238 INFO      : Using proxy None:80 http
+2020-08-18 03:28:01,238 DEBUG     : Trying to connect to node wss://hercules.peerplays.download/api
+2020-08-18 03:28:02,966 DEBUG     : {"method": "call", "params": [1, "login", ["", ""]], "jsonrpc": "2.0", "id": 1}
+2020-08-18 03:28:03,336 DEBUG     : "{\"id\":1,\"jsonrpc\":\"2.0\",\"result\":true}"
+2020-08-18 03:28:03,337 DEBUG     : {"method": "call", "params": [1, "database", []], "jsonrpc": "2.0", "id": 2}
+2020-08-18 03:28:03,652 DEBUG     : "{\"id\":2,\"jsonrpc\":\"2.0\",\"result\":3}"
+2020-08-18 03:28:03,652 DEBUG     : {"method": "call", "params": [1, "history", []], "jsonrpc": "2.0", "id": 3}
+2020-08-18 03:28:03,969 DEBUG     : "{\"id\":3,\"jsonrpc\":\"2.0\",\"result\":4}"
+2020-08-18 03:28:03,969 DEBUG     : {"method": "call", "params": [1, "network_broadcast", []], "jsonrpc": "2.0", "id": 4}
+2020-08-18 03:28:04,350 DEBUG     : "{\"id\":4,\"jsonrpc\":\"2.0\",\"result\":5}"
+2020-08-18 03:28:04,351 DEBUG     : {"method": "call", "params": [0, "list_sports", []], "jsonrpc": "2.0", "id": 5}
+2020-08-18 03:28:04,686 DEBUG     : "{\"id\":5,\"jsonrpc\":\"2.0\",\"result\":[{\"id\":\"1.20.0\",\"name\":[[\"en\",\"Ice Hockey\"],[\"identifier\",\"Ice Hockey\"],[\"sen\",\"Ice Hockey\"]]},{\"id\":\"1.20.1\",\"name\":[[\"en\",\"Baseball\"],[\"identifier\",\"Baseball\"],[\"sen\",\"Baseball\"]]},{\"id\":\"1.20.2\",\"name\":[[\"en\",\"Basketball\"],[\"identifier\",\"Basketball\"],[\"sen\",\"Basketball\"]]},{\"id\":\"1.20.3\",\"name\":[[\"en\",\"Soccer\"],[\"identifier\",\"Soccer\"],[\"sen\",\"Soccer\"]]},{\"id\":\"1.20.4\",\"name\":[[\"en\",\"American Football\"],[\"identifier\",\"AmericanFootball\"],[\"sen\",\"Am. Football\"]]},{\"id\":\"1.20.5\",\"name\":[[\"en\",\"Esports\"],[\"identifier\",\"Esports\"],[\"sen\",\"Esports\"]]}]}"
+2020-08-18 03:28:04,689 DEBUG     : {"method": "call", "params": [0, "lookup_account_names", [["witness-account"]]], "jsonrpc": "2.0", "id": 6}
+2020-08-18 03:28:05,070 DEBUG     : "{\"id\":6,\"jsonrpc\":\"2.0\",\"result\":[{\"id\":\"1.2.1\",\"membership_expiration_date\":\"2106-02-07T06:28:15\",\"registrar\":\"1.2.1\",\"referrer\":\"1.2.1\",\"lifetime_referrer\":\"1.2.1\",\"network_fee_percentage\":2000,\"lifetime_referrer_fee_percentage\":8000,\"referrer_rewards_percentage\":0,\"name\":\"witness-account\",\"owner\":{\"weight_threshold\":1,\"account_auths\":[],\"key_auths\":[],\"address_auths\":[]},\"active\":{\"weight_threshold\":6,\"account_auths\":[[\"1.2.7\",1],[\"1.2.8\",1],[\"1.2.9\",1],[\"1.2.10\",1],[\"1.2.11\",1],[\"1.2.12\",1],[\"1.2.13\",1],[\"1.2.14\",1],[\"1.2.15\",1],[\"1.2.16\",1],[\"1.2.17\",1]],\"key_auths\":[],\"address_auths\":[]},\"options\":{\"memo_key\":\"TEST1111111111111111111111111111111114T1Anm\",\"voting_account\":\"1.2.5\",\"num_witness\":0,\"num_committee\":0,\"votes\":[],\"extensions\":[]},\"statistics\":\"2.6.1\",\"whitelisting_accounts\":[],\"blacklisting_accounts\":[],\"whitelisted_accounts\":[],\"blacklisted_accounts\":[],\"owner_special_authority\":[0,{}],\"active_special_authority\":[0,{}],\"top_n_control_flags\":0}]}"
+2020-08-18 03:28:05,071 DEBUG     : {"method": "call", "params": [0, "get_account_balances", ["1.2.1", []]], "jsonrpc": "2.0", "id": 7}
+2020-08-18 03:28:05,478 DEBUG     : "{\"id\":7,\"jsonrpc\":\"2.0\",\"result\":[{\"amount\":857800000,\"asset_id\":\"1.3.0\"},{\"amount\":\"1000000000000\",\"asset_id\":\"1.3.1\"}]}"
+2020-08-18 03:28:05,479 DEBUG     : {"method": "call", "params": [0, "get_objects", [["1.3.0"]]], "jsonrpc": "2.0", "id": 8}
+2020-08-18 03:28:05,887 DEBUG     : "{\"id\":8,\"jsonrpc\":\"2.0\",\"result\":[{\"id\":\"1.3.0\",\"symbol\":\"TEST\",\"precision\":5,\"issuer\":\"1.2.0\",\"options\":{\"max_supply\":\"1000000000000000\",\"market_fee_percent\":0,\"max_market_fee\":\"1000000000000000\",\"issuer_permissions\":0,\"flags\":0,\"core_exchange_rate\":{\"base\":{\"amount\":1,\"asset_id\":\"1.3.0\"},\"quote\":{\"amount\":1,\"asset_id\":\"1.3.0\"}},\"whitelist_authorities\":[],\"blacklist_authorities\":[],\"whitelist_markets\":[],\"blacklist_markets\":[],\"description\":\"\",\"extensions\":[]},\"dynamic_asset_data_id\":\"2.3.0\",\"dividend_data_id\":\"2.17.0\"}]}"
+2020-08-18 03:28:05,888 DEBUG     : {"method": "call", "params": [0, "get_objects", [["1.3.1"]]], "jsonrpc": "2.0", "id": 9}
+2020-08-18 03:28:06,298 DEBUG     : "{\"id\":9,\"jsonrpc\":\"2.0\",\"result\":[{\"id\":\"1.3.1\",\"symbol\":\"BTF\",\"precision\":8,\"issuer\":\"1.2.18\",\"options\":{\"max_supply\":\"1000000000000000\",\"market_fee_percent\":0,\"max_market_fee\":\"1000000000000000\",\"issuer_permissions\":79,\"flags\":0,\"core_exchange_rate\":{\"base\":{\"amount\":1,\"asset_id\":\"1.3.0\"},\"quote\":{\"amount\":1,\"asset_id\":\"1.3.1\"}},\"whitelist_authorities\":[],\"blacklist_authorities\":[],\"whitelist_markets\":[],\"blacklist_markets\":[],\"description\":\"Bitcoin with precision 8\",\"extensions\":[]},\"dynamic_asset_data_id\":\"2.3.1\"}]}"
+2020-08-18 03:28:06,301 DEBUG     : {"method": "call", "params": [0, "get_objects", [["1.2.7"]]], "jsonrpc": "2.0", "id": 10}
+2020-08-18 03:28:06,712 DEBUG     : "{\"id\":10,\"jsonrpc\":\"2.0\",\"result\":[{\"id\":\"1.2.7\",\"membership_expiration_date\":\"2106-02-07T06:28:15\",\"registrar\":\"1.2.7\",\"referrer\":\"1.2.7\",\"lifetime_referrer\":\"1.2.7\",\"network_fee_percentage\":2000,\"lifetime_referrer_fee_percentage\":8000,\"referrer_rewards_percentage\":0,\"name\":\"init0\",\"owner\":{\"weight_threshold\":1,\"account_auths\":[],\"key_auths\":[[\"TEST6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV\",1]],\"address_auths\":[]},\"active\":{\"weight_threshold\":1,\"account_auths\":[],\"key_auths\":[[\"TEST6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV\",1]],\"address_auths\":[]},\"options\":{\"memo_key\":\"TEST6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV\",\"voting_account\":\"1.2.5\",\"num_witness\":0,\"num_committee\":0,\"votes\":[],\"extensions\":[]},\"statistics\":\"2.6.7\",\"whitelisting_accounts\":[],\"blacklisting_accounts\":[],\"whitelisted_accounts\":[],\"blacklisted_accounts\":[],\"cashback_vb\":\"1.13.1\",\"owner_special_authority\":[0,{}],\"active_special_authority\":[0,{}],\"top_n_control_flags\":0}]}"
+2020-08-18 03:28:06,713 DEBUG     : {"method": "call", "params": [0, "get_account_balances", ["1.2.7", []]], "jsonrpc": "2.0", "id": 11}
+2020-08-18 03:28:07,034 DEBUG     : "{\"id\":11,\"jsonrpc\":\"2.0\",\"result\":[{\"amount\":\"10250398347\",\"asset_id\":\"1.3.0\"},{\"amount\":\"994500000000\",\"asset_id\":\"1.3.1\"}]}"
+2020-08-18 03:28:07,035 DEBUG     : {"method": "call", "params": [0, "get_proposed_transactions", ["1.2.1"]], "jsonrpc": "2.0", "id": 12}
+2020-08-18 03:28:07,377 DEBUG     : "{\"id\":12,\"jsonrpc\":\"2.0\",\"result\":[]}"
+2020-08-18 03:28:07,487 DEBUG     : {"method": "call", "params": [0, "get_chain_properties", []], "jsonrpc": "2.0", "id": 13}
+2020-08-18 03:28:07,811 DEBUG     : "{\"id\":13,\"jsonrpc\":\"2.0\",\"result\":{\"id\":\"2.11.0\",\"chain_id\":\"9e770aee9cb04b11f62391b89a38e1ee28981c94e2b8e7047e0902862568d285\",\"immutable_parameters\":{\"min_committee_member_count\":11,\"min_witness_count\":11,\"num_special_accounts\":0,\"num_special_assets\":0}}}"
+2020-08-18 03:28:07,811 DEBUG     : {"method": "call", "params": [0, "get_chain_properties", []], "jsonrpc": "2.0", "id": 14}
+2020-08-18 03:28:08,127 DEBUG     : "{\"id\":14,\"jsonrpc\":\"2.0\",\"result\":{\"id\":\"2.11.0\",\"chain_id\":\"9e770aee9cb04b11f62391b89a38e1ee28981c94e2b8e7047e0902862568d285\",\"immutable_parameters\":{\"min_committee_member_count\":11,\"min_witness_count\":11,\"num_special_accounts\":0,\"num_special_assets\":0}}}"
+2020-08-18 03:28:08,129 DEBUG     : Configuration key dataproxy_link.proxies not found in ;config-defaults.yaml;config-bos-mint.yaml;config-defaults.yaml;config-bos-mint.yaml! Using given default value.
+2020-08-18 03:28:08,129 DEBUG     : Configuration key dataproxy_link.proxies not found in ;config-defaults.yaml;config-bos-mint.yaml;config-defaults.yaml;config-bos-mint.yaml! Using given default value.
+2020-08-18 03:28:08,129 DEBUG     : getMenuInfo done
+2020-08-18 03:28:08,129 DEBUG     : getMenuInfo done
+2020-08-18 03:28:08,275 INFO      : 127.0.0.1 - - [18/Aug/2020 03:28:08] "[37mGET /overview HTTP/1.1[0m" 200 -
+2020-08-18 03:28:08,499 INFO      : 127.0.0.1 - - [18/Aug/2020 03:28:08] "[37mGET /static/webassets-external/themes/default/assets/fonts/icons.woff2 HTTP/1.1[0m" 200 -
+2020-08-18 03:28:08,645 INFO      : 127.0.0.1 - - [18/Aug/2020 03:28:08] "[37mGET /static/favicon.ico HTTP/1.1[0m" 200 -

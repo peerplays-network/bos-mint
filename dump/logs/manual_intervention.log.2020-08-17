@@ -1,0 +1,9 @@
+2020-08-17 00:21:09,342 INFO      : Custom config has been loaded ;config-defaults.yaml;incident_storage_config.yaml
+2020-08-17 00:21:09,426 INFO      :  * Running on http://localhost:5000/ (Press CTRL+C to quit)
+2020-08-17 00:21:18,249 INFO      : 127.0.0.1 - - [17/Aug/2020 00:21:18] "[32mGET / HTTP/1.1[0m" 302 -
+2020-08-17 00:21:18,257 INFO      : Using proxy None:80 http
+2020-08-17 00:22:10,770 INFO      : 127.0.0.1 - - [17/Aug/2020 00:22:10] "[32mGET / HTTP/1.1[0m" 302 -
+2020-08-17 00:23:03,678 INFO      : 127.0.0.1 - - [17/Aug/2020 00:23:03] "[32mGET / HTTP/1.1[0m" 302 -
+2020-08-17 00:37:34,406 INFO      : Custom config has been loaded ;config-defaults.yaml;incident_storage_config.yaml
+2020-08-17 00:37:34,486 INFO      :  * Running on http://localhost:5000/ (Press CTRL+C to quit)
+2020-08-17 00:37:46,753 INFO      : Using proxy None:80 http
