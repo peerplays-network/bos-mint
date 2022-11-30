@@ -11,7 +11,7 @@
 	{% else %}
 	<p class="transition hidden">
 	{% endif %}
-	
+
 	<table class="ui very basic collapsing celled table">
 		<tbody>
 			{% for item in listItems %}
@@ -40,7 +40,7 @@
 		<tbody>
 			<tr>
 				<td><div class="ui relaxed divided list">
-				{% for operation in operations %} 
+				{% for operation in operations %}
 					{{ operation|safe }}
 				{% endfor %}</div></td>
 			</tr>
@@ -48,6 +48,16 @@
 			<tr>
 				<td>
 					<div class="ui right floated buttons">
+						{% if advanced_user %}
+						<div class="ui floated buttons">
+       						<form action="{{ buttonDeleteURL }}" id="buttonDelete" method="POST">
+         						<button class="ui labeled secondary icon button">
+            						<i class="trash icon"></i>{{ buttonDelete }}
+         						</button>
+      						</form>
+   						</div>
+						{% endif %}
+
 						{% if buttonNegative %}
 						<form action="{{ buttonNegativeURL }}" id="buttonNegative" method="POST">
 							<button class="ui labeled negative icon button">
@@ -55,20 +65,21 @@
 							</button>
 						</form>
 						{% endif %}
-						{% if buttonPositive and buttonNegative %}
+						{% if buttonPositive and buttonNegative and not advanced_user %}
 						<div class="or"></div>
 						{% endif %}
 						{% if buttonPositive %}
 						<form action="{{ buttonPositiveURL }}" id="buttonPositive" method="POST">
-						<button class="ui right labeled positive icon button">
+						<button class="ui labeled positive icon button">
 							<i class="thumbs up icon"></i>{{ buttonPositive }}
 						</button>
 						</form>
 						{% endif %}
 					</div>
-				</td> 
+				</td>
 			{% endif %}
 		</tbody>
+
 	</table>
 
 	</p>

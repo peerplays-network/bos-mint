@@ -1,18 +1,18 @@
-from . import wrapper
-
 from functools import wraps
-from peerplays.account import Account
-from peerplays.sport import Sport, Sports
-from peerplays.eventgroup import EventGroups, EventGroup
-from peerplays.event import Events, Event
-from peerplays.bettingmarketgroup import BettingMarketGroup, BettingMarketGroups
-from peerplays.bettingmarket import BettingMarkets, BettingMarket
-from peerplays.rule import Rules, Rule
-from peerplays.proposal import Proposals
 
-from peerplays.instance import shared_peerplays_instance
-from peerplays.asset import Asset
 from bookied_sync.lookup import Lookup
+from peerplays.account import Account
+from peerplays.asset import Asset
+from peerplays.bettingmarket import BettingMarkets, BettingMarket
+from peerplays.bettingmarketgroup import BettingMarketGroup, BettingMarketGroups
+from peerplays.event import Events, Event
+from peerplays.eventgroup import EventGroups, EventGroup
+from peerplays.instance import shared_peerplays_instance
+from peerplays.proposal import Proposals
+from peerplays.rule import Rules, Rule
+from peerplays.sport import Sport, Sports
+
+from . import wrapper
 
 
 class NodeException(Exception):
@@ -369,6 +369,29 @@ class Node(object):
             raise NodeException(ex.__class__.__name__ + ": " + str(ex))
 
     @proposedOperation
+    def deleteSport(self, sportId):
+        try:
+            return self.get_node().sport_delete(
+                sport_id=sportId,
+                account=self.getSelectedAccountName(),
+                append_to=self.getPendingProposal()
+            )
+        except Exception as ex:
+            raise NodeException(ex.__class__.__name__ + ": " + str(ex))
+
+    @proposedOperation
+    def deleteEventgroup(self, event_group_id):
+
+        try:
+            return self.get_node().eventgroup_delete(
+                event_group_id=event_group_id,
+                account=self.getSelectedAccountName(),
+                append_to=self.getPendingProposal()
+            )
+        except Exception as ex:
+            raise NodeException(ex.__class__.__name__ + ": " + str(ex))
+
+    @proposedOperation
     def createEventGroup(self, istrings, sportId):
         try:
             return self.get_node().event_group_create(istrings, sportId, account=self.getSelectedAccountName(), append_to=self.getPendingProposal())
@@ -519,6 +542,17 @@ class Node(object):
                 [proposalId],
                 self.getSelectedAccountName(),
                 self.getSelectedAccountName())
+        except Exception as ex:
+            raise NodeException(ex.__class__.__name__ + ": " + str(ex))
+
+    @proposedOperation
+    def deleteProposal(self, proposalId):
+        try:
+            return self.get_node().deleteproposal(
+                proposalId,
+                "witness-account",
+                append_to=self.getPendingProposal()
+            )
         except Exception as ex:
             raise NodeException(ex.__class__.__name__ + ": " + str(ex))
 

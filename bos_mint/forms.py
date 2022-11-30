@@ -266,6 +266,10 @@ class SportFormDetails(FlaskForm):
         self.name.fill(selectedObject['name'])
 
 
+class DeleteForm(FlaskForm):
+    cancel = SubmitField("Cancel")
+    submit = SubmitField("Delete")
+
 class NewEventGroupForm(FlaskForm):
     sport = SelectField("Sport", validators=[DataRequired()],
                         choices=None)

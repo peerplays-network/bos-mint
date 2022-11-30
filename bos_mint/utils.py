@@ -95,36 +95,24 @@ PARENT_TYPE = {
     'bet': 'bettingmarket'
 }
 
-TYPENAME_TO_NEWOP_MAP = {
-    'sport': 'sport_create',
-    'eventgroup': 'event_group_create',
-    'event': 'event_create',
-    'event_status': None,
-    'bettingmarketgroup': 'betting_market_group_create',
-    'bettingmarketgrouprule': 'betting_market_rules_create',
-    'bettingmarket': 'betting_market_create',
-    'bet': 'bet_create',
-}
-
-TYPENAME_TO_UPDATEOP_MAP = {
-    'sport': 'sport_update',
-    'eventgroup': 'event_group_update',
-    'event': 'event_update',
-    'event_status': 'event_update_status',
-    'bettingmarketgroup': 'betting_market_group_update',
-    'bettingmarketgrouprule': 'betting_market_rules_update',
-    'bettingmarket': 'betting_market_update'
-}
-
-UPDATEOP_TO_TYPENAME_MAP = {
+OP_TO_TYPENAME_MAP = {
+    'sport_create': 'sport',
+    'sport_delete': 'sport',
     'sport_update': 'sport',
+    'event_group_create': 'eventgroup',
+    'event_group_delete': 'eventgroup',
     'event_group_update': 'eventgroup',
+    'event_create': 'event',
     'event_update': 'event',
     'event_update_status': 'event_status',
+    'betting_market_group_create': 'bettingmarketgroup',
     'betting_market_group_update': 'bettingmarketgroup',
+    'betting_market_rules_create': 'bettingmarketgrouprule',
     'betting_market_rules_update': 'bettingmarketgrouprule',
+    'betting_market_create': 'bettingmarket',
     'betting_market_update': 'bettingmarket',
-    'betting_market_group_resolve': 'bettingmarketgroup'
+    'betting_market_group_resolve': 'bettingmarketgroup',
+    'bet_create': 'bet',
 }
 
 
@@ -340,12 +328,7 @@ def getProposalOperations(tx):
                 operation = operation['op']
                 operationName = getOperationNameForId(operation[0])
                 typeName = 'unknown'
-                for tmpTypeName, newOpName in TYPENAME_TO_NEWOP_MAP.items():
-                    if newOpName == operationName:
-                        typeName = tmpTypeName
-
-                typeName = UPDATEOP_TO_TYPENAME_MAP.get(operationName, typeName)
-
+                typeName = OP_TO_TYPENAME_MAP.get(operationName, typeName)
                 if typeName == 'unknown':
                     raise Exception
                 # this is a hack. proper id construction __must__ be
